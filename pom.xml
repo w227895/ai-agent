@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.ke</groupId>
-    <artifactId>spring-ai-deepseek-function-demo</artifactId>
+    <artifactId>flight-change-mail-agent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>spring-ai-deepseek-function-demo</name>
-    <description>Spring AI DeepSeek function calling demo</description>
+    <name>flight-change-mail-agent</name>
+    <description>Spring AI DeepSeek flight change mail parsing workflow</description>
 
     <properties>
         <java.version>17</java.version>
@@ -58,6 +58,19 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.ke.deepseektools.FlightChangeMailAgentApplication</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>com/ke/deepseektools/tools/LocalBusinessTools*</exclude>
+                        <exclude>com/ke/deepseektools/service/OpenMeteoWeatherService*</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

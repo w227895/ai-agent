@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: spring-ai-deepseek-function-demo
+    name: flight-change-mail-agent
   ai:
     deepseek:
       api-key: ${DEEPSEEK_API_KEY:}
@@ -15,3 +15,4 @@ spring:
 logging:
   level:
     com.ke.deepseektools.tools: INFO
+    com.ke.deepseektools.service: INFO

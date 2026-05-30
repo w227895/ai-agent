@@ -1,13 +1,22 @@
-# Spring AI DeepSeek Function Calling Demo
+# 航变邮件处理中心
 
-一个最小 Spring Boot + Spring AI + DeepSeek 的 function calling 示例。
+一个 Spring Boot + Spring AI + DeepSeek 的航变邮件解析 demo。
 
-天气工具会调用 Open-Meteo 的真实接口：
+处理链路：
 
-- Geocoding API：城市名转经纬度
-- Forecast API：按经纬度查询天气预报
-
-订单金额计算保留为本地业务函数，方便演示模型一次请求里连续调用多个工具。
+```text
+航变邮件来了
+↓
+识别
+↓
+提取
+↓
+关联订单
+↓
+生成工单
+↓
+通知人工
+```
 
 ## 准备
 
@@ -23,41 +32,47 @@ $env:DEEPSEEK_API_KEY="你的 DeepSeek API Key"
 mvn spring-boot:run
 ```
 
-如果本机没有安装 Maven，可以安装 Maven 后运行上面的命令，或在 IDE 中直接导入 `pom.xml`。
 当前机器也已临时下载 Maven 到 `C:\tmp\apache-maven-3.9.9`，可以这样运行：
 
 ```powershell
 & "C:\tmp\apache-maven-3.9.9\bin\mvn.cmd" spring-boot:run
 ```
 
-## 调用
-
-浏览器打开页面：
+## 页面
 
 ```text
 http://localhost:8080/
 ```
 
-也可以直接调用接口：
+## 接口
 
 ```powershell
-Invoke-RestMethod "http://localhost:8080/ai/function-call"
+Invoke-RestMethod "http://localhost:8080/mail/process"
 ```
 
-也可以传入自己的问题：
+也可以 POST 邮件正文：
 
 ```powershell
-Invoke-RestMethod "http://localhost:8080/ai/function-call?message=我明天去上海，天气怎么样？另外 5 件 88 元商品打 9 折是多少钱？"
+Invoke-RestMethod "http://localhost:8080/mail/process" `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body '{"emailContent":"Subject: 航班变更通知 MU5101\n旅客张三，票号 781-1234567890，PNR H8K2Q9，原航班 MU5101 变更为 MU5115。"}'
 ```
 
-控制台如果看到类似日志，说明模型触发了本地工具调用：
+## AI 结合方式
 
-```text
-Tool called: getCityWeather(city=上海)
-Tool called: calculateOrderPrice(unitPrice=88, quantity=5, discountRate=0.9)
+`AiConfig` 把 `FlightChangeWorkflowTools` 注册给 DeepSeek：
+
+```java
+.defaultTools(workflowTools)
 ```
 
-天气接口来源：
+模型负责识别邮件、提取字段、决定工具调用顺序和参数。Spring AI 负责把模型的 tool call 映射到 Java 方法。
 
-- https://geocoding-api.open-meteo.com/v1/search
-- https://api.open-meteo.com/v1/forecast
+当前工具：
+
+- `findRelatedOrder`：关联订单
+- `createFlightChangeWorkOrder`：生成航变工单
+- `notifyHumanAgent`：通知人工坐席
+
+当前订单、工单、通知服务是本地实现，已经按服务边界拆开。后续接真实系统时替换 `service` 包里的实现即可。

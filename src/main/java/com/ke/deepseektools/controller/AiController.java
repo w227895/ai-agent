@@ -12,6 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/ai")
 public class AiController {
 
+    private static final String DEFAULT_MAIL = """
+            Subject: 航班变更通知 MU5101
+
+            旅客张三，票号 781-1234567890，PNR H8K2Q9。
+            原航班 MU5101 因计划调整变更为 MU5115，出发日期 2026-06-02，航线北京首都T2至上海虹桥T2。
+            请联系旅客确认是否接受变更。
+            """;
+
     private final ChatClient chatClient;
 
     public AiController(ChatClient chatClient) {
@@ -19,30 +27,28 @@ public class AiController {
     }
 
     @GetMapping("/function-call")
-    public AiResponse functionCall(
-            @RequestParam(defaultValue = "我明天去北京出差，天气怎么样？顺便帮我算一下 3 件 199 元商品打 8 折后一共多少钱。")
-            String message) {
-
-        String answer = chatClient.prompt()
-                .user(message)
-                .call()
-                .content();
-
-        return new AiResponse(message, answer);
+    public AiResponse functionCall(@RequestParam(defaultValue = DEFAULT_MAIL) String message) {
+        return processMailLikeText(message);
     }
 
     @PostMapping("/function-call")
     public AiResponse functionCall(@RequestBody AiRequest request) {
         String message = request.message();
         if (message == null || message.isBlank()) {
-            message = "我明天去北京出差，天气怎么样？顺便帮我算一下 3 件 199 元商品打 8 折后一共多少钱。";
+            message = DEFAULT_MAIL;
         }
+        return processMailLikeText(message);
+    }
 
+    private AiResponse processMailLikeText(String message) {
         String answer = chatClient.prompt()
-                .user(message)
+                .user("""
+                        请按航变邮件处理流程处理下面内容：
+
+                        %s
+                        """.formatted(message))
                 .call()
                 .content();
-
         return new AiResponse(message, answer);
     }
 

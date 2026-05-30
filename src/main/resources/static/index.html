@@ -3,20 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Spring AI DeepSeek Function Calling</title>
+    <title>航变邮件处理中心</title>
     <style>
         :root {
-            color-scheme: light;
-            --bg: #f6f7f9;
+            --bg: #f5f7fa;
             --panel: #ffffff;
-            --text: #172033;
+            --text: #162033;
             --muted: #667085;
-            --line: #d7dce5;
-            --primary: #1f7a8c;
-            --primary-dark: #155e6f;
-            --accent: #d1495b;
-            --tool: #eef7f8;
-            --shadow: 0 16px 48px rgba(23, 32, 51, 0.10);
+            --line: #d7dde8;
+            --primary: #176b87;
+            --primary-dark: #0f5268;
+            --accent: #c2410c;
+            --soft: #eef6f8;
+            --shadow: 0 16px 42px rgba(22, 32, 51, 0.10);
         }
 
         * {
@@ -27,259 +26,207 @@
             margin: 0;
             min-height: 100vh;
             font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-            background: var(--bg);
             color: var(--text);
-        }
-
-        .app {
-            min-height: 100vh;
-            display: grid;
-            grid-template-rows: auto 1fr;
+            background: var(--bg);
         }
 
         header {
+            background: var(--panel);
             border-bottom: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(10px);
+        }
+
+        .header-inner,
+        main {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
         }
 
         .header-inner {
-            width: min(1120px, calc(100% - 32px));
-            margin: 0 auto;
-            min-height: 72px;
+            min-height: 76px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 0;
-        }
-
-        .brand-mark {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            background: var(--primary);
-            display: grid;
-            place-items: center;
-            color: #fff;
-            font-weight: 800;
-        }
-
-        .brand-title {
+        h1 {
             margin: 0;
-            font-size: 18px;
-            line-height: 1.25;
+            font-size: 22px;
+            line-height: 1.2;
         }
 
-        .brand-subtitle {
-            margin: 2px 0 0;
+        .subtitle {
+            margin: 5px 0 0;
             color: var(--muted);
             font-size: 13px;
         }
 
         .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
             color: var(--muted);
             font-size: 13px;
             white-space: nowrap;
         }
 
-        .status-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: #2fb344;
-        }
-
         main {
-            width: min(1120px, calc(100% - 32px));
-            margin: 0 auto;
             padding: 24px 0;
             display: grid;
-            grid-template-columns: 300px minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr) 360px;
             gap: 20px;
-            min-height: 0;
         }
 
-        aside,
-        .chat {
+        .panel {
             background: var(--panel);
             border: 1px solid var(--line);
             border-radius: 8px;
             box-shadow: var(--shadow);
         }
 
-        aside {
-            padding: 18px;
-            align-self: start;
-        }
-
-        .section-title {
-            margin: 0 0 12px;
-            font-size: 15px;
-        }
-
-        .tool-list {
+        .workspace {
             display: grid;
-            gap: 10px;
+            grid-template-rows: auto 1fr auto;
+            min-height: calc(100vh - 124px);
+            overflow: hidden;
         }
 
-        .tool-item {
+        .panel-header {
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .editor {
+            padding: 18px;
+            display: grid;
+            grid-template-rows: minmax(260px, 42vh) auto minmax(220px, 1fr);
+            gap: 14px;
+            min-height: 0;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 260px;
+            resize: vertical;
             border: 1px solid var(--line);
             border-radius: 8px;
-            padding: 12px;
-            background: var(--tool);
+            padding: 14px;
+            color: var(--text);
+            font: 14px/1.65 Consolas, "Microsoft YaHei", monospace;
+            outline: none;
         }
 
-        .tool-name {
-            margin: 0 0 6px;
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.14);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            min-height: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--text);
+            cursor: pointer;
+            padding: 0 14px;
+            font: inherit;
             font-weight: 700;
+        }
+
+        button.primary {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #fff;
+        }
+
+        button.primary:hover {
+            background: var(--primary-dark);
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: wait;
+        }
+
+        .result {
+            min-height: 220px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcfe;
+            padding: 14px;
+            overflow: auto;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        aside {
+            align-self: start;
+            padding: 18px;
+        }
+
+        .flow {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .step {
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            gap: 10px;
+            align-items: start;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .step-title {
+            margin: 0 0 4px;
+            font-weight: 800;
             font-size: 14px;
         }
 
-        .tool-desc {
+        .step-desc {
             margin: 0;
             color: var(--muted);
             font-size: 13px;
             line-height: 1.55;
         }
 
-        .examples {
+        .hint {
             margin-top: 18px;
-            display: grid;
-            gap: 8px;
-        }
-
-        .example-button {
-            width: 100%;
-            min-height: 38px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: #fff;
-            color: var(--text);
-            cursor: pointer;
-            text-align: left;
-            padding: 9px 10px;
-            line-height: 1.45;
-            font: inherit;
-            font-size: 13px;
-        }
-
-        .example-button:hover {
-            border-color: var(--primary);
-        }
-
-        .chat {
-            min-height: calc(100vh - 120px);
-            display: grid;
-            grid-template-rows: 1fr auto;
-            overflow: hidden;
-        }
-
-        .messages {
-            padding: 20px;
-            overflow: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .message {
-            max-width: 78%;
-            border-radius: 8px;
-            padding: 12px 14px;
-            line-height: 1.65;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-        }
-
-        .message.user {
-            align-self: flex-end;
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .message.assistant {
-            align-self: flex-start;
-            background: #f1f4f8;
-            border: 1px solid var(--line);
-        }
-
-        .message.system {
-            align-self: center;
-            max-width: 100%;
-            background: transparent;
             color: var(--muted);
             font-size: 13px;
-            padding: 0;
-        }
-
-        .composer {
-            border-top: 1px solid var(--line);
-            padding: 14px;
-            background: #fff;
-        }
-
-        .composer-form {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 10px;
-            align-items: end;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 72px;
-            max-height: 180px;
-            resize: vertical;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 12px;
-            font: inherit;
-            line-height: 1.5;
-            color: var(--text);
-            outline: none;
-        }
-
-        textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.14);
-        }
-
-        button[type="submit"] {
-            min-width: 104px;
-            min-height: 44px;
-            border: 0;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-            cursor: pointer;
-            font: inherit;
-            font-weight: 700;
-        }
-
-        button[type="submit"]:hover {
-            background: var(--primary-dark);
-        }
-
-        button[type="submit"]:disabled {
-            cursor: wait;
-            opacity: 0.65;
+            line-height: 1.65;
         }
 
         .error {
             color: var(--accent);
         }
 
-        @media (max-width: 860px) {
+        @media (max-width: 920px) {
             .header-inner {
                 align-items: flex-start;
                 flex-direction: column;
@@ -290,114 +237,128 @@
                 grid-template-columns: 1fr;
             }
 
-            .chat {
-                min-height: 620px;
-            }
-
-            .message {
-                max-width: 92%;
-            }
-
-            .composer-form {
-                grid-template-columns: 1fr;
-            }
-
-            button[type="submit"] {
-                width: 100%;
+            .workspace {
+                min-height: 720px;
             }
         }
     </style>
 </head>
 <body>
-<div class="app">
-    <header>
-        <div class="header-inner">
-            <div class="brand">
-                <div class="brand-mark">AI</div>
-                <div>
-                    <h1 class="brand-title">Spring AI Function Calling</h1>
-                    <p class="brand-subtitle">DeepSeek + 本地工具 + 真实天气接口</p>
-                </div>
-            </div>
-            <div class="status" aria-label="服务状态">
-                <span class="status-dot"></span>
-                <span>同一 Spring Boot 应用提供页面和接口</span>
-            </div>
+<header>
+    <div class="header-inner">
+        <div>
+            <h1>航变邮件处理中心</h1>
+            <p class="subtitle">DeepSeek 识别提取，Spring AI 工具完成订单关联、工单生成和人工通知</p>
         </div>
-    </header>
+        <div class="status">POST /mail/process</div>
+    </div>
+</header>
 
-    <main>
-        <aside>
-            <h2 class="section-title">可用工具</h2>
-            <div class="tool-list">
-                <section class="tool-item">
-                    <p class="tool-name">getCityWeather</p>
-                    <p class="tool-desc">调用 Open-Meteo 查询城市明天天气，并返回出行建议。</p>
-                </section>
-                <section class="tool-item">
-                    <p class="tool-name">calculateOrderPrice</p>
-                    <p class="tool-desc">按单价、数量和折扣率计算订单总价。</p>
-                </section>
+<main>
+    <section class="panel workspace">
+        <div class="panel-header">
+            <h2 class="panel-title">邮件正文</h2>
+        </div>
+        <div class="editor">
+            <textarea id="emailInput" spellcheck="false"></textarea>
+            <div class="actions">
+                <button class="primary" id="processButton" type="button">处理邮件</button>
+                <button id="sampleButton" type="button">填入示例</button>
+                <button id="clearButton" type="button">清空</button>
             </div>
+            <div class="result" id="result">处理结果会显示在这里。</div>
+        </div>
+    </section>
 
-            <div class="examples">
-                <h2 class="section-title">示例问题</h2>
-                <button class="example-button" type="button">我明天去北京出差，天气怎么样？顺便帮我算一下 3 件 199 元商品打 8 折后一共多少钱。</button>
-                <button class="example-button" type="button">明天上海适合出门吗？另外 5 件 88 元商品打 9 折是多少钱？</button>
-                <button class="example-button" type="button">查一下深圳明天天气，再算 2 件 1299 元商品打 85 折后的金额。</button>
-            </div>
-        </aside>
-
-        <section class="chat" aria-label="对话区">
-            <div class="messages" id="messages">
-                <div class="message assistant">你好，我会通过 DeepSeek 判断是否需要调用工具。问我天气、出行或订单折扣时，会触发后端 Java 方法。</div>
-            </div>
-
-            <div class="composer">
-                <form class="composer-form" id="chatForm">
-                    <textarea id="messageInput" name="message" placeholder="输入问题，例如：明天北京天气怎么样？3 件 199 元商品打 8 折多少钱？"></textarea>
-                    <button id="sendButton" type="submit">发送</button>
-                </form>
-            </div>
-        </section>
-    </main>
-</div>
+    <aside class="panel">
+        <h2 class="panel-title">处理链路</h2>
+        <div class="flow">
+            <section class="step">
+                <div class="step-number">1</div>
+                <div>
+                    <p class="step-title">识别</p>
+                    <p class="step-desc">判断是否为航变邮件，区分普通通知、营销邮件、航变通知。</p>
+                </div>
+            </section>
+            <section class="step">
+                <div class="step-number">2</div>
+                <div>
+                    <p class="step-title">提取</p>
+                    <p class="step-desc">抽取乘机人、航班、日期、航线、票号、PNR、变更原因。</p>
+                </div>
+            </section>
+            <section class="step">
+                <div class="step-number">3</div>
+                <div>
+                    <p class="step-title">关联订单</p>
+                    <p class="step-desc">调用 findRelatedOrder 工具，根据票号和 PNR 优先匹配订单。</p>
+                </div>
+            </section>
+            <section class="step">
+                <div class="step-number">4</div>
+                <div>
+                    <p class="step-title">生成工单</p>
+                    <p class="step-desc">调用 createFlightChangeWorkOrder，生成待人工处理工单。</p>
+                </div>
+            </section>
+            <section class="step">
+                <div class="step-number">5</div>
+                <div>
+                    <p class="step-title">通知人工</p>
+                    <p class="step-desc">调用 notifyHumanAgent，把工单和关键信息推入人工坐席队列。</p>
+                </div>
+            </section>
+        </div>
+        <p class="hint">当前订单、工单和通知服务是本地实现，已经按服务边界拆开。后续接真实订单系统、工单系统或企业微信/钉钉时，替换对应 Service 即可。</p>
+    </aside>
+</main>
 
 <script>
-    const form = document.querySelector("#chatForm");
-    const input = document.querySelector("#messageInput");
-    const button = document.querySelector("#sendButton");
-    const messages = document.querySelector("#messages");
+    const sampleMail = `Subject: 航班变更通知 MU5101
 
-    function appendMessage(text, type) {
-        const item = document.createElement("div");
-        item.className = `message ${type}`;
-        item.textContent = text;
-        messages.appendChild(item);
-        messages.scrollTop = messages.scrollHeight;
-        return item;
-    }
+尊敬的旅客张三：
+您预订的 2026-06-02 北京首都T2 至 上海虹桥T2 MU5101 航班因航空公司计划调整发生变更。
+原航班：MU5101，起飞时间 2026-06-02 08:00。
+新航班：MU5115，起飞时间 2026-06-02 10:30。
+票号：781-1234567890，PNR：H8K2Q9。
+请协助联系旅客确认是否接受变更。`;
 
-    async function sendMessage(message) {
-        const text = message.trim();
-        if (!text) {
-            input.focus();
+    const emailInput = document.querySelector("#emailInput");
+    const result = document.querySelector("#result");
+    const processButton = document.querySelector("#processButton");
+    const sampleButton = document.querySelector("#sampleButton");
+    const clearButton = document.querySelector("#clearButton");
+
+    emailInput.value = sampleMail;
+
+    sampleButton.addEventListener("click", () => {
+        emailInput.value = sampleMail;
+        emailInput.focus();
+    });
+
+    clearButton.addEventListener("click", () => {
+        emailInput.value = "";
+        result.textContent = "处理结果会显示在这里。";
+        emailInput.focus();
+    });
+
+    processButton.addEventListener("click", async () => {
+        const emailContent = emailInput.value.trim();
+        if (!emailContent) {
+            emailInput.focus();
+            result.innerHTML = "<span class=\"error\">请先粘贴邮件正文。</span>";
             return;
         }
 
-        appendMessage(text, "user");
-        input.value = "";
-        button.disabled = true;
-        button.textContent = "处理中";
-        const loading = appendMessage("模型正在判断是否需要调用工具...", "system");
+        processButton.disabled = true;
+        processButton.textContent = "处理中";
+        result.textContent = "AI 正在识别邮件并调用工具链...";
 
         try {
-            const response = await fetch("/ai/function-call", {
+            const response = await fetch("/mail/process", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({message: text})
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({emailContent})
             });
 
             if (!response.ok) {
@@ -405,35 +366,13 @@
             }
 
             const data = await response.json();
-            loading.remove();
-            appendMessage(data.answer || "没有返回内容。", "assistant");
+            result.textContent = data.result || "没有返回处理结果。";
         } catch (error) {
-            loading.remove();
-            appendMessage(`请求失败：${error.message}`, "assistant error");
+            result.innerHTML = `<span class="error">请求失败：${error.message}</span>`;
         } finally {
-            button.disabled = false;
-            button.textContent = "发送";
-            input.focus();
+            processButton.disabled = false;
+            processButton.textContent = "处理邮件";
         }
-    }
-
-    form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        sendMessage(input.value);
-    });
-
-    input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-            event.preventDefault();
-            sendMessage(input.value);
-        }
-    });
-
-    document.querySelectorAll(".example-button").forEach((item) => {
-        item.addEventListener("click", () => {
-            input.value = item.textContent;
-            input.focus();
-        });
     });
 </script>
 </body>
