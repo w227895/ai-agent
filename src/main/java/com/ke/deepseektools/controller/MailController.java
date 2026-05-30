@@ -1,6 +1,6 @@
 package com.ke.deepseektools.controller;
 
-import org.springframework.ai.chat.client.ChatClient;
+import com.ke.deepseektools.fewshot.FewShotPlatformService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/mail")
 public class MailController {
+
+    private static final String FLIGHT_CHANGE_MAIL_SCENARIO = "flight-change-mail";
 
     private static final String SAMPLE_MAIL = """
             Subject: 航班变更通知 MU5101
@@ -22,10 +24,10 @@ public class MailController {
             请协助联系旅客确认是否接受变更。
             """;
 
-    private final ChatClient chatClient;
+    private final FewShotPlatformService fewShotPlatformService;
 
-    public MailController(ChatClient chatClient) {
-        this.chatClient = chatClient;
+    public MailController(FewShotPlatformService fewShotPlatformService) {
+        this.fewShotPlatformService = fewShotPlatformService;
     }
 
     @GetMapping("/process")
@@ -40,15 +42,7 @@ public class MailController {
             emailContent = SAMPLE_MAIL;
         }
 
-        String result = chatClient.prompt()
-                .user("""
-                        请处理下面这封邮件，严格按系统工作流完成识别、提取、关联订单、生成工单、通知人工。
-
-                        邮件正文：
-                        %s
-                        """.formatted(emailContent))
-                .call()
-                .content();
+        String result = fewShotPlatformService.run(FLIGHT_CHANGE_MAIL_SCENARIO, emailContent).result();
 
         return new MailProcessResponse(emailContent, result);
     }

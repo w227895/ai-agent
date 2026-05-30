@@ -1,6 +1,6 @@
 package com.ke.deepseektools.controller;
 
-import org.springframework.ai.chat.client.ChatClient;
+import com.ke.deepseektools.fewshot.FewShotPlatformService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/ai")
 public class AiController {
 
+    private static final String FLIGHT_CHANGE_MAIL_SCENARIO = "flight-change-mail";
+
     private static final String DEFAULT_MAIL = """
             Subject: 航班变更通知 MU5101
 
@@ -20,10 +22,10 @@ public class AiController {
             请联系旅客确认是否接受变更。
             """;
 
-    private final ChatClient chatClient;
+    private final FewShotPlatformService fewShotPlatformService;
 
-    public AiController(ChatClient chatClient) {
-        this.chatClient = chatClient;
+    public AiController(FewShotPlatformService fewShotPlatformService) {
+        this.fewShotPlatformService = fewShotPlatformService;
     }
 
     @GetMapping("/function-call")
@@ -41,14 +43,7 @@ public class AiController {
     }
 
     private AiResponse processMailLikeText(String message) {
-        String answer = chatClient.prompt()
-                .user("""
-                        请按航变邮件处理流程处理下面内容：
-
-                        %s
-                        """.formatted(message))
-                .call()
-                .content();
+        String answer = fewShotPlatformService.run(FLIGHT_CHANGE_MAIL_SCENARIO, message).result();
         return new AiResponse(message, answer);
     }
 
