@@ -32,6 +32,14 @@ mvn spring-boot:run
 
 ## 调用
 
+浏览器打开页面：
+
+```text
+http://localhost:8080/
+```
+
+也可以直接调用接口：
+
 ```powershell
 Invoke-RestMethod "http://localhost:8080/ai/function-call"
 ```

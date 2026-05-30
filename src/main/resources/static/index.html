@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spring AI DeepSeek Function Calling</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f6f7f9;
+            --panel: #ffffff;
+            --text: #172033;
+            --muted: #667085;
+            --line: #d7dce5;
+            --primary: #1f7a8c;
+            --primary-dark: #155e6f;
+            --accent: #d1495b;
+            --tool: #eef7f8;
+            --shadow: 0 16px 48px rgba(23, 32, 51, 0.10);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .app {
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        header {
+            border-bottom: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-inner {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--primary);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .brand-title {
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.25;
+        }
+
+        .brand-subtitle {
+            margin: 2px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #2fb344;
+        }
+
+        main {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0;
+            display: grid;
+            grid-template-columns: 300px minmax(0, 1fr);
+            gap: 20px;
+            min-height: 0;
+        }
+
+        aside,
+        .chat {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        aside {
+            padding: 18px;
+            align-self: start;
+        }
+
+        .section-title {
+            margin: 0 0 12px;
+            font-size: 15px;
+        }
+
+        .tool-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .tool-item {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px;
+            background: var(--tool);
+        }
+
+        .tool-name {
+            margin: 0 0 6px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .tool-desc {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .examples {
+            margin-top: 18px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .example-button {
+            width: 100%;
+            min-height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--text);
+            cursor: pointer;
+            text-align: left;
+            padding: 9px 10px;
+            line-height: 1.45;
+            font: inherit;
+            font-size: 13px;
+        }
+
+        .example-button:hover {
+            border-color: var(--primary);
+        }
+
+        .chat {
+            min-height: calc(100vh - 120px);
+            display: grid;
+            grid-template-rows: 1fr auto;
+            overflow: hidden;
+        }
+
+        .messages {
+            padding: 20px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .message {
+            max-width: 78%;
+            border-radius: 8px;
+            padding: 12px 14px;
+            line-height: 1.65;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: #f1f4f8;
+            border: 1px solid var(--line);
+        }
+
+        .message.system {
+            align-self: center;
+            max-width: 100%;
+            background: transparent;
+            color: var(--muted);
+            font-size: 13px;
+            padding: 0;
+        }
+
+        .composer {
+            border-top: 1px solid var(--line);
+            padding: 14px;
+            background: #fff;
+        }
+
+        .composer-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 72px;
+            max-height: 180px;
+            resize: vertical;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px;
+            font: inherit;
+            line-height: 1.5;
+            color: var(--text);
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(31, 122, 140, 0.14);
+        }
+
+        button[type="submit"] {
+            min-width: 104px;
+            min-height: 44px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 700;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--primary-dark);
+        }
+
+        button[type="submit"]:disabled {
+            cursor: wait;
+            opacity: 0.65;
+        }
+
+        .error {
+            color: var(--accent);
+        }
+
+        @media (max-width: 860px) {
+            .header-inner {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 14px 0;
+            }
+
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .chat {
+                min-height: 620px;
+            }
+
+            .message {
+                max-width: 92%;
+            }
+
+            .composer-form {
+                grid-template-columns: 1fr;
+            }
+
+            button[type="submit"] {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-mark">AI</div>
+                <div>
+                    <h1 class="brand-title">Spring AI Function Calling</h1>
+                    <p class="brand-subtitle">DeepSeek + 本地工具 + 真实天气接口</p>
+                </div>
+            </div>
+            <div class="status" aria-label="服务状态">
+                <span class="status-dot"></span>
+                <span>同一 Spring Boot 应用提供页面和接口</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <aside>
+            <h2 class="section-title">可用工具</h2>
+            <div class="tool-list">
+                <section class="tool-item">
+                    <p class="tool-name">getCityWeather</p>
+                    <p class="tool-desc">调用 Open-Meteo 查询城市明天天气，并返回出行建议。</p>
+                </section>
+                <section class="tool-item">
+                    <p class="tool-name">calculateOrderPrice</p>
+                    <p class="tool-desc">按单价、数量和折扣率计算订单总价。</p>
+                </section>
+            </div>
+
+            <div class="examples">
+                <h2 class="section-title">示例问题</h2>
+                <button class="example-button" type="button">我明天去北京出差，天气怎么样？顺便帮我算一下 3 件 199 元商品打 8 折后一共多少钱。</button>
+                <button class="example-button" type="button">明天上海适合出门吗？另外 5 件 88 元商品打 9 折是多少钱？</button>
+                <button class="example-button" type="button">查一下深圳明天天气，再算 2 件 1299 元商品打 85 折后的金额。</button>
+            </div>
+        </aside>
+
+        <section class="chat" aria-label="对话区">
+            <div class="messages" id="messages">
+                <div class="message assistant">你好，我会通过 DeepSeek 判断是否需要调用工具。问我天气、出行或订单折扣时，会触发后端 Java 方法。</div>
+            </div>
+
+            <div class="composer">
+                <form class="composer-form" id="chatForm">
+                    <textarea id="messageInput" name="message" placeholder="输入问题，例如：明天北京天气怎么样？3 件 199 元商品打 8 折多少钱？"></textarea>
+                    <button id="sendButton" type="submit">发送</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const form = document.querySelector("#chatForm");
+    const input = document.querySelector("#messageInput");
+    const button = document.querySelector("#sendButton");
+    const messages = document.querySelector("#messages");
+
+    function appendMessage(text, type) {
+        const item = document.createElement("div");
+        item.className = `message ${type}`;
+        item.textContent = text;
+        messages.appendChild(item);
+        messages.scrollTop = messages.scrollHeight;
+        return item;
+    }
+
+    async function sendMessage(message) {
+        const text = message.trim();
+        if (!text) {
+            input.focus();
+            return;
+        }
+
+        appendMessage(text, "user");
+        input.value = "";
+        button.disabled = true;
+        button.textContent = "处理中";
+        const loading = appendMessage("模型正在判断是否需要调用工具...", "system");
+
+        try {
+            const response = await fetch("/ai/function-call", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({message: text})
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            loading.remove();
+            appendMessage(data.answer || "没有返回内容。", "assistant");
+        } catch (error) {
+            loading.remove();
+            appendMessage(`请求失败：${error.message}`, "assistant error");
+        } finally {
+            button.disabled = false;
+            button.textContent = "发送";
+            input.focus();
+        }
+    }
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        sendMessage(input.value);
+    });
+
+    input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            sendMessage(input.value);
+        }
+    });
+
+    document.querySelectorAll(".example-button").forEach((item) => {
+        item.addEventListener("click", () => {
+            input.value = item.textContent;
+            input.focus();
+        });
+    });
+</script>
+</body>
+</html>
