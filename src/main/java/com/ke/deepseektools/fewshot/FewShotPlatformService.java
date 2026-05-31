@@ -2,7 +2,6 @@ package com.ke.deepseektools.fewshot;
 
 import java.util.List;
 
-import com.ke.deepseektools.tools.FlightChangeWorkflowTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
@@ -10,13 +9,10 @@ import org.springframework.stereotype.Service;
 public class FewShotPlatformService {
 
     private final ChatClient chatClient;
-    private final FlightChangeWorkflowTools flightChangeWorkflowTools;
     private final FewShotScenarioRepository scenarioRepository;
 
-    public FewShotPlatformService(ChatClient chatClient, FlightChangeWorkflowTools flightChangeWorkflowTools,
-            FewShotScenarioRepository scenarioRepository) {
+    public FewShotPlatformService(ChatClient chatClient, FewShotScenarioRepository scenarioRepository) {
         this.chatClient = chatClient;
-        this.flightChangeWorkflowTools = flightChangeWorkflowTools;
         this.scenarioRepository = scenarioRepository;
     }
 
@@ -42,22 +38,32 @@ public class FewShotPlatformService {
         String effectiveInput = input == null || input.isBlank()
                 ? scenario.examples().stream().findFirst().map(FewShotExample::input).orElse("")
                 : input.trim();
+        long startedAt = System.currentTimeMillis();
 
         ChatClient.ChatClientRequestSpec request = chatClient.prompt()
                 .system(buildSystemPrompt(scenario))
-                .user("""
-                        请按当前 few-shot 场景配置处理下面输入。
+                .user(buildUserPrompt(scenario, effectiveInput));
 
-                        %s：
-                        %s
-                        """.formatted(scenario.inputLabel(), effectiveInput));
-
-        if (FewShotScenario.FLIGHT_CHANGE_WORKFLOW.equals(scenario.toolProfile())) {
-            request.tools(flightChangeWorkflowTools);
+        try {
+            String output = request.call().content();
+            scenarioRepository.recordRun(scenario, effectiveInput, output, "SUCCESS", null,
+                    System.currentTimeMillis() - startedAt);
+            return new FewShotRunResult(scenario.code(), scenario.name(), scenario.toolProfile(), effectiveInput, output);
+        } catch (RuntimeException exception) {
+            scenarioRepository.recordRun(scenario, effectiveInput, null, "FAILED", exception.getMessage(),
+                    System.currentTimeMillis() - startedAt);
+            throw exception;
         }
+    }
 
-        String output = request.call().content();
-        return new FewShotRunResult(scenario.code(), scenario.name(), scenario.toolProfile(), effectiveInput, output);
+    public PromptPreview previewPrompt(String scenarioCode, String input) {
+        FewShotScenario scenario = getScenario(scenarioCode);
+        String effectiveInput = input == null ? "" : input.trim();
+        return new PromptPreview(
+                scenario.code(),
+                scenario.name(),
+                buildSystemPrompt(scenario),
+                buildUserPrompt(scenario, effectiveInput));
     }
 
     private String buildSystemPrompt(FewShotScenario scenario) {
@@ -87,6 +93,15 @@ public class FewShotPlatformService {
                 renderExamples(scenario.examples()));
     }
 
+    private String buildUserPrompt(FewShotScenario scenario, String input) {
+        return """
+                请按当前 few-shot 场景配置处理下面输入。
+
+                %s：
+                %s
+                """.formatted(scenario.inputLabel(), input == null ? "" : input);
+    }
+
     private String renderExamples(List<FewShotExample> examples) {
         if (examples == null || examples.isEmpty()) {
             return "无。";
@@ -108,5 +123,12 @@ public class FewShotPlatformService {
             String toolProfile,
             String input,
             String result) {
+    }
+
+    public record PromptPreview(
+            String scenarioCode,
+            String scenarioName,
+            String systemPrompt,
+            String userPrompt) {
     }
 }

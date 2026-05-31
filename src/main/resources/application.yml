@@ -4,6 +4,15 @@ server:
 spring:
   application:
     name: flight-change-mail-agent
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ai_agent?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
   ai:
     deepseek:
       api-key: ${DEEPSEEK_API_KEY:}
@@ -14,5 +23,4 @@ spring:
 
 logging:
   level:
-    com.ke.deepseektools.tools: INFO
-    com.ke.deepseektools.service: INFO
+    com.ke.deepseektools: INFO

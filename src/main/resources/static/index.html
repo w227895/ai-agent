@@ -6,16 +6,18 @@
     <title>Few-shot 场景平台</title>
     <style>
         :root {
-            --bg: #f5f7fa;
+            --bg: #f6f8fb;
             --panel: #ffffff;
-            --text: #162033;
+            --text: #172033;
             --muted: #667085;
             --line: #d7dde8;
             --primary: #176b87;
             --primary-dark: #0f5268;
-            --accent: #c2410c;
+            --accent: #b42318;
+            --ok: #28715d;
             --soft: #eef6f8;
-            --shadow: 0 16px 42px rgba(22, 32, 51, 0.10);
+            --control: #fbfcfe;
+            --shadow: 0 14px 36px rgba(22, 32, 51, 0.08);
         }
 
         * {
@@ -37,12 +39,12 @@
 
         .header-inner,
         main {
-            width: min(1180px, calc(100% - 32px));
+            width: min(1480px, calc(100% - 32px));
             margin: 0 auto;
         }
 
         .header-inner {
-            min-height: 76px;
+            min-height: 74px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -68,10 +70,10 @@
         }
 
         main {
-            padding: 24px 0;
+            padding: 22px 0;
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 360px;
-            gap: 20px;
+            grid-template-columns: minmax(0, 1fr) minmax(480px, 620px);
+            gap: 18px;
         }
 
         .panel {
@@ -79,18 +81,17 @@
             border: 1px solid var(--line);
             border-radius: 8px;
             box-shadow: var(--shadow);
-        }
-
-        .workspace {
-            display: grid;
-            grid-template-rows: auto 1fr auto;
-            min-height: calc(100vh - 124px);
             overflow: hidden;
         }
 
         .panel-header {
-            padding: 18px 18px 14px;
+            min-height: 58px;
+            padding: 14px 16px;
             border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
 
         .panel-title {
@@ -98,19 +99,38 @@
             font-size: 16px;
         }
 
-        .editor {
-            padding: 18px;
+        .panel-body {
+            padding: 16px;
             display: grid;
-            grid-template-rows: auto minmax(260px, 42vh) auto minmax(220px, 1fr);
             gap: 14px;
-            min-height: 0;
         }
 
-        .field-row {
+        .runner {
+            min-height: calc(100vh - 118px);
             display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 12px;
+            grid-template-rows: auto 1fr;
+        }
+
+        .runner-body {
+            grid-template-rows: auto minmax(260px, 39vh) auto minmax(220px, 1fr);
+        }
+
+        .config-body {
+            max-height: calc(100vh - 118px);
+            overflow: auto;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 112px minmax(0, 1fr);
+            gap: 10px;
             align-items: center;
+        }
+
+        .two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
         label {
@@ -119,50 +139,67 @@
             font-weight: 700;
         }
 
-        select {
+        input,
+        select,
+        textarea {
             width: 100%;
-            min-height: 40px;
             border: 1px solid var(--line);
             border-radius: 8px;
-            padding: 0 12px;
+            background: var(--control);
             color: var(--text);
-            background: #fff;
-            font: inherit;
+            font: 14px/1.55 "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
             outline: none;
+        }
+
+        input,
+        select {
+            min-height: 38px;
+            padding: 0 11px;
         }
 
         textarea {
-            width: 100%;
-            min-height: 260px;
+            min-height: 96px;
+            padding: 11px;
             resize: vertical;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 14px;
-            color: var(--text);
-            font: 14px/1.65 Consolas, "Microsoft YaHei", monospace;
-            outline: none;
         }
 
+        textarea.mono {
+            font-family: Consolas, "Microsoft YaHei", monospace;
+            line-height: 1.6;
+        }
+
+        textarea.tall {
+            min-height: 170px;
+        }
+
+        textarea.prompt-preview {
+            min-height: 230px;
+            background: #fff;
+        }
+
+        input:focus,
+        select:focus,
         textarea:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.14);
+            box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.13);
+            background: #fff;
         }
 
         .actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 9px;
             align-items: center;
         }
 
         button {
-            min-height: 40px;
+            min-height: 38px;
             border-radius: 8px;
             border: 1px solid var(--line);
             background: #fff;
             color: var(--text);
             cursor: pointer;
-            padding: 0 14px;
+            padding: 0 13px;
             font: inherit;
             font-weight: 700;
         }
@@ -177,8 +214,13 @@
             background: var(--primary-dark);
         }
 
+        button.danger {
+            color: var(--accent);
+            border-color: #f2c7c2;
+        }
+
         button:disabled {
-            opacity: 0.65;
+            opacity: 0.62;
             cursor: wait;
         }
 
@@ -187,107 +229,80 @@
             border: 1px solid var(--line);
             border-radius: 8px;
             background: #fbfcfe;
-            padding: 14px;
+            padding: 13px;
             overflow: auto;
             white-space: pre-wrap;
             line-height: 1.7;
-            color: var(--text);
         }
 
-        aside {
-            align-self: start;
-            padding: 18px;
+        .divider {
+            height: 1px;
+            background: var(--line);
+            margin: 2px 0;
         }
 
-        .flow {
-            display: grid;
-            gap: 10px;
-            margin-top: 14px;
-        }
-
-        .step {
-            display: grid;
-            grid-template-columns: 32px 1fr;
-            gap: 10px;
-            align-items: start;
-            padding: 12px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: var(--soft);
-        }
-
-        .step-number {
-            width: 32px;
-            height: 32px;
-            display: grid;
-            place-items: center;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-            font-weight: 800;
-        }
-
-        .step-title {
-            margin: 0 0 4px;
-            font-weight: 800;
+        .section-title {
+            margin: 0;
             font-size: 14px;
         }
 
-        .step-desc {
-            margin: 0;
+        .example-bar {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .prompt-preview-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .note {
             color: var(--muted);
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.55;
         }
 
-        .hint {
-            margin-top: 18px;
+        .message {
+            min-height: 20px;
             color: var(--muted);
             font-size: 13px;
-            line-height: 1.65;
         }
 
+        .message.ok {
+            color: var(--ok);
+        }
+
+        .message.error,
         .error {
             color: var(--accent);
         }
 
-        .meta {
-            display: grid;
-            gap: 12px;
-            margin-top: 14px;
+        @media (max-width: 1060px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .config-body {
+                max-height: none;
+            }
         }
 
-        .meta-block {
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .meta-title {
-            margin: 0 0 6px;
-            font-size: 13px;
-            font-weight: 800;
-        }
-
-        .meta-text {
-            margin: 0;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.65;
-            white-space: pre-wrap;
-        }
-
-        @media (max-width: 920px) {
+        @media (max-width: 620px) {
             .header-inner {
                 align-items: flex-start;
                 flex-direction: column;
                 padding: 14px 0;
             }
 
-            main {
+            .row,
+            .two-cols,
+            .example-bar {
                 grid-template-columns: 1fr;
             }
 
-            .workspace {
+            .runner {
                 min-height: 720px;
             }
         }
@@ -298,26 +313,27 @@
     <div class="header-inner">
         <div>
             <h1>Few-shot 场景平台</h1>
-            <p class="subtitle">统一管理场景指令、样例和工具链，航变邮件只是第一个内置场景</p>
+            <p class="subtitle">场景、样例、提示词和运行日志统一落 MySQL</p>
         </div>
         <div class="status">POST /few-shot/run</div>
     </div>
 </header>
 
 <main>
-    <section class="panel workspace">
+    <section class="panel runner">
         <div class="panel-header">
-            <h2 class="panel-title">场景输入</h2>
+            <h2 class="panel-title">运行调试</h2>
+            <div class="message" id="runMessage"></div>
         </div>
-        <div class="editor">
-            <div class="field-row">
+        <div class="panel-body runner-body">
+            <div class="row">
                 <label for="scenarioSelect">场景</label>
                 <select id="scenarioSelect"></select>
             </div>
-            <textarea id="emailInput" spellcheck="false"></textarea>
+            <textarea class="mono" id="runInput" spellcheck="false"></textarea>
             <div class="actions">
                 <button class="primary" id="processButton" type="button">运行场景</button>
-                <button id="sampleButton" type="button">填入示例</button>
+                <button id="sampleButton" type="button">填入当前示例</button>
                 <button id="clearButton" type="button">清空</button>
             </div>
             <div class="result" id="result">处理结果会显示在这里。</div>
@@ -325,53 +341,208 @@
     </section>
 
     <aside class="panel">
-        <h2 class="panel-title">场景配置</h2>
-        <div class="meta" id="scenarioMeta"></div>
-        <p class="hint">场景由业务指令、输出契约、工具配置和 few-shot 示例组成。后续新增业务时优先新增场景和样例，只有需要真实系统动作时才接入新的工具链。</p>
+        <div class="panel-header">
+            <h2 class="panel-title">场景编辑</h2>
+            <button id="newScenarioButton" type="button">新建场景</button>
+        </div>
+        <div class="panel-body config-body">
+            <div class="two-cols">
+                <div>
+                    <label for="scenarioCode">编码</label>
+                    <input id="scenarioCode" autocomplete="off">
+                </div>
+                <div>
+                    <label for="scenarioName">名称</label>
+                    <input id="scenarioName" autocomplete="off">
+                </div>
+            </div>
+
+            <div>
+                <label for="inputLabel">输入标签</label>
+                <input id="inputLabel" autocomplete="off">
+            </div>
+
+            <div>
+                <label for="description">说明</label>
+                <textarea id="description"></textarea>
+            </div>
+
+            <div>
+                <label for="systemInstruction">业务指令</label>
+                <textarea class="tall" id="systemInstruction"></textarea>
+            </div>
+
+            <div>
+                <label for="outputContract">输出契约</label>
+                <textarea class="tall mono" id="outputContract"></textarea>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 class="section-title">最终提示词预览</h3>
+            <div class="prompt-preview-grid">
+                <div>
+                    <label for="systemPromptPreview">System Prompt</label>
+                    <textarea class="mono prompt-preview" id="systemPromptPreview" readonly></textarea>
+                </div>
+                <div>
+                    <label for="userPromptPreview">User Prompt</label>
+                    <textarea class="mono prompt-preview" id="userPromptPreview" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 class="section-title">Few-shot 示例</h3>
+            <div class="example-bar">
+                <select id="exampleSelect"></select>
+                <button id="addExampleButton" type="button">新增示例</button>
+                <button class="danger" id="deleteExampleButton" type="button">删除示例</button>
+            </div>
+
+            <div class="two-cols">
+                <div>
+                    <label for="exampleId">示例 ID</label>
+                    <input id="exampleId" autocomplete="off">
+                </div>
+                <div>
+                    <label for="exampleTitle">标题</label>
+                    <input id="exampleTitle" autocomplete="off">
+                </div>
+            </div>
+
+            <div>
+                <label for="exampleTags">标签</label>
+                <input id="exampleTags" autocomplete="off" placeholder="多个标签用逗号分隔">
+            </div>
+
+            <div>
+                <label for="exampleInput">示例输入</label>
+                <textarea class="tall mono" id="exampleInput"></textarea>
+            </div>
+
+            <div>
+                <label for="expectedOutput">期望输出</label>
+                <textarea class="tall mono" id="expectedOutput"></textarea>
+            </div>
+
+            <div class="actions">
+                <button class="primary" id="saveScenarioButton" type="button">保存到 MySQL</button>
+                <button id="reloadButton" type="button">重新加载</button>
+            </div>
+            <div class="message" id="editMessage"></div>
+            <div class="note">保存会写入当前场景及所有示例。删除示例后点击保存，MySQL 中对应示例也会被移除。</div>
+        </div>
     </aside>
 </main>
 
 <script>
     let scenarios = [];
     let currentScenario = null;
+    let currentExampleIndex = 0;
 
     const scenarioSelect = document.querySelector("#scenarioSelect");
-    const emailInput = document.querySelector("#emailInput");
+    const runInput = document.querySelector("#runInput");
     const result = document.querySelector("#result");
     const processButton = document.querySelector("#processButton");
     const sampleButton = document.querySelector("#sampleButton");
     const clearButton = document.querySelector("#clearButton");
-    const scenarioMeta = document.querySelector("#scenarioMeta");
+    const runMessage = document.querySelector("#runMessage");
+
+    const newScenarioButton = document.querySelector("#newScenarioButton");
+    const saveScenarioButton = document.querySelector("#saveScenarioButton");
+    const reloadButton = document.querySelector("#reloadButton");
+    const editMessage = document.querySelector("#editMessage");
+
+    const scenarioCode = document.querySelector("#scenarioCode");
+    const scenarioName = document.querySelector("#scenarioName");
+    const inputLabel = document.querySelector("#inputLabel");
+    const description = document.querySelector("#description");
+    const systemInstruction = document.querySelector("#systemInstruction");
+    const outputContract = document.querySelector("#outputContract");
+    const systemPromptPreview = document.querySelector("#systemPromptPreview");
+    const userPromptPreview = document.querySelector("#userPromptPreview");
+
+    const exampleSelect = document.querySelector("#exampleSelect");
+    const addExampleButton = document.querySelector("#addExampleButton");
+    const deleteExampleButton = document.querySelector("#deleteExampleButton");
+    const exampleId = document.querySelector("#exampleId");
+    const exampleTitle = document.querySelector("#exampleTitle");
+    const exampleTags = document.querySelector("#exampleTags");
+    const exampleInput = document.querySelector("#exampleInput");
+    const expectedOutput = document.querySelector("#expectedOutput");
 
     loadScenarios();
 
-    sampleButton.addEventListener("click", () => {
-        fillSelectedExample();
-        emailInput.focus();
+    scenarioSelect.addEventListener("change", () => {
+        persistFormToCurrent();
+        currentScenario = cloneScenario(scenarios.find((scenario) => scenario.code === scenarioSelect.value));
+        currentExampleIndex = 0;
+        fillForm();
+        fillSelectedExampleToRunInput();
+        clearMessages();
     });
 
-    scenarioSelect.addEventListener("change", () => {
-        currentScenario = scenarios.find((scenario) => scenario.code === scenarioSelect.value);
-        renderScenarioMeta();
-        fillSelectedExample();
+    exampleSelect.addEventListener("change", () => {
+        const nextExampleIndex = Number(exampleSelect.value || 0);
+        persistExampleForm();
+        currentExampleIndex = nextExampleIndex;
+        fillExampleForm();
+    });
+
+    [
+        scenarioCode,
+        scenarioName,
+        inputLabel,
+        description,
+        systemInstruction,
+        outputContract,
+        exampleId,
+        exampleTitle,
+        exampleTags,
+        exampleInput,
+        expectedOutput
+    ].forEach((element) => element.addEventListener("input", () => setEditMessage("有未保存修改。")));
+
+    [
+        scenarioCode,
+        scenarioName,
+        inputLabel,
+        description,
+        systemInstruction,
+        outputContract,
+        exampleId,
+        exampleTitle,
+        exampleTags,
+        exampleInput,
+        expectedOutput,
+        runInput
+    ].forEach((element) => element.addEventListener("input", updatePromptPreview));
+
+    sampleButton.addEventListener("click", () => {
+        persistExampleForm();
+        fillSelectedExampleToRunInput();
+        runInput.focus();
     });
 
     clearButton.addEventListener("click", () => {
-        emailInput.value = "";
+        runInput.value = "";
         result.textContent = "处理结果会显示在这里。";
-        emailInput.focus();
+        updatePromptPreview();
+        runInput.focus();
     });
 
     processButton.addEventListener("click", async () => {
-        const emailContent = emailInput.value.trim();
-        if (!emailContent) {
-            emailInput.focus();
+        const content = runInput.value.trim();
+        if (!content) {
+            runInput.focus();
             result.innerHTML = "<span class=\"error\">请先输入要处理的内容。</span>";
             return;
         }
 
         processButton.disabled = true;
         processButton.textContent = "运行中";
+        runMessage.textContent = "";
         result.textContent = "AI 正在按场景指令和 few-shot 示例处理...";
 
         try {
@@ -380,7 +551,7 @@
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     scenarioCode: scenarioSelect.value,
-                    input: emailContent
+                    input: content
                 })
             });
 
@@ -390,13 +561,104 @@
 
             const data = await response.json();
             result.textContent = data.result || "没有返回处理结果。";
+            runMessage.textContent = "运行完成";
         } catch (error) {
-            result.innerHTML = `<span class="error">请求失败：${error.message}</span>`;
+            result.innerHTML = `<span class="error">请求失败：${escapeHtml(error.message)}</span>`;
         } finally {
             processButton.disabled = false;
             processButton.textContent = "运行场景";
         }
     });
+
+    newScenarioButton.addEventListener("click", () => {
+        persistFormToCurrent();
+        const code = `new-scenario-${Date.now()}`;
+        currentScenario = {
+            code,
+            name: "新场景",
+            description: "",
+            inputLabel: "输入内容",
+            systemInstruction: "",
+            outputContract: "",
+            toolProfile: "none",
+            examples: []
+        };
+        scenarios.push(currentScenario);
+        currentExampleIndex = 0;
+        renderScenarioOptions(code);
+        fillForm();
+        runInput.value = "";
+        updatePromptPreview();
+        setEditMessage("新场景已创建，编辑后保存。");
+    });
+
+    addExampleButton.addEventListener("click", () => {
+        ensureScenario();
+        persistExampleForm();
+        currentScenario.examples.push({
+            id: `example-${Date.now()}`,
+            title: "新示例",
+            input: "",
+            expectedOutput: "",
+            tags: []
+        });
+        currentExampleIndex = currentScenario.examples.length - 1;
+        renderExampleOptions();
+        fillExampleForm();
+        setEditMessage("新示例已添加，编辑后保存。");
+    });
+
+    deleteExampleButton.addEventListener("click", () => {
+        ensureScenario();
+        if (!currentScenario.examples.length) {
+            return;
+        }
+        currentScenario.examples.splice(currentExampleIndex, 1);
+        currentExampleIndex = Math.max(0, currentExampleIndex - 1);
+        renderExampleOptions();
+        fillExampleForm();
+        setEditMessage("示例已删除，保存后生效。");
+    });
+
+    saveScenarioButton.addEventListener("click", async () => {
+        persistFormToCurrent();
+        if (!currentScenario.code || !currentScenario.name) {
+            setEditMessage("编码和名称不能为空。", true);
+            return;
+        }
+
+        saveScenarioButton.disabled = true;
+        saveScenarioButton.textContent = "保存中";
+        try {
+            const response = await fetch("/few-shot/scenarios", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(currentScenario)
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const saved = await response.json();
+            const index = scenarios.findIndex((scenario) => scenario.code === saved.code);
+            if (index >= 0) {
+                scenarios[index] = saved;
+            } else {
+                scenarios.push(saved);
+            }
+            currentScenario = cloneScenario(saved);
+            renderScenarioOptions(saved.code);
+            fillForm();
+            setEditMessage("已保存到 MySQL。", false, true);
+        } catch (error) {
+            setEditMessage(`保存失败：${error.message}`, true);
+        } finally {
+            saveScenarioButton.disabled = false;
+            saveScenarioButton.textContent = "保存到 MySQL";
+        }
+    });
+
+    reloadButton.addEventListener("click", loadScenarios);
 
     async function loadScenarios() {
         scenarioSelect.innerHTML = "<option>加载中...</option>";
@@ -407,63 +669,222 @@
                 throw new Error(`HTTP ${response.status}`);
             }
             scenarios = await response.json();
-            scenarioSelect.innerHTML = scenarios
-                .map((scenario) => `<option value="${escapeHtml(scenario.code)}">${escapeHtml(scenario.name)}</option>`)
-                .join("");
-            currentScenario = scenarios[0];
-            if (currentScenario) {
-                scenarioSelect.value = currentScenario.code;
-                fillSelectedExample();
-            }
-            renderScenarioMeta();
+            currentScenario = cloneScenario(scenarios[0]);
+            currentExampleIndex = 0;
+            renderScenarioOptions(currentScenario?.code);
+            fillForm();
+            fillSelectedExampleToRunInput();
+            setEditMessage("配置已加载。", false, true);
         } catch (error) {
             scenarioSelect.innerHTML = "<option>加载失败</option>";
-            scenarioMeta.innerHTML = `<p class="meta-text error">场景加载失败：${escapeHtml(error.message)}</p>`;
+            setEditMessage(`场景加载失败：${error.message}`, true);
         } finally {
             processButton.disabled = false;
         }
     }
 
-    function fillSelectedExample() {
-        const example = currentScenario?.examples?.[0];
-        emailInput.value = example?.input || "";
+    function renderScenarioOptions(selectedCode) {
+        scenarioSelect.innerHTML = scenarios
+            .map((scenario) => `<option value="${escapeHtml(scenario.code)}">${escapeHtml(scenario.name || scenario.code)}</option>`)
+            .join("");
+        if (selectedCode) {
+            scenarioSelect.value = selectedCode;
+        }
     }
 
-    function renderScenarioMeta() {
+    function fillForm() {
         if (!currentScenario) {
-            scenarioMeta.textContent = "暂无场景。";
+            setFormDisabled(true);
             return;
         }
+        setFormDisabled(false);
+        scenarioCode.value = currentScenario.code || "";
+        scenarioName.value = currentScenario.name || "";
+        inputLabel.value = currentScenario.inputLabel || "输入内容";
+        description.value = currentScenario.description || "";
+        systemInstruction.value = currentScenario.systemInstruction || "";
+        outputContract.value = currentScenario.outputContract || "";
+        renderExampleOptions();
+        fillExampleForm();
+        updatePromptPreview();
+    }
 
-        const examples = currentScenario.examples || [];
-        scenarioMeta.innerHTML = `
-            <section class="meta-block">
-                <p class="meta-title">说明</p>
-                <p class="meta-text">${escapeHtml(currentScenario.description || "")}</p>
-            </section>
-            <section class="meta-block">
-                <p class="meta-title">工具配置</p>
-                <p class="meta-text">${escapeHtml(currentScenario.toolProfile || "none")}</p>
-            </section>
-            <section class="meta-block">
-                <p class="meta-title">输出契约</p>
-                <p class="meta-text">${escapeHtml(currentScenario.outputContract || "未配置")}</p>
-            </section>
-            <section>
-                <p class="meta-title">示例</p>
-                <div class="flow">
-                    ${examples.map((example, index) => `
-                        <section class="step">
-                            <div class="step-number">${index + 1}</div>
-                            <div>
-                                <p class="step-title">${escapeHtml(example.title || example.id)}</p>
-                                <p class="step-desc">${escapeHtml(example.expectedOutput || "")}</p>
-                            </div>
-                        </section>
-                    `).join("") || "<p class=\"meta-text\">暂无示例。</p>"}
-                </div>
-            </section>
-        `;
+    function fillExampleForm() {
+        const example = currentScenario?.examples?.[currentExampleIndex];
+        const disabled = !example;
+        [exampleId, exampleTitle, exampleTags, exampleInput, expectedOutput, deleteExampleButton].forEach((element) => {
+            element.disabled = disabled;
+        });
+        if (!example) {
+            exampleId.value = "";
+            exampleTitle.value = "";
+            exampleTags.value = "";
+            exampleInput.value = "";
+            expectedOutput.value = "";
+            updatePromptPreview();
+            return;
+        }
+        exampleSelect.value = String(currentExampleIndex);
+        exampleId.value = example.id || "";
+        exampleTitle.value = example.title || "";
+        exampleTags.value = (example.tags || []).join(", ");
+        exampleInput.value = example.input || "";
+        expectedOutput.value = example.expectedOutput || "";
+        updatePromptPreview();
+    }
+
+    function renderExampleOptions() {
+        const examples = currentScenario?.examples || [];
+        exampleSelect.innerHTML = examples
+            .map((example, index) => `<option value="${index}">${index + 1}. ${escapeHtml(example.title || example.id || "未命名示例")}</option>`)
+            .join("");
+        exampleSelect.disabled = examples.length === 0;
+        deleteExampleButton.disabled = examples.length === 0;
+        if (currentExampleIndex >= examples.length) {
+            currentExampleIndex = Math.max(0, examples.length - 1);
+        }
+        if (examples.length) {
+            exampleSelect.value = String(currentExampleIndex);
+        }
+    }
+
+    function persistFormToCurrent() {
+        if (!currentScenario) {
+            return;
+        }
+        persistExampleForm();
+        currentScenario.code = normalizeCode(scenarioCode.value);
+        currentScenario.name = scenarioName.value.trim();
+        currentScenario.inputLabel = inputLabel.value.trim() || "输入内容";
+        currentScenario.toolProfile = "none";
+        currentScenario.description = description.value.trim();
+        currentScenario.systemInstruction = systemInstruction.value.trim();
+        currentScenario.outputContract = outputContract.value.trim();
+    }
+
+    function persistExampleForm() {
+        const example = currentScenario?.examples?.[currentExampleIndex];
+        if (!example) {
+            return;
+        }
+        example.id = exampleId.value.trim() || `example-${Date.now()}`;
+        example.title = exampleTitle.value.trim() || example.id;
+        example.input = exampleInput.value.trim();
+        example.expectedOutput = expectedOutput.value.trim();
+        example.tags = exampleTags.value
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean);
+        renderExampleOptions();
+    }
+
+    function fillSelectedExampleToRunInput() {
+        const example = currentScenario?.examples?.[currentExampleIndex] || currentScenario?.examples?.[0];
+        runInput.value = example?.input || "";
+        updatePromptPreview();
+    }
+
+    function ensureScenario() {
+        if (!currentScenario) {
+            currentScenario = {
+                code: `new-scenario-${Date.now()}`,
+                name: "新场景",
+                description: "",
+                inputLabel: "输入内容",
+                systemInstruction: "",
+                outputContract: "",
+                toolProfile: "none",
+                examples: []
+            };
+        }
+        if (!currentScenario.examples) {
+            currentScenario.examples = [];
+        }
+    }
+
+    function setFormDisabled(disabled) {
+        [
+            scenarioCode,
+            scenarioName,
+            inputLabel,
+            description,
+            systemInstruction,
+            outputContract,
+            systemPromptPreview,
+            userPromptPreview,
+            exampleSelect,
+            addExampleButton,
+            saveScenarioButton
+        ].forEach((element) => {
+            element.disabled = disabled;
+        });
+    }
+
+    function setEditMessage(message, isError = false, isOk = false) {
+        editMessage.textContent = message;
+        editMessage.className = `message${isError ? " error" : ""}${isOk ? " ok" : ""}`;
+    }
+
+    function clearMessages() {
+        runMessage.textContent = "";
+        editMessage.textContent = "";
+        editMessage.className = "message";
+    }
+
+    function cloneScenario(scenario) {
+        return scenario ? JSON.parse(JSON.stringify(scenario)) : null;
+    }
+
+    function normalizeCode(value) {
+        return String(value || "").trim().toLowerCase().replaceAll("_", "-");
+    }
+
+    function updatePromptPreview() {
+        if (!currentScenario) {
+            systemPromptPreview.value = "";
+            userPromptPreview.value = "";
+            return;
+        }
+        persistFormToCurrent();
+        systemPromptPreview.value = buildSystemPrompt(currentScenario);
+        userPromptPreview.value = buildUserPrompt(currentScenario, runInput.value.trim());
+    }
+
+    function buildSystemPrompt(scenario) {
+        return `你是一个可复用的 few-shot 任务执行器。你会收到一个业务场景配置、输出契约和若干示例。
+请优先遵守当前业务场景配置，其次参考示例中的表达方式和边界条件。
+不要把示例中的具体姓名、订单号、日期、票号等实体套用到新输入里。
+
+场景编码：${scenario.code || ""}
+场景名称：${scenario.name || ""}
+场景说明：${scenario.description || ""}
+
+业务指令：
+${scenario.systemInstruction || ""}
+
+输出契约：
+${scenario.outputContract || ""}
+
+Few-shot 示例：
+${renderExamples(scenario.examples || [])}`;
+    }
+
+    function buildUserPrompt(scenario, input) {
+        return `请按当前 few-shot 场景配置处理下面输入。
+
+${scenario.inputLabel || "输入内容"}：
+${input || ""}`;
+    }
+
+    function renderExamples(examples) {
+        if (!examples.length) {
+            return "无。";
+        }
+        return examples.map((example, index) => `示例 ${index + 1}：${example.title || ""}
+输入：
+${example.input || ""}
+期望输出/处理方式：
+${example.expectedOutput || ""}`).join("\n\n");
     }
 
     function escapeHtml(value) {

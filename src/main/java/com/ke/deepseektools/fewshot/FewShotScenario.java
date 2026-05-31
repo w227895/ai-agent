@@ -13,7 +13,6 @@ public record FewShotScenario(
         List<FewShotExample> examples) {
 
     public static final String NO_TOOLS = "none";
-    public static final String FLIGHT_CHANGE_WORKFLOW = "flight-change-workflow";
 
     public FewShotScenario withExamples(List<FewShotExample> newExamples) {
         return new FewShotScenario(code, name, description, inputLabel, systemInstruction, outputContract,

@@ -5,6 +5,7 @@ import java.util.List;
 import com.ke.deepseektools.fewshot.FewShotExample;
 import com.ke.deepseektools.fewshot.FewShotPlatformService;
 import com.ke.deepseektools.fewshot.FewShotPlatformService.FewShotRunResult;
+import com.ke.deepseektools.fewshot.FewShotPlatformService.PromptPreview;
 import com.ke.deepseektools.fewshot.FewShotScenario;
 import com.ke.deepseektools.fewshot.FewShotScenarioRepository.FewShotScenarioNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,11 @@ public class FewShotController {
     @GetMapping("/scenarios/{code}")
     public FewShotScenario getScenario(@PathVariable String code) {
         return fewShotPlatformService.getScenario(code);
+    }
+
+    @GetMapping("/scenarios/{code}/prompt-preview")
+    public PromptPreview previewPrompt(@PathVariable String code) {
+        return fewShotPlatformService.previewPrompt(code, "");
     }
 
     @PostMapping("/scenarios")
