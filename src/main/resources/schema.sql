@@ -78,3 +78,14 @@ CREATE TABLE IF NOT EXISTS few_shot_run_log (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_few_shot_run_log_scenario_created (scenario_code, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS few_shot_failure_case (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    scenario_code VARCHAR(128) NOT NULL,
+    input_text MEDIUMTEXT NOT NULL,
+    actual_output MEDIUMTEXT NULL,
+    expected_output MEDIUMTEXT NOT NULL,
+    problem_note TEXT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_few_shot_failure_case_scenario_created (scenario_code, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -7,7 +7,7 @@
     <style>
         :root {
             --bg: #f3f5f7;
-            --surface: #ffffff;
+            --surface: #fff;
             --soft: #f7f9fb;
             --line: #d8dee7;
             --line-strong: #b8c2d0;
@@ -24,7 +24,6 @@
         }
 
         * { box-sizing: border-box; }
-
         body {
             margin: 0;
             min-height: 100vh;
@@ -32,9 +31,7 @@
             background: var(--bg);
             font: 14px/1.55 "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
         }
-
         button, input, select, textarea { font: inherit; }
-
         button {
             min-height: 38px;
             border: 1px solid var(--line);
@@ -45,13 +42,11 @@
             padding: 0 14px;
             font-weight: 700;
         }
-
         button:hover { border-color: var(--line-strong); background: var(--soft); }
         button.primary { border-color: var(--primary); background: var(--primary); color: #fff; }
         button.primary:hover { background: var(--primary-dark); }
         button.danger { color: var(--danger); border-color: #efc6bf; }
         button:disabled { opacity: 0.62; cursor: wait; }
-
         input, select, textarea {
             width: 100%;
             border: 1px solid var(--line);
@@ -60,19 +55,15 @@
             color: var(--text);
             outline: none;
         }
-
         input, select { min-height: 38px; padding: 0 11px; }
         textarea { min-height: 110px; padding: 12px; resize: vertical; }
         textarea.mono { font-family: Consolas, "Microsoft YaHei", monospace; line-height: 1.6; }
-        textarea.tall { min-height: 190px; }
-        textarea.prompt-preview { min-height: 360px; color: var(--mono-text); border-color: #2f3b4f; background: var(--mono-bg); font-size: 13px; }
-        textarea[readonly], input[readonly] { background: var(--soft); color: #475467; }
-
+        textarea.tall { min-height: 210px; }
+        textarea.prompt-preview { min-height: 420px; color: var(--mono-text); border-color: #2f3b4f; background: var(--mono-bg); font-size: 13px; }
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
         }
-
         label { color: var(--muted); font-size: 12px; font-weight: 700; }
 
         .app-shell { min-height: 100vh; display: grid; grid-template-columns: 270px minmax(0, 1fr); }
@@ -87,14 +78,12 @@
             border-right: 1px solid var(--line);
             background: #fff;
         }
-
         .brand { display: grid; gap: 5px; padding: 2px 6px 14px; border-bottom: 1px solid var(--line); }
         .brand-title { margin: 0; font-size: 20px; line-height: 1.25; }
         .brand-subtitle { margin: 0; color: var(--muted); font-size: 12px; }
         .menu { display: grid; align-content: start; gap: 18px; overflow: auto; padding-right: 2px; }
         .menu-group { display: grid; gap: 7px; }
         .menu-title { padding: 0 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
-
         .nav-button {
             width: 100%;
             min-height: 42px;
@@ -105,9 +94,7 @@
             border-color: transparent;
             background: transparent;
             text-align: left;
-            font-weight: 700;
         }
-
         .nav-icon {
             width: 24px;
             height: 24px;
@@ -118,9 +105,17 @@
             background: #eef2f5;
             font-size: 13px;
         }
-
         .nav-button.active { color: var(--primary-dark); border-color: var(--primary-soft); background: var(--primary-soft); }
-        .sidebar-foot { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); color: var(--muted); font-size: 12px; }
+        .sidebar-foot {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            color: var(--muted);
+            font-size: 12px;
+        }
         .endpoint { color: var(--primary-dark); font-family: Consolas, monospace; font-weight: 700; }
 
         .workspace { min-width: 0; display: grid; grid-template-rows: auto 1fr; }
@@ -138,7 +133,6 @@
             background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(10px);
         }
-
         .page-title { margin: 0; font-size: 22px; line-height: 1.25; }
         .page-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
         .scenario-picker { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px; align-items: center; }
@@ -151,8 +145,7 @@
         .panel-title { margin: 0; font-size: 16px; }
         .panel-kicker { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
         .panel-body { display: grid; gap: 16px; padding: 18px; }
-        .overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-
+        .overview-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
         .feature-tile {
             min-height: 126px;
             display: grid;
@@ -164,14 +157,13 @@
             background: #fff;
             text-align: left;
         }
-
         .feature-tile:hover { border-color: var(--primary); background: #fbfefe; }
         .tile-icon { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--primary-soft); color: var(--primary-dark); font-weight: 800; }
         .tile-title { margin: 0; font-size: 15px; }
         .tile-text { margin: 5px 0 0; color: var(--muted); font-size: 12px; font-weight: 400; }
-
         .form-grid { display: grid; gap: 16px; }
         .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .three-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         .field { display: grid; gap: 7px; }
         .run-grid, .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .result { min-height: 340px; padding: 14px; overflow: auto; white-space: pre-wrap; line-height: 1.7; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
@@ -182,12 +174,45 @@
         .example-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
         .sticky-actions { position: sticky; bottom: 0; display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--line); background: rgba(255, 255, 255, 0.96); }
         .empty-state { min-height: 180px; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 8px; background: var(--soft); text-align: center; }
-        .readonly-badge { border: 1px solid var(--line); border-radius: 999px; background: var(--soft); color: var(--primary-dark); font-size: 12px; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
+        .list-toolbar { display: grid; grid-template-columns: minmax(240px, 1fr) 120px auto auto; gap: 10px; align-items: center; }
+        .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        table { width: 100%; min-width: 860px; border-collapse: collapse; }
+        th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+        th { color: var(--muted); background: var(--soft); font-size: 12px; font-weight: 800; }
+        tbody tr:hover { background: #fbfefe; }
+        tbody tr:last-child td { border-bottom: 0; }
+        .table-code { font-family: Consolas, monospace; color: var(--primary-dark); font-weight: 700; }
+        .table-muted { color: var(--muted); font-size: 12px; }
+        .table-actions { display: flex; gap: 8px; justify-content: flex-end; white-space: nowrap; }
+        .table-actions button { min-height: 32px; padding: 0 10px; }
+        .pager { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+        .pager-actions { display: flex; gap: 8px; align-items: center; }
+        .resource-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+        .resource-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+        .metric { min-height: 86px; display: grid; gap: 6px; align-content: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .metric-value { font-size: 24px; line-height: 1; font-weight: 800; color: var(--primary-dark); }
+        .metric-label { color: var(--muted); font-size: 12px; font-weight: 700; }
+        .relation-chip {
+            display: inline-flex;
+            max-width: 100%;
+            min-height: 26px;
+            align-items: center;
+            margin: 2px 4px 2px 0;
+            padding: 0 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .relation-chip.primary { border-color: var(--primary-soft); background: var(--primary-soft); color: var(--primary-dark); }
+        .relation-cell { max-width: 300px; }
+        .truncate { max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         @media (max-width: 1180px) {
-            .overview-grid, .run-grid, .preview-grid { grid-template-columns: 1fr; }
+            .overview-grid, .run-grid, .preview-grid, .resource-summary { grid-template-columns: 1fr 1fr; }
         }
-
         @media (max-width: 860px) {
             .app-shell { grid-template-columns: 1fr; }
             .sidebar { position: static; height: auto; grid-template-rows: auto auto; }
@@ -195,12 +220,12 @@
             .menu { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; }
             .topbar { position: static; grid-template-columns: 1fr; }
         }
-
         @media (max-width: 640px) {
             .content, .topbar { padding-left: 16px; padding-right: 16px; }
-            .menu, .two-cols, .example-bar, .scenario-picker, .overview-grid { grid-template-columns: 1fr; }
+            .menu, .two-cols, .three-cols, .example-bar, .scenario-picker, .overview-grid, .list-toolbar, .resource-summary { grid-template-columns: 1fr; }
             .sticky-actions { position: static; display: grid; }
             .message { text-align: left; }
+            .pager { display: grid; }
         }
     </style>
 </head>
@@ -209,20 +234,22 @@
     <aside class="sidebar">
         <div class="brand">
             <h1 class="brand-title">Few-shot 提示词平台</h1>
-            <p class="brand-subtitle">研发维护主提示词和输出结构，业务维护 few-shot 示例</p>
+            <p class="brand-subtitle">主提示词、输出结构和 few-shot 示例分层维护</p>
         </div>
-
         <nav class="menu" aria-label="功能菜单">
             <div class="menu-group">
                 <div class="menu-title">工作台</div>
-                <button class="nav-button active" type="button" data-view-target="overview"><span class="nav-icon">概</span><span>功能总览</span></button>
+                <button class="nav-button active" type="button" data-view-target="resourceHub"><span class="nav-icon">联</span><span>资源关系</span></button>
+                <button class="nav-button" type="button" data-view-target="overview"><span class="nav-icon">概</span><span>功能总览</span></button>
+                <button class="nav-button" type="button" data-view-target="scenarioList"><span class="nav-icon">表</span><span>场景列表</span></button>
             </div>
             <div class="menu-group">
                 <div class="menu-title">运行中心</div>
                 <button class="nav-button" type="button" data-view-target="run"><span class="nav-icon">行</span><span>运行调试</span></button>
+                <button class="nav-button" type="button" data-view-target="failureOptimize"><span class="nav-icon">优</span><span>失败优化</span></button>
             </div>
             <div class="menu-group">
-                <div class="menu-title">提示词分层</div>
+                <div class="menu-title">配置维护</div>
                 <button class="nav-button" type="button" data-view-target="mainPrompt"><span class="nav-icon">主</span><span>主提示词</span></button>
                 <button class="nav-button" type="button" data-view-target="outputSchema"><span class="nav-icon">构</span><span>输出结构</span></button>
                 <button class="nav-button" type="button" data-view-target="examples"><span class="nav-icon">例</span><span>Few-shot 示例</span></button>
@@ -233,7 +260,6 @@
                 <button class="nav-button" type="button" data-view-target="scenario"><span class="nav-icon">绑</span><span>场景绑定</span></button>
             </div>
         </nav>
-
         <div class="sidebar-foot">
             <span>模型运行接口</span>
             <span class="endpoint">POST /few-shot/run</span>
@@ -243,8 +269,8 @@
     <div class="workspace">
         <header class="topbar">
             <div>
-                <h2 class="page-title" id="pageTitle">功能总览</h2>
-                <p class="page-subtitle" id="pageSubtitle">主提示词、输出结构和 few-shot 示例已经分层管理。</p>
+                <h2 class="page-title" id="pageTitle">资源关系</h2>
+                <p class="page-subtitle" id="pageSubtitle">把场景、主提示词、输出结构和 few-shot 样例放在同一张关系图里维护。</p>
             </div>
             <div class="scenario-picker">
                 <label for="scenarioSelect">当前场景</label>
@@ -253,29 +279,211 @@
         </header>
 
         <main class="content">
-            <section class="view active" data-view="overview">
+            <section class="view active" data-view="resourceHub">
+                <div class="resource-summary">
+                    <div class="metric">
+                        <div class="metric-value" id="scenarioMetric">0</div>
+                        <div class="metric-label">场景</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="promptMetric">0</div>
+                        <div class="metric-label">主提示词</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="schemaMetric">0</div>
+                        <div class="metric-label">输出结构</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="exampleMetric">0</div>
+                        <div class="metric-label">Few-shot 样例</div>
+                    </div>
+                </div>
+
+                <div class="resource-grid">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">场景列表</h3>
+                                <p class="panel-kicker">场景是编排入口，向下绑定一个主提示词、一个输出结构和一组样例。</p>
+                            </div>
+                            <button class="primary" type="button" data-hub-action="newScenario">新增场景</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>场景</th>
+                                        <th>主提示词</th>
+                                        <th>输出结构</th>
+                                        <th>样例</th>
+                                        <th style="text-align: right;">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="hubScenarioRows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">主提示词列表</h3>
+                                <p class="panel-kicker">同一个 prompt_code 可以被多个场景复用，列表里直接显示使用它的场景。</p>
+                            </div>
+                            <button type="button" data-hub-action="newPrompt">新增主提示词</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>prompt_code</th>
+                                        <th>状态</th>
+                                        <th>使用场景</th>
+                                        <th style="text-align: right;">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="hubPromptRows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">输出结构列表</h3>
+                                <p class="panel-kicker">schema_code 决定模型输出契约，场景通过绑定关系引用它。</p>
+                            </div>
+                            <button type="button" data-hub-action="newSchema">新增输出结构</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>schema_code</th>
+                                        <th>结构名称</th>
+                                        <th>使用场景</th>
+                                        <th style="text-align: right;">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="hubSchemaRows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Few-shot 样例列表</h3>
+                                <p class="panel-kicker">样例归属于场景，编辑样例时会进入对应场景的样例维护页。</p>
+                            </div>
+                            <button type="button" data-hub-action="addExample">给当前场景加样例</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>样例</th>
+                                        <th>所属场景</th>
+                                        <th>标签</th>
+                                        <th style="text-align: right;">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="hubExampleRows"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="view" data-view="overview">
                 <div class="overview-grid">
+                    <button class="feature-tile" type="button" data-view-target="scenarioList">
+                        <span class="tile-icon">表</span>
+                        <span><strong class="tile-title">场景列表</strong><span class="tile-text">分页查看场景，支持新增、编辑、删除和调试。</span></span>
+                    </button>
                     <button class="feature-tile" type="button" data-view-target="mainPrompt">
                         <span class="tile-icon">主</span>
-                        <span><strong class="tile-title">主提示词</strong><span class="tile-text">来自 llm_prompt，由研发维护，业务侧只读。</span></span>
+                        <span><strong class="tile-title">主提示词</strong><span class="tile-text">维护 llm_prompt 的 system/user prompt。</span></span>
+                    </button>
+                    <button class="feature-tile" type="button" data-view-target="outputSchema">
+                        <span class="tile-icon">构</span>
+                        <span><strong class="tile-title">输出结构</strong><span class="tile-text">维护目标 JSON、字段说明和空值规则。</span></span>
                     </button>
                     <button class="feature-tile" type="button" data-view-target="examples">
                         <span class="tile-icon">例</span>
                         <span><strong class="tile-title">Few-shot 示例</strong><span class="tile-text">业务维护输入和期望输出样例。</span></span>
                     </button>
-                    <button class="feature-tile" type="button" data-view-target="outputSchema">
-                        <span class="tile-icon">构</span>
-                        <span><strong class="tile-title">输出结构</strong><span class="tile-text">来自 llm_output_schema，业务可读。</span></span>
-                    </button>
                     <button class="feature-tile" type="button" data-view-target="prompt">
                         <span class="tile-icon">预</span>
-                        <span><strong class="tile-title">最终 Prompt</strong><span class="tile-text">查看研发模板加业务示例后的真实内容。</span></span>
+                        <span><strong class="tile-title">最终 Prompt</strong><span class="tile-text">查看真实发送给模型的内容。</span></span>
                     </button>
                     <button class="feature-tile" type="button" data-view-target="run">
                         <span class="tile-icon">行</span>
-                        <span><strong class="tile-title">运行调试</strong><span class="tile-text">输入邮件正文，查看模型返回结果。</span></span>
+                        <span><strong class="tile-title">运行调试</strong><span class="tile-text">输入邮件正文，查看模型返回。</span></span>
+                    </button>
+                    <button class="feature-tile" type="button" data-view-target="failureOptimize">
+                        <span class="tile-icon">优</span>
+                        <span><strong class="tile-title">失败优化</strong><span class="tile-text">导入失败样例，生成提示词优化建议。</span></span>
                     </button>
                 </div>
+            </section>
+
+            <section class="view" data-view="scenarioList">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">场景列表</h3>
+                            <p class="panel-kicker">按传统列表维护 few-shot 场景，支持分页、搜索、增删改查。</p>
+                        </div>
+                        <button class="primary" id="listNewScenarioButton" type="button">新增场景</button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="list-toolbar">
+                            <input id="scenarioSearchInput" autocomplete="off" placeholder="搜索编码、名称、说明、prompt 或 schema">
+                            <select id="scenarioPageSize">
+                                <option value="5">每页 5 条</option>
+                                <option value="10" selected>每页 10 条</option>
+                                <option value="20">每页 20 条</option>
+                                <option value="50">每页 50 条</option>
+                            </select>
+                            <button id="scenarioSearchButton" type="button">查询</button>
+                            <button id="refreshScenarioListButton" type="button">刷新</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>场景</th>
+                                    <th>输入标签</th>
+                                    <th>绑定 prompt</th>
+                                    <th>绑定 schema</th>
+                                    <th>示例数</th>
+                                    <th style="text-align: right;">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody id="scenarioTableBody">
+                                <tr><td colspan="6" class="table-muted">加载中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pager">
+                            <div class="table-muted" id="scenarioPageInfo">第 1 / 1 页，共 0 条</div>
+                            <div class="message" id="scenarioListMessage"></div>
+                            <div class="pager-actions">
+                                <button id="scenarioPrevPageButton" type="button">上一页</button>
+                                <button id="scenarioNextPageButton" type="button">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </section>
 
             <section class="view" data-view="run">
@@ -311,33 +519,129 @@
                 </div>
             </section>
 
+            <section class="view" data-view="failureOptimize">
+                <div class="run-grid">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">失败案例</h3>
+                                <p class="panel-kicker">当前场景的解析失败样例</p>
+                            </div>
+                            <div class="message" id="failureMessage"></div>
+                        </div>
+                        <div class="panel-body form-grid">
+                            <div class="field">
+                                <label for="failureCaseJson">失败案例内容</label>
+                                <textarea class="tall mono" id="failureCaseJson" spellcheck="false" placeholder='可以直接粘贴自然语言，例如：这封邮件原文是...，模型输出成...，正确应该是...，问题是把票号识别成了PNR。也支持 JSON 数组。'></textarea>
+                            </div>
+                            <div class="actions">
+                                <button class="primary" id="importFailureCasesButton" type="button">智能导入失败案例</button>
+                                <button id="loadFailureCasesButton" type="button">刷新列表</button>
+                                <button id="optimizePromptButton" type="button">生成优化建议</button>
+                            </div>
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>输入</th>
+                                        <th>问题备注</th>
+                                        <th>时间</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="failureCaseRows">
+                                    <tr><td colspan="3" class="table-muted">暂无失败案例。</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">优化建议</h3>
+                                <p class="panel-kicker">草稿建议不会自动覆盖线上配置</p>
+                            </div>
+                        </div>
+                        <div class="panel-body form-grid">
+                            <div class="field">
+                                <label for="optimizationAnalysis">问题分析</label>
+                                <textarea class="mono" id="optimizationAnalysis" readonly></textarea>
+                            </div>
+                            <div class="field">
+                                <label for="suggestedExamplesView">建议新增示例</label>
+                                <textarea class="tall mono" id="suggestedExamplesView" readonly></textarea>
+                            </div>
+                            <div class="actions">
+                                <button class="primary" id="applySuggestedExamplesButton" type="button">加入当前场景示例</button>
+                            </div>
+                            <div class="field">
+                                <label for="suggestedSystemPrompt">建议 system_prompt</label>
+                                <textarea class="tall mono" id="suggestedSystemPrompt" readonly></textarea>
+                            </div>
+                            <div class="field">
+                                <label for="suggestedUserPrompt">建议 user_prompt</label>
+                                <textarea class="tall mono" id="suggestedUserPrompt" readonly></textarea>
+                            </div>
+                            <div class="field">
+                                <label for="suggestedFieldDescription">建议字段说明</label>
+                                <textarea class="tall mono" id="suggestedFieldDescription" readonly></textarea>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
             <section class="view" data-view="mainPrompt">
                 <section class="panel">
                     <div class="panel-header">
                         <div>
-                            <h3 class="panel-title">主提示词</h3>
-                            <p class="panel-kicker">读取 llm_prompt 中启用且优先级最高的模板</p>
+                            <h3 class="panel-title">主提示词编辑</h3>
+                            <p class="panel-kicker">维护 llm_prompt，当前场景会按 prompt_code 绑定</p>
                         </div>
-                        <span class="readonly-badge">研发维护</span>
+                        <button class="primary" id="savePromptButton" type="button">保存主提示词</button>
                     </div>
                     <div class="panel-body form-grid">
-                        <div class="two-cols">
+                        <div class="three-cols">
                             <div class="field">
-                                <label for="mainPromptCode">prompt_code</label>
-                                <input id="mainPromptCode" readonly>
+                                <label for="promptTemplateSelect">选择模板</label>
+                                <select id="promptTemplateSelect"></select>
                             </div>
                             <div class="field">
-                                <label for="mainPromptMeta">类型 / 优先级</label>
-                                <input id="mainPromptMeta" readonly>
+                                <label for="mainPromptCode">prompt_code</label>
+                                <input id="mainPromptCode">
+                            </div>
+                            <div class="field">
+                                <label for="mainPromptActive">启用</label>
+                                <select id="mainPromptActive">
+                                    <option value="true">启用</option>
+                                    <option value="false">停用</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="three-cols">
+                            <div class="field">
+                                <label for="mainCodeType">code_type</label>
+                                <input id="mainCodeType">
+                            </div>
+                            <div class="field">
+                                <label for="mainTemplateType">template_type</label>
+                                <input id="mainTemplateType">
+                            </div>
+                            <div class="field">
+                                <label for="mainPriority">priority / mail_type</label>
+                                <div class="two-cols">
+                                    <input id="mainPriority" type="number">
+                                    <input id="mainMailType" type="number">
+                                </div>
                             </div>
                         </div>
                         <div class="field">
                             <label for="mainSystemPrompt">system_prompt</label>
-                            <textarea class="tall mono" id="mainSystemPrompt" readonly></textarea>
+                            <textarea class="tall mono" id="mainSystemPrompt"></textarea>
                         </div>
                         <div class="field">
                             <label for="mainUserPrompt">user_prompt</label>
-                            <textarea class="tall mono" id="mainUserPrompt" readonly></textarea>
+                            <textarea class="tall mono" id="mainUserPrompt"></textarea>
                         </div>
                     </div>
                 </section>
@@ -347,33 +651,44 @@
                 <section class="panel">
                     <div class="panel-header">
                         <div>
-                            <h3 class="panel-title">输出结构配置</h3>
-                            <p class="panel-kicker">读取 llm_output_schema 中启用的目标 JSON 和字段说明</p>
+                            <h3 class="panel-title">输出结构编辑</h3>
+                            <p class="panel-kicker">维护 llm_output_schema，当前场景会按 schema_code 绑定</p>
                         </div>
-                        <span class="readonly-badge">研发/产品维护</span>
+                        <button class="primary" id="saveSchemaButton" type="button">保存输出结构</button>
                     </div>
                     <div class="panel-body form-grid">
-                        <div class="two-cols">
+                        <div class="three-cols">
+                            <div class="field">
+                                <label for="schemaTemplateSelect">选择结构</label>
+                                <select id="schemaTemplateSelect"></select>
+                            </div>
                             <div class="field">
                                 <label for="schemaCodeView">schema_code</label>
-                                <input id="schemaCodeView" readonly>
+                                <input id="schemaCodeView">
                             </div>
                             <div class="field">
-                                <label for="schemaNameView">结构名称</label>
-                                <input id="schemaNameView" readonly>
+                                <label for="schemaActive">启用</label>
+                                <select id="schemaActive">
+                                    <option value="true">启用</option>
+                                    <option value="false">停用</option>
+                                </select>
                             </div>
+                        </div>
+                        <div class="field">
+                            <label for="schemaNameView">结构名称</label>
+                            <input id="schemaNameView">
                         </div>
                         <div class="field">
                             <label for="schemaJsonView">目标 JSON 结构</label>
-                            <textarea class="tall mono" id="schemaJsonView" readonly></textarea>
+                            <textarea class="tall mono" id="schemaJsonView"></textarea>
                         </div>
                         <div class="field">
                             <label for="fieldDescriptionView">字段业务说明</label>
-                            <textarea class="tall mono" id="fieldDescriptionView" readonly></textarea>
+                            <textarea class="tall mono" id="fieldDescriptionView"></textarea>
                         </div>
                         <div class="field">
                             <label for="emptyValueRuleView">空值规则</label>
-                            <textarea class="mono" id="emptyValueRuleView" readonly></textarea>
+                            <textarea class="mono" id="emptyValueRuleView"></textarea>
                         </div>
                     </div>
                 </section>
@@ -384,7 +699,7 @@
                     <div class="panel-header">
                         <div>
                             <h3 class="panel-title">Few-shot 示例</h3>
-                            <p class="panel-kicker">业务只维护示例，不维护主提示词；期望输出按生产 JSON 结构填写</p>
+                            <p class="panel-kicker">业务维护示例输入和期望输出 JSON</p>
                         </div>
                     </div>
                     <div class="panel-body form-grid">
@@ -435,7 +750,7 @@
                         <div class="panel-header">
                             <div>
                                 <h3 class="panel-title">最终 System Prompt</h3>
-                            <p class="panel-kicker">研发 system_prompt + 输出结构 + 业务 few-shot 示例</p>
+                                <p class="panel-kicker">主提示词 + 输出结构 + 字段说明 + few-shot 示例</p>
                             </div>
                         </div>
                         <div class="panel-body">
@@ -446,7 +761,7 @@
                         <div class="panel-header">
                             <div>
                                 <h3 class="panel-title">最终 User Prompt</h3>
-                                <p class="panel-kicker">研发 user_prompt 占位符替换后的内容</p>
+                                <p class="panel-kicker">user_prompt 占位符替换后的内容</p>
                             </div>
                         </div>
                         <div class="panel-body">
@@ -461,7 +776,7 @@
                     <div class="panel-header">
                         <div>
                             <h3 class="panel-title">场景绑定</h3>
-                            <p class="panel-kicker">场景元信息、主提示词和输出结构绑定关系</p>
+                            <p class="panel-kicker">维护场景元信息，并绑定 prompt_code / schema_code</p>
                         </div>
                         <button id="newScenarioButton" type="button">新建场景</button>
                     </div>
@@ -476,18 +791,18 @@
                                 <input id="scenarioName" autocomplete="off">
                             </div>
                         </div>
-                        <div class="two-cols">
+                        <div class="three-cols">
                             <div class="field">
                                 <label for="inputLabel">输入标签</label>
                                 <input id="inputLabel" autocomplete="off">
                             </div>
                             <div class="field">
                                 <label for="promptCode">绑定 prompt_code</label>
-                                <input id="promptCode" readonly>
+                                <select id="promptCode"></select>
                             </div>
                             <div class="field">
                                 <label for="schemaCode">绑定 schema_code</label>
-                                <input id="schemaCode" readonly>
+                                <select id="schemaCode"></select>
                             </div>
                         </div>
                         <div class="field">
@@ -511,17 +826,26 @@
     const DEFAULT_PROMPT_CODE = "3131132944@qq.com";
     const DEFAULT_SCHEMA_CODE = "flight_change_extract";
     let scenarios = [];
+    let scenarioPageItems = [];
+    let promptTemplates = [];
+    let outputSchemas = [];
+    let failureCases = [];
+    let optimizationResult = null;
     let currentScenario = null;
     let currentExampleIndex = 0;
+    let scenarioPage = {page: 1, size: 10, keyword: "", total: 0, totalPages: 1};
 
     const viewMeta = {
-        overview: ["功能总览", "主提示词、输出结构和 few-shot 示例已经分层管理。"],
+        resourceHub: ["资源关系", "把场景、主提示词、输出结构和 few-shot 样例放在同一张关系图里维护。"],
+        overview: ["功能总览", "主提示词、输出结构和 few-shot 示例分层维护。"],
         run: ["运行调试", "选择场景，输入邮件正文，查看识别结果。"],
-        mainPrompt: ["主提示词", "研发维护 llm_prompt，业务侧只读。"],
-        outputSchema: ["输出结构", "研发/产品维护 llm_output_schema，业务侧只读。"],
+        failureOptimize: ["失败优化", "导入解析失败样例，生成低风险提示词优化建议。"],
+        scenarioList: ["场景列表", "分页管理场景，支持新增、查看、编辑、删除和调试。"],
+        mainPrompt: ["主提示词", "维护 llm_prompt 的 system_prompt 和 user_prompt。"],
+        outputSchema: ["输出结构", "维护 llm_output_schema 的目标 JSON、字段说明和空值规则。"],
         examples: ["Few-shot 示例", "业务维护当前场景的输入和期望输出样例。"],
         prompt: ["最终 Prompt", "查看真实发送给模型的两段 Prompt。"],
-        scenario: ["场景绑定", "维护场景元信息，绑定关系只读展示。"]
+        scenario: ["场景绑定", "维护场景元信息和绑定关系。"]
     };
 
     const pageTitle = document.querySelector("#pageTitle");
@@ -530,6 +854,24 @@
     const views = [...document.querySelectorAll("[data-view]")];
 
     const scenarioSelect = document.querySelector("#scenarioSelect");
+    const scenarioMetric = document.querySelector("#scenarioMetric");
+    const promptMetric = document.querySelector("#promptMetric");
+    const schemaMetric = document.querySelector("#schemaMetric");
+    const exampleMetric = document.querySelector("#exampleMetric");
+    const hubScenarioRows = document.querySelector("#hubScenarioRows");
+    const hubPromptRows = document.querySelector("#hubPromptRows");
+    const hubSchemaRows = document.querySelector("#hubSchemaRows");
+    const hubExampleRows = document.querySelector("#hubExampleRows");
+    const scenarioSearchInput = document.querySelector("#scenarioSearchInput");
+    const scenarioPageSize = document.querySelector("#scenarioPageSize");
+    const scenarioSearchButton = document.querySelector("#scenarioSearchButton");
+    const refreshScenarioListButton = document.querySelector("#refreshScenarioListButton");
+    const listNewScenarioButton = document.querySelector("#listNewScenarioButton");
+    const scenarioTableBody = document.querySelector("#scenarioTableBody");
+    const scenarioPageInfo = document.querySelector("#scenarioPageInfo");
+    const scenarioListMessage = document.querySelector("#scenarioListMessage");
+    const scenarioPrevPageButton = document.querySelector("#scenarioPrevPageButton");
+    const scenarioNextPageButton = document.querySelector("#scenarioNextPageButton");
     const runInput = document.querySelector("#runInput");
     const runInputLabelText = document.querySelector("#runInputLabelText");
     const result = document.querySelector("#result");
@@ -537,6 +879,18 @@
     const sampleButton = document.querySelector("#sampleButton");
     const clearButton = document.querySelector("#clearButton");
     const runMessage = document.querySelector("#runMessage");
+    const failureCaseJson = document.querySelector("#failureCaseJson");
+    const importFailureCasesButton = document.querySelector("#importFailureCasesButton");
+    const loadFailureCasesButton = document.querySelector("#loadFailureCasesButton");
+    const optimizePromptButton = document.querySelector("#optimizePromptButton");
+    const applySuggestedExamplesButton = document.querySelector("#applySuggestedExamplesButton");
+    const failureMessage = document.querySelector("#failureMessage");
+    const failureCaseRows = document.querySelector("#failureCaseRows");
+    const optimizationAnalysis = document.querySelector("#optimizationAnalysis");
+    const suggestedExamplesView = document.querySelector("#suggestedExamplesView");
+    const suggestedSystemPrompt = document.querySelector("#suggestedSystemPrompt");
+    const suggestedUserPrompt = document.querySelector("#suggestedUserPrompt");
+    const suggestedFieldDescription = document.querySelector("#suggestedFieldDescription");
 
     const scenarioCode = document.querySelector("#scenarioCode");
     const scenarioName = document.querySelector("#scenarioName");
@@ -550,18 +904,28 @@
     const reloadButton = document.querySelector("#reloadButton");
     const editMessage = document.querySelector("#editMessage");
 
+    const promptTemplateSelect = document.querySelector("#promptTemplateSelect");
+    const savePromptButton = document.querySelector("#savePromptButton");
     const mainPromptCode = document.querySelector("#mainPromptCode");
-    const mainPromptMeta = document.querySelector("#mainPromptMeta");
+    const mainPromptActive = document.querySelector("#mainPromptActive");
+    const mainCodeType = document.querySelector("#mainCodeType");
+    const mainTemplateType = document.querySelector("#mainTemplateType");
+    const mainPriority = document.querySelector("#mainPriority");
+    const mainMailType = document.querySelector("#mainMailType");
     const mainSystemPrompt = document.querySelector("#mainSystemPrompt");
     const mainUserPrompt = document.querySelector("#mainUserPrompt");
+
+    const schemaTemplateSelect = document.querySelector("#schemaTemplateSelect");
+    const saveSchemaButton = document.querySelector("#saveSchemaButton");
     const schemaCodeView = document.querySelector("#schemaCodeView");
+    const schemaActive = document.querySelector("#schemaActive");
     const schemaNameView = document.querySelector("#schemaNameView");
     const schemaJsonView = document.querySelector("#schemaJsonView");
     const fieldDescriptionView = document.querySelector("#fieldDescriptionView");
     const emptyValueRuleView = document.querySelector("#emptyValueRuleView");
+
     const systemPromptPreview = document.querySelector("#systemPromptPreview");
     const userPromptPreview = document.querySelector("#userPromptPreview");
-
     const exampleSelect = document.querySelector("#exampleSelect");
     const addExampleButton = document.querySelector("#addExampleButton");
     const deleteExampleButton = document.querySelector("#deleteExampleButton");
@@ -573,31 +937,76 @@
     const exampleInput = document.querySelector("#exampleInput");
     const expectedOutput = document.querySelector("#expectedOutput");
 
-    loadScenarios();
+    loadAll();
 
     navButtons.forEach((button) => button.addEventListener("click", () => setView(button.dataset.viewTarget)));
-
+    document.querySelector("[data-view='resourceHub']").addEventListener("click", handleHubAction);
     scenarioSelect.addEventListener("change", () => {
         persistFormToCurrent();
         currentScenario = cloneScenario(scenarios.find((scenario) => scenario.code === scenarioSelect.value));
         currentExampleIndex = 0;
         fillForm();
         fillSelectedExampleToRunInput();
+        loadFailureCases();
+        clearOptimizationResult();
         clearMessages();
     });
-
+    scenarioSearchButton.addEventListener("click", () => {
+        scenarioPage.page = 1;
+        scenarioPage.keyword = scenarioSearchInput.value.trim();
+        loadScenarioPage();
+    });
+    scenarioSearchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            scenarioSearchButton.click();
+        }
+    });
+    scenarioPageSize.addEventListener("change", () => {
+        scenarioPage.page = 1;
+        scenarioPage.size = Number(scenarioPageSize.value || 10);
+        loadScenarioPage();
+    });
+    scenarioPrevPageButton.addEventListener("click", () => {
+        if (scenarioPage.page > 1) {
+            scenarioPage.page -= 1;
+            loadScenarioPage();
+        }
+    });
+    scenarioNextPageButton.addEventListener("click", () => {
+        if (scenarioPage.page < scenarioPage.totalPages) {
+            scenarioPage.page += 1;
+            loadScenarioPage();
+        }
+    });
+    refreshScenarioListButton.addEventListener("click", () => loadScenarioPage());
+    listNewScenarioButton.addEventListener("click", newScenario);
+    scenarioTableBody.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const code = button.dataset.code;
+        if (button.dataset.action === "edit") selectScenarioFromList(code, "scenario");
+        if (button.dataset.action === "run") selectScenarioFromList(code, "run");
+        if (button.dataset.action === "delete") deleteScenario(code);
+    });
+    promptTemplateSelect.addEventListener("change", () => fillMainPrompt(promptTemplateSelect.value));
+    schemaTemplateSelect.addEventListener("change", () => fillOutputSchema(schemaTemplateSelect.value));
     exampleSelect.addEventListener("change", () => {
         persistExampleForm();
         currentExampleIndex = Number(exampleSelect.value || 0);
         fillExampleForm();
     });
 
+    [
+        scenarioCode, scenarioName, inputLabel, description, promptCode, schemaCode,
+        mainPromptCode, mainPromptActive, mainCodeType, mainTemplateType, mainPriority, mainMailType, mainSystemPrompt, mainUserPrompt,
+        schemaCodeView, schemaActive, schemaNameView, schemaJsonView, fieldDescriptionView, emptyValueRuleView,
+        exampleId, exampleTitle, exampleTags, exampleInput, expectedOutput
+    ].forEach((element) => {
+        element.addEventListener("input", updatePromptPreview);
+        element.addEventListener("change", updatePromptPreview);
+    });
     [scenarioCode, scenarioName, inputLabel, description, exampleId, exampleTitle, exampleTags, exampleInput, expectedOutput]
-        .forEach((element) => {
-            element.addEventListener("input", () => setEditMessage("有未保存修改。"));
-            element.addEventListener("input", updatePromptPreview);
-        });
-
+        .forEach((element) => element.addEventListener("input", () => setEditMessage("有未保存修改。")));
     runInput.addEventListener("input", updatePromptPreview);
 
     sampleButton.addEventListener("click", () => {
@@ -605,27 +1014,371 @@
         fillSelectedExampleToRunInput();
         runInput.focus();
     });
-
     clearButton.addEventListener("click", () => {
         runInput.value = "";
         result.textContent = "处理结果会显示在这里。";
         updatePromptPreview();
         runInput.focus();
     });
+    processButton.addEventListener("click", runScenario);
+    importFailureCasesButton.addEventListener("click", importFailureCases);
+    loadFailureCasesButton.addEventListener("click", loadFailureCases);
+    optimizePromptButton.addEventListener("click", optimizePrompt);
+    applySuggestedExamplesButton.addEventListener("click", applySuggestedExamples);
+    addExampleButton.addEventListener("click", addExample);
+    deleteExampleButton.addEventListener("click", deleteExample);
+    newScenarioButton.addEventListener("click", newScenario);
+    saveScenarioButton.addEventListener("click", saveCurrentScenario);
+    saveScenarioMetaButton.addEventListener("click", saveCurrentScenario);
+    savePromptButton.addEventListener("click", saveCurrentPrompt);
+    saveSchemaButton.addEventListener("click", saveCurrentSchema);
+    reloadButton.addEventListener("click", loadAll);
 
-    processButton.addEventListener("click", async () => {
+    async function loadAll(preserveCode = currentScenario?.code) {
+        scenarioSelect.innerHTML = "<option>加载中...</option>";
+        processButton.disabled = true;
+        try {
+            const [scenarioResponse, promptResponse, schemaResponse] = await Promise.all([
+                fetch("/few-shot/scenarios"),
+                fetch("/few-shot/prompts"),
+                fetch("/few-shot/output-schemas")
+            ]);
+            if (!scenarioResponse.ok || !promptResponse.ok || !schemaResponse.ok) {
+                throw new Error("配置加载失败");
+            }
+            scenarios = await scenarioResponse.json();
+            promptTemplates = await promptResponse.json();
+            outputSchemas = await schemaResponse.json();
+            currentScenario = cloneScenario(scenarios.find((scenario) => scenario.code === preserveCode) || scenarios[0]);
+            currentExampleIndex = 0;
+            renderScenarioOptions(currentScenario?.code);
+            renderTemplateOptions();
+            renderResourceHub();
+            fillForm();
+            fillSelectedExampleToRunInput();
+            await loadScenarioPage();
+            await loadFailureCases();
+            setEditMessage("配置已加载。", false, true);
+        } catch (error) {
+            scenarioSelect.innerHTML = "<option>加载失败</option>";
+            setFormDisabled(true);
+            setEditMessage(`配置加载失败：${error.message}`, true);
+        } finally {
+            processButton.disabled = !currentScenario;
+        }
+    }
+
+    async function loadScenarioPage() {
+        scenarioTableBody.innerHTML = "<tr><td colspan=\"6\" class=\"table-muted\">加载中...</td></tr>";
+        setScenarioListMessage("");
+        try {
+            const params = new URLSearchParams({
+                page: String(scenarioPage.page),
+                size: String(scenarioPage.size),
+                keyword: scenarioPage.keyword
+            });
+            const response = await fetch(`/few-shot/scenarios/page?${params.toString()}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            scenarioPageItems = data.items || [];
+            scenarioPage.total = Number(data.total || 0);
+            scenarioPage.page = Number(data.page || 1);
+            scenarioPage.size = Number(data.size || scenarioPage.size);
+            scenarioPage.totalPages = Math.max(Number(data.totalPages || 0), 1);
+            if (scenarioPageItems.length === 0 && scenarioPage.page > 1) {
+                scenarioPage.page -= 1;
+                await loadScenarioPage();
+                return;
+            }
+            renderScenarioTable();
+        } catch (error) {
+            scenarioPageItems = [];
+            scenarioTableBody.innerHTML = `<tr><td colspan="6" class="error">列表加载失败：${escapeHtml(error.message)}</td></tr>`;
+            setScenarioListMessage("列表加载失败", true);
+            updateScenarioPager();
+        }
+    }
+
+    function renderScenarioTable() {
+        if (!scenarioPageItems.length) {
+            scenarioTableBody.innerHTML = "<tr><td colspan=\"6\" class=\"table-muted\">暂无场景数据。</td></tr>";
+            updateScenarioPager();
+            return;
+        }
+        scenarioTableBody.innerHTML = scenarioPageItems.map((scenario) => {
+            const examples = scenario.examples || [];
+            return `
+                <tr>
+                    <td>
+                        <div class="table-code">${escapeHtml(scenario.code || "")}</div>
+                        <div>${escapeHtml(scenario.name || "")}</div>
+                        <div class="table-muted">${escapeHtml(scenario.description || "")}</div>
+                    </td>
+                    <td>${escapeHtml(scenario.inputLabel || "")}</td>
+                    <td class="table-code">${escapeHtml(scenario.promptCode || "")}</td>
+                    <td class="table-code">${escapeHtml(scenario.schemaCode || "")}</td>
+                    <td>${examples.length}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button type="button" data-action="edit" data-code="${escapeHtml(scenario.code || "")}">编辑</button>
+                            <button type="button" data-action="run" data-code="${escapeHtml(scenario.code || "")}">调试</button>
+                            <button class="danger" type="button" data-action="delete" data-code="${escapeHtml(scenario.code || "")}">删除</button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join("");
+        updateScenarioPager();
+    }
+
+    function updateScenarioPager() {
+        scenarioPageSize.value = String(scenarioPage.size);
+        scenarioPageInfo.textContent = `第 ${scenarioPage.page} / ${scenarioPage.totalPages} 页，共 ${scenarioPage.total} 条`;
+        scenarioPrevPageButton.disabled = scenarioPage.page <= 1;
+        scenarioNextPageButton.disabled = scenarioPage.page >= scenarioPage.totalPages || scenarioPage.total === 0;
+    }
+
+    async function selectScenarioFromList(code, viewName, targetExampleIndex = 0) {
+        persistFormToCurrent();
+        let scenario = scenarios.find((item) => item.code === code);
+        if (!scenario) {
+            const response = await fetch(`/few-shot/scenarios/${encodeURIComponent(code)}`);
+            if (!response.ok) {
+                setScenarioListMessage(`场景加载失败：HTTP ${response.status}`, true);
+                return;
+            }
+            scenario = await response.json();
+            upsertBy(scenarios, scenario, "code");
+        }
+        currentScenario = cloneScenario(scenario);
+        currentExampleIndex = targetExampleIndex;
+        renderScenarioOptions(code);
+        fillForm();
+        fillSelectedExampleToRunInput();
+        clearMessages();
+        setView(viewName);
+    }
+
+    async function deleteScenario(code) {
+        if (!code || !confirm(`确定删除场景「${code}」吗？该场景下的 few-shot 示例也会一起删除。`)) {
+            return;
+        }
+        setScenarioListMessage("正在删除...");
+        try {
+            const response = await fetch(`/few-shot/scenarios/${encodeURIComponent(code)}`, {method: "DELETE"});
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const remaining = scenarios.filter((scenario) => scenario.code !== code);
+            const nextCode = currentScenario?.code === code ? remaining[0]?.code : currentScenario?.code;
+            scenarios = remaining;
+            await loadAll(nextCode);
+            setScenarioListMessage("场景已删除。", false, true);
+        } catch (error) {
+            setScenarioListMessage(`删除失败：${error.message}`, true);
+        }
+    }
+
+    function setScenarioListMessage(message, isError = false, isOk = false) {
+        scenarioListMessage.textContent = message;
+        scenarioListMessage.className = `message${isError ? " error" : ""}${isOk ? " ok" : ""}`;
+    }
+
+    function renderResourceHub() {
+        const examples = flattenExamples();
+        scenarioMetric.textContent = String(scenarios.length);
+        promptMetric.textContent = String(promptTemplates.length);
+        schemaMetric.textContent = String(outputSchemas.length);
+        exampleMetric.textContent = String(examples.length);
+
+        hubScenarioRows.innerHTML = scenarios.length ? scenarios.map((scenario) => `
+            <tr>
+                <td>
+                    <div class="table-code">${escapeHtml(scenario.code || "")}</div>
+                    <div>${escapeHtml(scenario.name || "")}</div>
+                    <div class="table-muted truncate">${escapeHtml(scenario.description || "")}</div>
+                </td>
+                <td>${resourceChip(scenario.promptCode || "", "primary")}</td>
+                <td>${resourceChip(scenario.schemaCode || "", "primary")}</td>
+                <td>${resourceChip(`${(scenario.examples || []).length} 个样例`)}</td>
+                <td>
+                    <div class="table-actions">
+                        <button type="button" data-hub-action="editScenario" data-code="${escapeHtml(scenario.code || "")}">编辑</button>
+                        <button type="button" data-hub-action="viewExamples" data-code="${escapeHtml(scenario.code || "")}">样例</button>
+                        <button type="button" data-hub-action="runScenario" data-code="${escapeHtml(scenario.code || "")}">调试</button>
+                    </div>
+                </td>
+            </tr>`).join("") : emptyHubRow(5, "暂无场景。");
+
+        hubPromptRows.innerHTML = promptTemplates.length ? promptTemplates.map((prompt) => {
+            const usedBy = scenarios.filter((scenario) => scenario.promptCode === prompt.promptCode);
+            return `
+                <tr>
+                    <td>
+                        <div class="table-code">${escapeHtml(prompt.promptCode || "")}</div>
+                        <div class="table-muted">priority ${Number(prompt.priority || 0)} / mail_type ${Number(prompt.mailType || 0)}</div>
+                    </td>
+                    <td>${resourceChip(prompt.active ? "启用" : "停用", prompt.active ? "primary" : "")}</td>
+                    <td class="relation-cell">${usageChips(usedBy)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button type="button" data-hub-action="editPrompt" data-code="${escapeHtml(prompt.promptCode || "")}">编辑</button>
+                            <button type="button" data-hub-action="bindPrompt" data-code="${escapeHtml(prompt.promptCode || "")}">绑到当前场景</button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join("") : emptyHubRow(4, "暂无主提示词。");
+
+        hubSchemaRows.innerHTML = outputSchemas.length ? outputSchemas.map((schema) => {
+            const usedBy = scenarios.filter((scenario) => scenario.schemaCode === schema.schemaCode);
+            return `
+                <tr>
+                    <td class="table-code">${escapeHtml(schema.schemaCode || "")}</td>
+                    <td>
+                        <div>${escapeHtml(schema.schemaName || "")}</div>
+                        <div class="table-muted">${schema.active ? "启用" : "停用"}</div>
+                    </td>
+                    <td class="relation-cell">${usageChips(usedBy)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button type="button" data-hub-action="editSchema" data-code="${escapeHtml(schema.schemaCode || "")}">编辑</button>
+                            <button type="button" data-hub-action="bindSchema" data-code="${escapeHtml(schema.schemaCode || "")}">绑到当前场景</button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join("") : emptyHubRow(4, "暂无输出结构。");
+
+        hubExampleRows.innerHTML = examples.length ? examples.map((item) => `
+            <tr>
+                <td>
+                    <div>${escapeHtml(item.example.title || item.example.id || "")}</div>
+                    <div class="table-code">${escapeHtml(item.example.id || "")}</div>
+                </td>
+                <td>
+                    <div>${escapeHtml(item.scenario.name || item.scenario.code || "")}</div>
+                    <div class="table-code">${escapeHtml(item.scenario.code || "")}</div>
+                </td>
+                <td class="relation-cell">${(item.example.tags || []).map((tag) => resourceChip(tag)).join("") || `<span class="table-muted">无标签</span>`}</td>
+                <td>
+                    <div class="table-actions">
+                        <button type="button" data-hub-action="editExample" data-code="${escapeHtml(item.scenario.code || "")}" data-index="${item.index}">编辑</button>
+                        <button type="button" data-hub-action="runScenario" data-code="${escapeHtml(item.scenario.code || "")}">调试</button>
+                    </div>
+                </td>
+            </tr>`).join("") : emptyHubRow(4, "暂无 few-shot 样例。");
+    }
+
+    function handleHubAction(event) {
+        const button = event.target.closest("[data-hub-action]");
+        if (!button) return;
+        const action = button.dataset.hubAction;
+        const code = button.dataset.code || "";
+        if (action === "newScenario") newScenario();
+        if (action === "editScenario") selectScenarioFromList(code, "scenario");
+        if (action === "viewExamples") selectScenarioFromList(code, "examples");
+        if (action === "runScenario") selectScenarioFromList(code, "run");
+        if (action === "newPrompt") newPromptTemplate();
+        if (action === "editPrompt") openPromptEditor(code);
+        if (action === "bindPrompt") bindPromptToCurrentScenario(code);
+        if (action === "newSchema") newOutputSchema();
+        if (action === "editSchema") openSchemaEditor(code);
+        if (action === "bindSchema") bindSchemaToCurrentScenario(code);
+        if (action === "addExample") {
+            addExample();
+            setView("examples");
+        }
+        if (action === "editExample") selectScenarioFromList(code, "examples", Number(button.dataset.index || 0));
+    }
+
+    function newPromptTemplate() {
+        fillMainPrompt("");
+        mainPromptCode.value = `prompt-${Date.now()}`;
+        mainPromptActive.value = "true";
+        mainCodeType.value = "2";
+        mainTemplateType.value = "1";
+        mainPriority.value = 1;
+        mainMailType.value = 0;
+        mainSystemPrompt.value = "";
+        mainUserPrompt.value = "";
+        setView("mainPrompt");
+        setEditMessage("新主提示词已创建，填写后保存。");
+    }
+
+    function openPromptEditor(code) {
+        fillMainPrompt(code);
+        setView("mainPrompt");
+        setEditMessage(`正在编辑主提示词：${code}`);
+    }
+
+    function bindPromptToCurrentScenario(code) {
+        ensureScenario();
+        persistExampleForm();
+        currentScenario.promptCode = code;
+        promptCode.value = code;
+        currentScenario.mainPrompt = promptTemplates.find((item) => item.promptCode === code) || null;
+        fillMainPrompt(code);
+        renderScenarioOptions(currentScenario.code);
+        renderResourceHub();
+        setView("scenario");
+        setEditMessage(`已绑定主提示词 ${code}，保存场景后生效。`);
+    }
+
+    function newOutputSchema() {
+        fillOutputSchema("");
+        schemaCodeView.value = `schema-${Date.now()}`;
+        schemaActive.value = "true";
+        schemaNameView.value = "新输出结构";
+        schemaJsonView.value = "{}";
+        fieldDescriptionView.value = "";
+        emptyValueRuleView.value = "";
+        setView("outputSchema");
+        setEditMessage("新输出结构已创建，填写后保存。");
+    }
+
+    function openSchemaEditor(code) {
+        fillOutputSchema(code);
+        setView("outputSchema");
+        setEditMessage(`正在编辑输出结构：${code}`);
+    }
+
+    function bindSchemaToCurrentScenario(code) {
+        ensureScenario();
+        persistExampleForm();
+        currentScenario.schemaCode = code;
+        schemaCode.value = code;
+        currentScenario.outputSchema = outputSchemas.find((item) => item.schemaCode === code) || null;
+        fillOutputSchema(code);
+        renderScenarioOptions(currentScenario.code);
+        renderResourceHub();
+        setView("scenario");
+        setEditMessage(`已绑定输出结构 ${code}，保存场景后生效。`);
+    }
+
+    function flattenExamples() {
+        return scenarios.flatMap((scenario) => (scenario.examples || []).map((example, index) => ({scenario, example, index})));
+    }
+
+    function usageChips(usedBy) {
+        if (!usedBy.length) return `<span class="table-muted">未绑定场景</span>`;
+        return usedBy.map((scenario) => resourceChip(scenario.name || scenario.code, "primary")).join("");
+    }
+
+    function resourceChip(text, variant = "") {
+        return `<span class="relation-chip${variant ? ` ${variant}` : ""}">${escapeHtml(text || "-")}</span>`;
+    }
+
+    function emptyHubRow(colspan, message) {
+        return `<tr><td colspan="${colspan}" class="table-muted">${escapeHtml(message)}</td></tr>`;
+    }
+
+    async function runScenario() {
         const content = runInput.value.trim();
         if (!content) {
             runInput.focus();
             result.innerHTML = "<span class=\"error\">请先输入要处理的内容。</span>";
             return;
         }
-
         processButton.disabled = true;
         processButton.textContent = "运行中";
         runMessage.textContent = "";
-        result.textContent = "AI 正在按主提示词和业务 few-shot 示例处理...";
-
+        result.textContent = "AI 正在按当前提示词、输出结构和 few-shot 示例处理...";
         try {
             const response = await fetch("/few-shot/run", {
                 method: "POST",
@@ -644,64 +1397,236 @@
             processButton.disabled = false;
             processButton.textContent = "运行场景";
         }
-    });
+    }
 
-    newScenarioButton.addEventListener("click", () => {
-        persistFormToCurrent();
-        const code = `new-scenario-${Date.now()}`;
-        currentScenario = {
-            code,
-            name: "新场景",
-            description: "",
-            inputLabel: "邮件正文",
-            systemInstruction: "",
-            outputContract: "",
-            toolProfile: "none",
-            promptCode: DEFAULT_PROMPT_CODE,
-            mainPrompt: null,
-            schemaCode: DEFAULT_SCHEMA_CODE,
-            outputSchema: null,
-            examples: []
-        };
-        scenarios.push(currentScenario);
-        currentExampleIndex = 0;
-        renderScenarioOptions(code);
-        fillForm();
-        setView("scenario");
-        setEditMessage("新场景已创建，编辑后保存。");
-    });
-
-    addExampleButton.addEventListener("click", () => {
-        ensureScenario();
-        persistExampleForm();
-        currentScenario.examples.push({
-            id: `example-${Date.now()}`,
-            title: "新示例",
-            input: "",
-            expectedOutput: "",
-            tags: []
-        });
-        currentExampleIndex = currentScenario.examples.length - 1;
-        renderExampleOptions();
-        fillExampleForm();
-        setEditMessage("新示例已添加，编辑后保存。");
-    });
-
-    deleteExampleButton.addEventListener("click", () => {
-        ensureScenario();
-        if (!currentScenario.examples.length) {
+    async function loadFailureCases() {
+        if (!currentScenario?.code) {
+            failureCases = [];
+            renderFailureCases();
             return;
         }
-        currentScenario.examples.splice(currentExampleIndex, 1);
-        currentExampleIndex = Math.max(0, currentExampleIndex - 1);
+        try {
+            const response = await fetch(`/few-shot/scenarios/${encodeURIComponent(currentScenario.code)}/failure-cases`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            failureCases = await response.json();
+            renderFailureCases();
+            setFailureMessage(`已加载 ${failureCases.length} 条失败案例。`, false, true);
+        } catch (error) {
+            failureCases = [];
+            renderFailureCases();
+            setFailureMessage(`失败案例加载失败：${error.message}`, true);
+        }
+    }
+
+    async function importFailureCases() {
+        if (!currentScenario?.code) return;
+        const rawText = failureCaseJson.value.trim();
+        if (!rawText) {
+            setFailureMessage("请先粘贴失败案例内容。", true);
+            return;
+        }
+        importFailureCasesButton.disabled = true;
+        importFailureCasesButton.textContent = "整理中";
+        try {
+            const cases = tryParseFailureCaseInput(rawText);
+            const endpoint = cases
+                    ? `/few-shot/scenarios/${encodeURIComponent(currentScenario.code)}/failure-cases/import`
+                    : `/few-shot/scenarios/${encodeURIComponent(currentScenario.code)}/failure-cases/import-text`;
+            const payload = cases ? {cases} : {text: rawText};
+            const saved = await postJson(endpoint, payload);
+            failureCases = [...saved, ...failureCases];
+            failureCaseJson.value = "";
+            renderFailureCases();
+            setFailureMessage(`已导入 ${saved.length} 条失败案例。`, false, true);
+        } catch (error) {
+            setFailureMessage(`导入失败：${error.message}`, true);
+        } finally {
+            importFailureCasesButton.disabled = false;
+            importFailureCasesButton.textContent = "智能导入失败案例";
+        }
+    }
+
+    async function optimizePrompt() {
+        if (!currentScenario?.code) return;
+        if (!failureCases.length) {
+            setFailureMessage("请先导入失败案例。", true);
+            return;
+        }
+        optimizePromptButton.disabled = true;
+        optimizePromptButton.textContent = "生成中";
+        clearOptimizationResult();
+        try {
+            const response = await fetch(`/few-shot/scenarios/${encodeURIComponent(currentScenario.code)}/optimize-prompt`, {
+                method: "POST"
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            optimizationResult = await response.json();
+            renderOptimizationResult();
+            setFailureMessage("优化建议已生成。", false, true);
+        } catch (error) {
+            setFailureMessage(`优化失败：${error.message}`, true);
+        } finally {
+            optimizePromptButton.disabled = false;
+            optimizePromptButton.textContent = "生成优化建议";
+        }
+    }
+
+    function applySuggestedExamples() {
+        const suggestedExamples = optimizationResult?.suggestedExamples || [];
+        if (!suggestedExamples.length) {
+            setFailureMessage("当前优化结果没有建议示例。", true);
+            return;
+        }
+        ensureScenario();
+        persistExampleForm();
+        const existingIds = new Set((currentScenario.examples || []).map((example) => example.id));
+        const examplesToAdd = suggestedExamples.map((example, index) => {
+            let id = example.id || `failure-example-${Date.now()}-${index + 1}`;
+            if (existingIds.has(id)) {
+                id = `${id}-${Date.now()}`;
+            }
+            existingIds.add(id);
+            return {
+                id,
+                title: example.title || id,
+                input: example.input || "",
+                expectedOutput: example.expectedOutput || "",
+                tags: example.tags?.length ? example.tags : ["失败优化"]
+            };
+        });
+        currentScenario.examples.push(...examplesToAdd);
+        currentExampleIndex = currentScenario.examples.length - examplesToAdd.length;
         renderExampleOptions();
         fillExampleForm();
+        renderResourceHub();
         updatePromptPreview();
-        setEditMessage("示例已删除，保存后生效。");
-    });
+        setView("examples");
+        setEditMessage(`已加入 ${examplesToAdd.length} 条建议示例，保存后生效。`, false, true);
+    }
 
-    saveScenarioButton.addEventListener("click", saveCurrentScenario);
-    saveScenarioMetaButton.addEventListener("click", saveCurrentScenario);
+    function parseFailureCaseInput(value) {
+        const raw = value.trim();
+        if (!raw) {
+            throw new Error("请先粘贴失败案例 JSON。");
+        }
+        const parsed = JSON.parse(raw);
+        const items = Array.isArray(parsed) ? parsed : Array.isArray(parsed.cases) ? parsed.cases : [parsed];
+        const cases = items.map((item) => ({
+            input: item.input || item.inputText || item.emailContent || "",
+            actualOutput: item.actualOutput || item.currentOutput || "",
+            expectedOutput: item.expectedOutput || item.fixedOutput || "",
+            problemNote: item.problemNote || item.note || ""
+        })).filter((item) => item.input.trim() && item.expectedOutput.trim());
+        if (!cases.length) {
+            throw new Error("失败案例至少需要 input 和 expectedOutput。");
+        }
+        return cases;
+    }
+
+    function tryParseFailureCaseInput(value) {
+        try {
+            return parseFailureCaseInput(value);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function renderFailureCases() {
+        failureCaseRows.innerHTML = failureCases.length ? failureCases.map((failureCase) => `
+            <tr>
+                <td class="truncate">${escapeHtml(shortText(failureCase.input, 96))}</td>
+                <td class="truncate">${escapeHtml(shortText(failureCase.problemNote || "-", 72))}</td>
+                <td class="table-muted">${escapeHtml(formatDateTime(failureCase.createdAt))}</td>
+            </tr>`).join("") : `<tr><td colspan="3" class="table-muted">暂无失败案例。</td></tr>`;
+    }
+
+    function renderOptimizationResult() {
+        const suggestedExamples = optimizationResult?.suggestedExamples || [];
+        optimizationAnalysis.value = optimizationResult?.analysis || "";
+        suggestedExamplesView.value = suggestedExamples.length ? JSON.stringify(suggestedExamples, null, 2) : "";
+        suggestedSystemPrompt.value = optimizationResult?.suggestedSystemPrompt || "";
+        suggestedUserPrompt.value = optimizationResult?.suggestedUserPrompt || "";
+        suggestedFieldDescription.value = optimizationResult?.suggestedFieldDescriptionJson || "";
+    }
+
+    function clearOptimizationResult() {
+        optimizationResult = null;
+        optimizationAnalysis.value = "";
+        suggestedExamplesView.value = "";
+        suggestedSystemPrompt.value = "";
+        suggestedUserPrompt.value = "";
+        suggestedFieldDescription.value = "";
+    }
+
+    function setFailureMessage(message, isError = false, isOk = false) {
+        failureMessage.textContent = message;
+        failureMessage.className = `message${isError ? " error" : ""}${isOk ? " ok" : ""}`;
+    }
+
+    function shortText(value, maxLength) {
+        const text = String(value || "").replace(/\s+/g, " ").trim();
+        return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+    }
+
+    function formatDateTime(value) {
+        return value ? String(value).replace("T", " ").slice(0, 19) : "";
+    }
+
+    async function saveCurrentPrompt() {
+        const payload = readPromptForm();
+        if (!payload.promptCode) {
+            mainPromptCode.focus();
+            setEditMessage("prompt_code 不能为空。", true);
+            return;
+        }
+        savePromptButton.disabled = true;
+        savePromptButton.textContent = "保存中";
+        try {
+            const saved = await postJson("/few-shot/prompts", payload);
+            upsertBy(promptTemplates, saved, "promptCode");
+            if (currentScenario?.promptCode === saved.promptCode) {
+                currentScenario.mainPrompt = saved;
+            }
+            renderTemplateOptions();
+            fillMainPrompt(saved.promptCode);
+            renderResourceHub();
+            updatePromptPreview();
+            setEditMessage("主提示词已保存。", false, true);
+        } catch (error) {
+            setEditMessage(`主提示词保存失败：${error.message}`, true);
+        } finally {
+            savePromptButton.disabled = false;
+            savePromptButton.textContent = "保存主提示词";
+        }
+    }
+
+    async function saveCurrentSchema() {
+        const payload = readSchemaForm();
+        if (!payload.schemaCode) {
+            schemaCodeView.focus();
+            setEditMessage("schema_code 不能为空。", true);
+            return;
+        }
+        saveSchemaButton.disabled = true;
+        saveSchemaButton.textContent = "保存中";
+        try {
+            const saved = await postJson("/few-shot/output-schemas", payload);
+            upsertBy(outputSchemas, saved, "schemaCode");
+            if (currentScenario?.schemaCode === saved.schemaCode) {
+                currentScenario.outputSchema = saved;
+            }
+            renderTemplateOptions();
+            fillOutputSchema(saved.schemaCode);
+            renderResourceHub();
+            updatePromptPreview();
+            setEditMessage("输出结构已保存。", false, true);
+        } catch (error) {
+            setEditMessage(`输出结构保存失败：${error.message}`, true);
+        } finally {
+            saveSchemaButton.disabled = false;
+            saveSchemaButton.textContent = "保存输出结构";
+        }
+    }
 
     async function saveCurrentScenario() {
         persistFormToCurrent();
@@ -709,64 +1634,27 @@
             setEditMessage("场景编码和名称不能为空。", true);
             return;
         }
-
         saveScenarioButton.disabled = true;
         saveScenarioMetaButton.disabled = true;
         saveScenarioButton.textContent = "保存中";
         saveScenarioMetaButton.textContent = "保存中";
         try {
-            const response = await fetch("/few-shot/scenarios", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(currentScenario)
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            const saved = await response.json();
-            const index = scenarios.findIndex((scenario) => scenario.code === saved.code);
-            if (index >= 0) {
-                scenarios[index] = saved;
-            } else {
-                scenarios.push(saved);
-            }
+            const saved = await postJson("/few-shot/scenarios", currentScenario);
+            upsertBy(scenarios, saved, "code");
             currentScenario = cloneScenario(saved);
             renderScenarioOptions(saved.code);
+            renderTemplateOptions();
             fillForm();
-            setEditMessage("业务示例已保存。", false, true);
+            renderResourceHub();
+            await loadScenarioPage();
+            setEditMessage("场景配置已保存。", false, true);
         } catch (error) {
-            setEditMessage(`保存失败：${error.message}`, true);
+            setEditMessage(`场景保存失败：${error.message}`, true);
         } finally {
             saveScenarioButton.disabled = false;
             saveScenarioMetaButton.disabled = false;
             saveScenarioButton.textContent = "保存业务示例";
             saveScenarioMetaButton.textContent = "保存场景配置";
-        }
-    }
-
-    reloadButton.addEventListener("click", loadScenarios);
-
-    async function loadScenarios() {
-        scenarioSelect.innerHTML = "<option>加载中...</option>";
-        processButton.disabled = true;
-        try {
-            const response = await fetch("/few-shot/scenarios");
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            scenarios = await response.json();
-            currentScenario = cloneScenario(scenarios[0]);
-            currentExampleIndex = 0;
-            renderScenarioOptions(currentScenario?.code);
-            fillForm();
-            fillSelectedExampleToRunInput();
-            setEditMessage("配置已加载。", false, true);
-        } catch (error) {
-            scenarioSelect.innerHTML = "<option>加载失败</option>";
-            setFormDisabled(true);
-            setEditMessage(`场景加载失败：${error.message}`, true);
-        } finally {
-            processButton.disabled = !currentScenario;
         }
     }
 
@@ -783,9 +1671,22 @@
         scenarioSelect.innerHTML = scenarios
             .map((scenario) => `<option value="${escapeHtml(scenario.code)}">${escapeHtml(scenario.name || scenario.code)}</option>`)
             .join("");
-        if (selectedCode) {
-            scenarioSelect.value = selectedCode;
-        }
+        if (selectedCode) scenarioSelect.value = selectedCode;
+    }
+
+    function renderTemplateOptions() {
+        promptTemplateSelect.innerHTML = promptTemplates
+            .map((prompt) => `<option value="${escapeHtml(prompt.promptCode)}">${escapeHtml(prompt.promptCode)}</option>`)
+            .join("");
+        schemaTemplateSelect.innerHTML = outputSchemas
+            .map((schema) => `<option value="${escapeHtml(schema.schemaCode)}">${escapeHtml(schema.schemaName || schema.schemaCode)}</option>`)
+            .join("");
+        promptCode.innerHTML = promptTemplates
+            .map((prompt) => `<option value="${escapeHtml(prompt.promptCode)}">${escapeHtml(prompt.promptCode)}</option>`)
+            .join("");
+        schemaCode.innerHTML = outputSchemas
+            .map((schema) => `<option value="${escapeHtml(schema.schemaCode)}">${escapeHtml(schema.schemaName || schema.schemaCode)}</option>`)
+            .join("");
     }
 
     function fillForm() {
@@ -797,34 +1698,39 @@
         scenarioCode.value = currentScenario.code || "";
         scenarioName.value = currentScenario.name || "";
         inputLabel.value = currentScenario.inputLabel || "邮件正文";
-        promptCode.value = currentScenario.promptCode || "";
-        schemaCode.value = currentScenario.schemaCode || "";
         description.value = currentScenario.description || "";
+        promptCode.value = currentScenario.promptCode || DEFAULT_PROMPT_CODE;
+        schemaCode.value = currentScenario.schemaCode || DEFAULT_SCHEMA_CODE;
         runInputLabelText.textContent = currentScenario.inputLabel || "邮件正文";
-        fillMainPrompt();
-        fillOutputSchema();
+        fillMainPrompt(currentScenario.promptCode);
+        fillOutputSchema(currentScenario.schemaCode);
         renderExampleOptions();
         fillExampleForm();
         updatePromptPreview();
     }
 
-    function fillMainPrompt() {
-        const mainPrompt = currentScenario?.mainPrompt;
-        mainPromptCode.value = mainPrompt?.promptCode || currentScenario?.promptCode || "";
-        mainPromptMeta.value = mainPrompt
-            ? `code_type=${mainPrompt.codeType || ""} / template_type=${mainPrompt.templateType || ""} / priority=${mainPrompt.priority} / mail_type=${mainPrompt.mailType}`
-            : "未找到启用主提示词，运行时会使用兼容兜底模板";
-        mainSystemPrompt.value = mainPrompt?.systemPrompt || "";
-        mainUserPrompt.value = mainPrompt?.userPrompt || "";
+    function fillMainPrompt(code = promptTemplateSelect.value || currentScenario?.promptCode) {
+        const prompt = promptTemplates.find((item) => item.promptCode === code) || currentScenario?.mainPrompt || null;
+        if (prompt?.promptCode) promptTemplateSelect.value = prompt.promptCode;
+        mainPromptCode.value = prompt?.promptCode || code || "";
+        mainPromptActive.value = String(prompt?.active ?? true);
+        mainCodeType.value = prompt?.codeType || "2";
+        mainTemplateType.value = prompt?.templateType || "1";
+        mainPriority.value = prompt?.priority ?? 1;
+        mainMailType.value = prompt?.mailType ?? 0;
+        mainSystemPrompt.value = prompt?.systemPrompt || "";
+        mainUserPrompt.value = prompt?.userPrompt || "";
     }
 
-    function fillOutputSchema() {
-        const outputSchema = currentScenario?.outputSchema;
-        schemaCodeView.value = outputSchema?.schemaCode || currentScenario?.schemaCode || "";
-        schemaNameView.value = outputSchema?.schemaName || "未找到启用输出结构，运行时会使用兼容兜底输出契约";
-        schemaJsonView.value = outputSchema?.schemaJson || currentScenario?.outputContract || "";
-        fieldDescriptionView.value = outputSchema?.fieldDescriptionJson || "";
-        emptyValueRuleView.value = outputSchema?.emptyValueRule || "";
+    function fillOutputSchema(code = schemaTemplateSelect.value || currentScenario?.schemaCode) {
+        const schema = outputSchemas.find((item) => item.schemaCode === code) || currentScenario?.outputSchema || null;
+        if (schema?.schemaCode) schemaTemplateSelect.value = schema.schemaCode;
+        schemaCodeView.value = schema?.schemaCode || code || "";
+        schemaActive.value = String(schema?.active ?? true);
+        schemaNameView.value = schema?.schemaName || "";
+        schemaJsonView.value = schema?.schemaJson || currentScenario?.outputContract || "";
+        fieldDescriptionView.value = schema?.fieldDescriptionJson || "";
+        emptyValueRuleView.value = schema?.emptyValueRule || "";
     }
 
     function fillExampleForm() {
@@ -863,15 +1769,66 @@
         if (currentExampleIndex >= examples.length) {
             currentExampleIndex = Math.max(0, examples.length - 1);
         }
-        if (examples.length) {
-            exampleSelect.value = String(currentExampleIndex);
-        }
+        if (examples.length) exampleSelect.value = String(currentExampleIndex);
+    }
+
+    function addExample() {
+        ensureScenario();
+        persistExampleForm();
+        currentScenario.examples.push({
+            id: `example-${Date.now()}`,
+            title: "新示例",
+            input: "",
+            expectedOutput: "",
+            tags: []
+        });
+        currentExampleIndex = currentScenario.examples.length - 1;
+        renderExampleOptions();
+        fillExampleForm();
+        renderResourceHub();
+        setEditMessage("新示例已添加，编辑后保存。");
+    }
+
+    function deleteExample() {
+        ensureScenario();
+        if (!currentScenario.examples.length) return;
+        currentScenario.examples.splice(currentExampleIndex, 1);
+        currentExampleIndex = Math.max(0, currentExampleIndex - 1);
+        renderExampleOptions();
+        fillExampleForm();
+        renderResourceHub();
+        updatePromptPreview();
+        setEditMessage("示例已删除，保存后生效。");
+    }
+
+    function newScenario() {
+        persistFormToCurrent();
+        const code = `new-scenario-${Date.now()}`;
+        currentScenario = {
+            code,
+            name: "新场景",
+            description: "",
+            inputLabel: "邮件正文",
+            systemInstruction: "",
+            outputContract: "",
+            toolProfile: "none",
+            promptCode: promptTemplates[0]?.promptCode || DEFAULT_PROMPT_CODE,
+            mainPrompt: null,
+            schemaCode: outputSchemas[0]?.schemaCode || DEFAULT_SCHEMA_CODE,
+            outputSchema: null,
+            examples: []
+        };
+        scenarios.push(currentScenario);
+        currentExampleIndex = 0;
+        renderScenarioOptions(code);
+        fillForm();
+        renderResourceHub();
+        setView("scenario");
+        setEditMessage("新场景已创建，编辑后保存。");
     }
 
     function persistFormToCurrent() {
-        if (!currentScenario) {
-            return;
-        }
+        if (!currentScenario) return;
         persistExampleForm();
         currentScenario.code = normalizeCode(scenarioCode.value);
         currentScenario.name = scenarioName.value.trim();
@@ -879,6 +1836,8 @@
         currentScenario.description = description.value.trim();
         currentScenario.promptCode = promptCode.value.trim() || DEFAULT_PROMPT_CODE;
         currentScenario.schemaCode = schemaCode.value.trim() || DEFAULT_SCHEMA_CODE;
+        currentScenario.mainPrompt = promptTemplates.find((item) => item.promptCode === currentScenario.promptCode) || currentScenario.mainPrompt;
+        currentScenario.outputSchema = outputSchemas.find((item) => item.schemaCode === currentScenario.schemaCode) || currentScenario.outputSchema;
         currentScenario.toolProfile = currentScenario.toolProfile || "none";
         currentScenario.systemInstruction = currentScenario.systemInstruction || "";
         currentScenario.outputContract = currentScenario.outputContract || "";
@@ -887,9 +1846,7 @@
 
     function persistExampleForm() {
         const example = currentScenario?.examples?.[currentExampleIndex];
-        if (!example) {
-            return;
-        }
+        if (!example) return;
         example.id = exampleId.value.trim() || `example-${Date.now()}`;
         example.title = exampleTitle.value.trim() || example.id;
         example.input = exampleInput.value.trim();
@@ -902,6 +1859,30 @@
         const example = currentScenario?.examples?.[currentExampleIndex] || currentScenario?.examples?.[0];
         runInput.value = example?.input || "";
         updatePromptPreview();
+    }
+
+    function readPromptForm() {
+        return {
+            promptCode: mainPromptCode.value.trim(),
+            codeType: mainCodeType.value.trim() || "2",
+            templateType: mainTemplateType.value.trim() || "1",
+            userPrompt: mainUserPrompt.value,
+            priority: Number(mainPriority.value || 0),
+            active: mainPromptActive.value === "true",
+            systemPrompt: mainSystemPrompt.value,
+            mailType: Number(mainMailType.value || 0)
+        };
+    }
+
+    function readSchemaForm() {
+        return {
+            schemaCode: normalizeCode(schemaCodeView.value),
+            schemaName: schemaNameView.value.trim(),
+            schemaJson: schemaJsonView.value,
+            fieldDescriptionJson: fieldDescriptionView.value,
+            emptyValueRule: emptyValueRuleView.value,
+            active: schemaActive.value === "true"
+        };
     }
 
     function ensureScenario() {
@@ -921,16 +1902,88 @@
                 examples: []
             };
         }
-        if (!currentScenario.examples) {
-            currentScenario.examples = [];
+        if (!currentScenario.examples) currentScenario.examples = [];
+    }
+
+    function updatePromptPreview() {
+        if (!currentScenario) {
+            systemPromptPreview.value = "";
+            userPromptPreview.value = "";
+            return;
         }
+        persistFormToCurrent();
+        if (mainPromptCode.value === currentScenario.promptCode) {
+            currentScenario.mainPrompt = readPromptForm();
+        }
+        if (schemaCodeView.value === currentScenario.schemaCode) {
+            currentScenario.outputSchema = readSchemaForm();
+        }
+        systemPromptPreview.value = buildSystemPrompt(currentScenario);
+        userPromptPreview.value = buildUserPrompt(currentScenario, runInput.value.trim());
+    }
+
+    function buildSystemPrompt(scenario) {
+        const base = scenario.mainPrompt?.systemPrompt || scenario.systemInstruction || "";
+        const outputSchema = renderOutputSchema(scenario.outputSchema, scenario.outputContract);
+        const examples = renderExamples(scenario.examples || []);
+        return [
+            base,
+            outputSchema,
+            examples ? `以下 Few-shot 示例由业务维护，只作为当前场景的补充样例。请学习输入和期望输出之间的映射关系，不要照抄示例中的姓名、订单号、日期、票号、PNR 等实体到新输入。\n\n${examples}` : ""
+        ].filter((section) => section && section.trim()).join("\n\n");
+    }
+
+    function renderOutputSchema(outputSchema, fallbackOutputContract) {
+        if (!outputSchema) {
+            return fallbackOutputContract ? `输出结构配置：\n${fallbackOutputContract}` : "";
+        }
+        return [
+            `输出结构配置（由 llm_output_schema 维护）：\nschema_code：${outputSchema.schemaCode || ""}\nschema_name：${outputSchema.schemaName || ""}\n\n目标JSON结构：\n${outputSchema.schemaJson || ""}`,
+            outputSchema.fieldDescriptionJson ? `字段业务说明：\n${outputSchema.fieldDescriptionJson}` : "",
+            outputSchema.emptyValueRule ? `空值规则：\n${outputSchema.emptyValueRule}` : ""
+        ].filter((section) => section && section.trim()).join("\n\n");
+    }
+
+    function buildUserPrompt(scenario, input) {
+        const template = scenario.mainPrompt?.userPrompt;
+        if (!template) {
+            return `请按当前场景配置处理下面输入。\n${scenario.inputLabel || "邮件正文"}：\n${input || ""}`;
+        }
+        return template
+            .replaceAll("{current_time}", formatCurrentTime())
+            .replaceAll("{email_content}", input || "")
+            .trim();
+    }
+
+    function renderExamples(examples) {
+        if (!examples.length) return "";
+        return `业务 Few-shot 示例：\n${examples.map((example, index) => `示例 ${index + 1}：${example.title || ""}\n输入：\n${example.input || ""}\n期望输出：\n${example.expectedOutput || ""}`).join("\n\n")}`;
+    }
+
+    async function postJson(url, payload) {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    }
+
+    function upsertBy(items, item, key) {
+        const index = items.findIndex((candidate) => candidate[key] === item[key]);
+        if (index >= 0) items[index] = item;
+        else items.push(item);
     }
 
     function setFormDisabled(disabled) {
-        [scenarioCode, scenarioName, inputLabel, description, exampleSelect, addExampleButton, saveScenarioButton, saveScenarioMetaButton, sampleButton, processButton]
-            .forEach((element) => {
-                element.disabled = disabled;
-            });
+        [
+            scenarioCode, scenarioName, inputLabel, description, promptCode, schemaCode,
+            exampleSelect, addExampleButton, saveScenarioButton, saveScenarioMetaButton,
+            sampleButton, processButton, savePromptButton, saveSchemaButton
+        ].forEach((element) => {
+            element.disabled = disabled;
+        });
     }
 
     function setEditMessage(message, isError = false, isOk = false) {
@@ -950,67 +2003,6 @@
 
     function normalizeCode(value) {
         return String(value || "").trim().toLowerCase().replaceAll("_", "-");
-    }
-
-    function updatePromptPreview() {
-        if (!currentScenario) {
-            systemPromptPreview.value = "";
-            userPromptPreview.value = "";
-            return;
-        }
-        persistFormToCurrent();
-        systemPromptPreview.value = buildSystemPrompt(currentScenario);
-        userPromptPreview.value = buildUserPrompt(currentScenario, runInput.value.trim());
-    }
-
-    function buildSystemPrompt(scenario) {
-        const base = scenario.mainPrompt?.systemPrompt || scenario.systemInstruction || "";
-        const outputSchema = renderOutputSchema(scenario.outputSchema, scenario.outputContract);
-        const examples = renderExamples(scenario.examples || []);
-        return [base, outputSchema, examples ? `以下 Few-shot 示例由业务维护，只作为当前场景的补充样例。请学习输入和期望输出之间的映射关系，不要照抄示例中的姓名、订单号、日期、票号、PNR 等实体到新输入。
-
-${examples}` : ""].filter((section) => section && section.trim()).join("\n\n");
-    }
-
-    function renderOutputSchema(outputSchema, fallbackOutputContract) {
-        if (!outputSchema) {
-            return fallbackOutputContract ? `输出结构配置：\n${fallbackOutputContract}` : "";
-        }
-        return [`输出结构配置（由 llm_output_schema 维护）：
-schema_code：${outputSchema.schemaCode || ""}
-schema_name：${outputSchema.schemaName || ""}
-
-目标JSON结构：
-${outputSchema.schemaJson || ""}`,
-            outputSchema.fieldDescriptionJson ? `字段业务说明：\n${outputSchema.fieldDescriptionJson}` : "",
-            outputSchema.emptyValueRule ? `空值规则：\n${outputSchema.emptyValueRule}` : ""]
-            .filter((section) => section && section.trim())
-            .join("\n\n");
-    }
-
-    function buildUserPrompt(scenario, input) {
-        const template = scenario.mainPrompt?.userPrompt;
-        if (!template) {
-            return `请按当前 few-shot 场景配置处理下面输入。
-${scenario.inputLabel || "邮件正文"}：
-${input || ""}`;
-        }
-        return template
-            .replaceAll("{current_time}", formatCurrentTime())
-            .replaceAll("{email_content}", input || "")
-            .trim();
-    }
-
-    function renderExamples(examples) {
-        if (!examples.length) {
-            return "";
-        }
-        return `业务 Few-shot 示例：
-${examples.map((example, index) => `示例 ${index + 1}：${example.title || ""}
-输入：
-${example.input || ""}
-期望输出：
-${example.expectedOutput || ""}`).join("\n\n")}`;
     }
 
     function formatCurrentTime() {
