@@ -3,583 +3,579 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Few-shot 场景平台</title>
+    <title>Few-shot 提示词平台</title>
     <style>
         :root {
-            --bg: #f4f6f8;
-            --panel: #ffffff;
-            --panel-soft: #f8fafc;
-            --text: #16202f;
-            --muted: #647084;
-            --line: #d8dee8;
-            --line-strong: #c3ccd9;
-            --primary: #0f6f74;
-            --primary-dark: #0b5559;
-            --accent: #a44310;
+            --bg: #f3f5f7;
+            --surface: #ffffff;
+            --soft: #f7f9fb;
+            --line: #d8dee7;
+            --line-strong: #b8c2d0;
+            --text: #182230;
+            --muted: #667085;
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --primary-soft: #e2f3f1;
             --danger: #b42318;
-            --ok: #22745f;
-            --control: #fbfcfe;
-            --shadow: 0 16px 40px rgba(18, 28, 45, 0.08);
+            --ok: #20735c;
             --mono-bg: #101828;
-            --mono-text: #e6edf5;
+            --mono-text: #edf2f7;
+            --shadow: 0 18px 42px rgba(25, 37, 54, 0.08);
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
             color: var(--text);
-            background:
-                    linear-gradient(180deg, #eef4f5 0, rgba(238, 244, 245, 0) 260px),
-                    var(--bg);
-        }
-
-        header {
-            background: rgba(255, 255, 255, 0.92);
-            border-bottom: 1px solid var(--line);
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
-
-        .header-inner,
-        main {
-            width: min(1500px, calc(100% - 32px));
-            margin: 0 auto;
-        }
-
-        .header-inner {
-            min-height: 74px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 21px;
-            line-height: 1.2;
-        }
-
-        .subtitle {
-            margin: 5px 0 0;
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        .status {
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            background: var(--panel-soft);
-            color: var(--primary-dark);
-            font-size: 12px;
-            font-weight: 700;
-            padding: 7px 10px;
-            white-space: nowrap;
-        }
-
-        main {
-            padding: 20px 0 28px;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(460px, 600px);
-            gap: 16px;
-        }
-
-        .panel {
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .panel-header {
-            min-height: 60px;
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--line);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .panel-title {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .panel-kicker {
-            margin: 4px 0 0;
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        .panel-body {
-            padding: 18px;
-            display: grid;
-            gap: 16px;
-        }
-
-        .runner {
-            min-height: calc(100vh - 118px);
-            display: grid;
-            grid-template-rows: auto 1fr;
-        }
-
-        .runner-body {
-            grid-template-rows: auto minmax(300px, 42vh) auto minmax(230px, 1fr);
-        }
-
-        .config-body {
-            max-height: calc(100vh - 118px);
-            overflow: auto;
-            padding-bottom: 14px;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 96px minmax(0, 1fr);
-            gap: 12px;
-            align-items: center;
-        }
-
-        .two-cols {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .field {
-            display: grid;
-            gap: 7px;
-        }
-
-        .section-panel {
-            display: grid;
-            gap: 14px;
-        }
-
-        label {
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: var(--control);
-            color: var(--text);
+            background: var(--bg);
             font: 14px/1.55 "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-            outline: none;
         }
 
-        input,
-        select {
-            min-height: 38px;
-            padding: 0 11px;
-        }
-
-        textarea {
-            min-height: 96px;
-            padding: 12px;
-            resize: vertical;
-        }
-
-        textarea.mono {
-            font-family: Consolas, "Microsoft YaHei", monospace;
-            line-height: 1.6;
-        }
-
-        textarea.tall {
-            min-height: 170px;
-        }
-
-        #runInput {
-            font-size: 15px;
-            background: #fff;
-        }
-
-        textarea.prompt-preview {
-            min-height: 260px;
-            background: var(--mono-bg);
-            border-color: #2b3648;
-            color: var(--mono-text);
-            font-size: 13px;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.13);
-            background: #fff;
-        }
-
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
+        button, input, select, textarea { font: inherit; }
 
         button {
             min-height: 38px;
-            border-radius: 8px;
             border: 1px solid var(--line);
+            border-radius: 8px;
             background: #fff;
             color: var(--text);
             cursor: pointer;
             padding: 0 14px;
-            font: inherit;
             font-weight: 700;
         }
 
-        button:hover {
-            border-color: var(--line-strong);
-            background: var(--panel-soft);
+        button:hover { border-color: var(--line-strong); background: var(--soft); }
+        button.primary { border-color: var(--primary); background: var(--primary); color: #fff; }
+        button.primary:hover { background: var(--primary-dark); }
+        button.danger { color: var(--danger); border-color: #efc6bf; }
+        button:disabled { opacity: 0.62; cursor: wait; }
+
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
         }
 
-        button.primary {
+        input, select { min-height: 38px; padding: 0 11px; }
+        textarea { min-height: 110px; padding: 12px; resize: vertical; }
+        textarea.mono { font-family: Consolas, "Microsoft YaHei", monospace; line-height: 1.6; }
+        textarea.tall { min-height: 190px; }
+        textarea.prompt-preview { min-height: 360px; color: var(--mono-text); border-color: #2f3b4f; background: var(--mono-bg); font-size: 13px; }
+        textarea[readonly], input[readonly] { background: var(--soft); color: #475467; }
+
+        input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
-            background: var(--primary);
-            color: #fff;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
         }
 
-        button.primary:hover {
-            background: var(--primary-dark);
-        }
+        label { color: var(--muted); font-size: 12px; font-weight: 700; }
 
-        button.danger {
-            color: var(--danger);
-            border-color: #efc6bf;
-        }
-
-        button:disabled {
-            opacity: 0.62;
-            cursor: wait;
-        }
-
-        .result {
-            min-height: 220px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
+        .app-shell { min-height: 100vh; display: grid; grid-template-columns: 270px minmax(0, 1fr); }
+        .sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 18px;
+            padding: 22px 16px;
+            border-right: 1px solid var(--line);
             background: #fff;
-            padding: 14px;
-            overflow: auto;
-            white-space: pre-wrap;
-            line-height: 1.7;
         }
 
-        .result-shell {
+        .brand { display: grid; gap: 5px; padding: 2px 6px 14px; border-bottom: 1px solid var(--line); }
+        .brand-title { margin: 0; font-size: 20px; line-height: 1.25; }
+        .brand-subtitle { margin: 0; color: var(--muted); font-size: 12px; }
+        .menu { display: grid; align-content: start; gap: 18px; overflow: auto; padding-right: 2px; }
+        .menu-group { display: grid; gap: 7px; }
+        .menu-title { padding: 0 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
+
+        .nav-button {
+            width: 100%;
+            min-height: 42px;
             display: grid;
-            gap: 8px;
-        }
-
-        .divider {
-            height: 1px;
-            background: var(--line);
-            margin: 4px 0;
-        }
-
-        .section-title {
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .tabs {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            padding: 4px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: var(--panel-soft);
-        }
-
-        .tab-button {
-            border: 0;
-            background: transparent;
-            min-height: 34px;
-            padding: 0 10px;
-            color: var(--muted);
-        }
-
-        .tab-button.active {
-            background: #fff;
-            color: var(--primary-dark);
-            box-shadow: 0 1px 3px rgba(18, 28, 45, 0.08);
-        }
-
-        .tab-panel {
-            display: none;
-        }
-
-        .tab-panel.active {
-            display: grid;
-            gap: 14px;
-        }
-
-        .example-bar {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto auto;
-            gap: 8px;
+            grid-template-columns: 24px minmax(0, 1fr);
+            gap: 9px;
             align-items: center;
+            border-color: transparent;
+            background: transparent;
+            text-align: left;
+            font-weight: 700;
         }
 
-        .prompt-preview-grid {
-            display: grid;
-            gap: 10px;
-        }
-
-        .note {
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.55;
-        }
-
-        .message {
-            min-height: 20px;
-            color: var(--muted);
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 7px;
+            color: var(--primary-dark);
+            background: #eef2f5;
             font-size: 13px;
-            text-align: right;
         }
 
-        .message.ok {
-            color: var(--ok);
+        .nav-button.active { color: var(--primary-dark); border-color: var(--primary-soft); background: var(--primary-soft); }
+        .sidebar-foot { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); color: var(--muted); font-size: 12px; }
+        .endpoint { color: var(--primary-dark); font-family: Consolas, monospace; font-weight: 700; }
+
+        .workspace { min-width: 0; display: grid; grid-template-rows: auto 1fr; }
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            min-height: 74px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+            gap: 18px;
+            align-items: center;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
         }
 
-        .message.error,
-        .error {
-            color: var(--accent);
+        .page-title { margin: 0; font-size: 22px; line-height: 1.25; }
+        .page-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+        .scenario-picker { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px; align-items: center; }
+        .content { min-width: 0; padding: 22px 24px 32px; }
+        .view { display: none; }
+        .view.active { display: grid; gap: 16px; }
+
+        .panel { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+        .panel-header { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+        .panel-title { margin: 0; font-size: 16px; }
+        .panel-kicker { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+        .panel-body { display: grid; gap: 16px; padding: 18px; }
+        .overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+
+        .feature-tile {
+            min-height: 126px;
+            display: grid;
+            align-content: space-between;
+            gap: 12px;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            text-align: left;
         }
 
-        @media (max-width: 1060px) {
-            main {
-                grid-template-columns: 1fr;
-            }
+        .feature-tile:hover { border-color: var(--primary); background: #fbfefe; }
+        .tile-icon { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--primary-soft); color: var(--primary-dark); font-weight: 800; }
+        .tile-title { margin: 0; font-size: 15px; }
+        .tile-text { margin: 5px 0 0; color: var(--muted); font-size: 12px; font-weight: 400; }
 
-            .config-body {
-                max-height: none;
-            }
+        .form-grid { display: grid; gap: 16px; }
+        .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .field { display: grid; gap: 7px; }
+        .run-grid, .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .result { min-height: 340px; padding: 14px; overflow: auto; white-space: pre-wrap; line-height: 1.7; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .message { min-height: 20px; color: var(--muted); font-size: 13px; text-align: right; }
+        .message.ok { color: var(--ok); }
+        .message.error, .error { color: var(--danger); }
+        .example-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+        .sticky-actions { position: sticky; bottom: 0; display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--line); background: rgba(255, 255, 255, 0.96); }
+        .empty-state { min-height: 180px; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 8px; background: var(--soft); text-align: center; }
+        .readonly-badge { border: 1px solid var(--line); border-radius: 999px; background: var(--soft); color: var(--primary-dark); font-size: 12px; font-weight: 800; padding: 6px 10px; white-space: nowrap; }
+
+        @media (max-width: 1180px) {
+            .overview-grid, .run-grid, .preview-grid { grid-template-columns: 1fr; }
         }
 
-        @media (max-width: 620px) {
-            .header-inner {
-                align-items: flex-start;
-                flex-direction: column;
-                padding: 14px 0;
-            }
+        @media (max-width: 860px) {
+            .app-shell { grid-template-columns: 1fr; }
+            .sidebar { position: static; height: auto; grid-template-rows: auto auto; }
+            .sidebar-foot { display: none; }
+            .menu { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; }
+            .topbar { position: static; grid-template-columns: 1fr; }
+        }
 
-            .row,
-            .two-cols,
-            .example-bar,
-            .tabs {
-                grid-template-columns: 1fr;
-            }
-
-            .runner {
-                min-height: 720px;
-            }
-
-            .message {
-                text-align: left;
-            }
+        @media (max-width: 640px) {
+            .content, .topbar { padding-left: 16px; padding-right: 16px; }
+            .menu, .two-cols, .example-bar, .scenario-picker, .overview-grid { grid-template-columns: 1fr; }
+            .sticky-actions { position: static; display: grid; }
+            .message { text-align: left; }
         }
     </style>
 </head>
 <body>
-<header>
-    <div class="header-inner">
-        <div>
-            <h1>Few-shot 场景平台</h1>
-            <p class="subtitle">邮件识别、场景配置和提示词预览</p>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <h1 class="brand-title">Few-shot 提示词平台</h1>
+            <p class="brand-subtitle">研发维护主提示词和输出结构，业务维护 few-shot 示例</p>
         </div>
-        <div class="status">POST /few-shot/run</div>
-    </div>
-</header>
 
-<main>
-    <section class="panel runner">
-        <div class="panel-header">
-            <div>
-                <h2 class="panel-title">运行调试</h2>
-                <p class="panel-kicker">输入邮件正文，按当前场景配置识别。</p>
+        <nav class="menu" aria-label="功能菜单">
+            <div class="menu-group">
+                <div class="menu-title">工作台</div>
+                <button class="nav-button active" type="button" data-view-target="overview"><span class="nav-icon">概</span><span>功能总览</span></button>
             </div>
-            <div class="message" id="runMessage"></div>
-        </div>
-        <div class="panel-body runner-body">
-            <div class="row">
-                <label for="scenarioSelect">场景</label>
-                <select id="scenarioSelect"></select>
+            <div class="menu-group">
+                <div class="menu-title">运行中心</div>
+                <button class="nav-button" type="button" data-view-target="run"><span class="nav-icon">行</span><span>运行调试</span></button>
             </div>
-            <textarea class="mono" id="runInput" spellcheck="false"></textarea>
-            <div class="actions">
-                <button class="primary" id="processButton" type="button">运行场景</button>
-                <button id="sampleButton" type="button">填入当前示例</button>
-                <button id="clearButton" type="button">清空</button>
+            <div class="menu-group">
+                <div class="menu-title">提示词分层</div>
+                <button class="nav-button" type="button" data-view-target="mainPrompt"><span class="nav-icon">主</span><span>主提示词</span></button>
+                <button class="nav-button" type="button" data-view-target="outputSchema"><span class="nav-icon">构</span><span>输出结构</span></button>
+                <button class="nav-button" type="button" data-view-target="examples"><span class="nav-icon">例</span><span>Few-shot 示例</span></button>
+                <button class="nav-button" type="button" data-view-target="prompt"><span class="nav-icon">预</span><span>最终 Prompt</span></button>
             </div>
-            <div class="result-shell">
-                <h3 class="section-title">识别结果</h3>
-                <div class="result" id="result">处理结果会显示在这里。</div>
+            <div class="menu-group">
+                <div class="menu-title">场景</div>
+                <button class="nav-button" type="button" data-view-target="scenario"><span class="nav-icon">绑</span><span>场景绑定</span></button>
             </div>
-        </div>
-    </section>
+        </nav>
 
-    <aside class="panel">
-        <div class="panel-header">
-            <div>
-                <h2 class="panel-title">场景编辑</h2>
-                <p class="panel-kicker">维护业务指令、输出契约和 few-shot 示例。</p>
-            </div>
-            <button id="newScenarioButton" type="button">新建场景</button>
-        </div>
-        <div class="panel-body config-body">
-            <div class="tabs" role="tablist" aria-label="场景配置">
-                <button class="tab-button active" type="button" data-config-tab="config">配置</button>
-                <button class="tab-button" type="button" data-config-tab="prompt">提示词</button>
-                <button class="tab-button" type="button" data-config-tab="examples">示例</button>
-            </div>
-
-            <section class="tab-panel active" data-config-panel="config">
-                <div class="two-cols">
-                    <div class="field">
-                        <label for="scenarioCode">编码</label>
-                        <input id="scenarioCode" autocomplete="off">
-                    </div>
-                    <div class="field">
-                        <label for="scenarioName">名称</label>
-                        <input id="scenarioName" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label for="inputLabel">输入标签</label>
-                    <input id="inputLabel" autocomplete="off">
-                </div>
-
-                <div class="field">
-                    <label for="description">说明</label>
-                    <textarea id="description"></textarea>
-                </div>
-
-                <div class="field">
-                    <label for="systemInstruction">业务指令</label>
-                    <textarea class="tall" id="systemInstruction"></textarea>
-                </div>
-
-                <div class="field">
-                    <label for="outputContract">输出契约</label>
-                    <textarea class="tall mono" id="outputContract"></textarea>
-                </div>
-            </section>
-
-            <section class="tab-panel" data-config-panel="prompt">
-                <div class="field">
-                    <label for="systemPromptPreview">System Prompt</label>
-                    <textarea class="mono prompt-preview" id="systemPromptPreview" readonly></textarea>
-                </div>
-                <div class="field">
-                    <label for="userPromptPreview">User Prompt</label>
-                    <textarea class="mono prompt-preview" id="userPromptPreview" readonly></textarea>
-                </div>
-            </section>
-
-            <section class="tab-panel" data-config-panel="examples">
-                <div class="example-bar">
-                    <select id="exampleSelect"></select>
-                    <button id="addExampleButton" type="button">新增示例</button>
-                    <button class="danger" id="deleteExampleButton" type="button">删除示例</button>
-                </div>
-
-                <div class="two-cols">
-                    <div class="field">
-                        <label for="exampleId">示例 ID</label>
-                        <input id="exampleId" autocomplete="off">
-                    </div>
-                    <div class="field">
-                        <label for="exampleTitle">标题</label>
-                        <input id="exampleTitle" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label for="exampleTags">标签</label>
-                    <input id="exampleTags" autocomplete="off" placeholder="多个标签用逗号分隔">
-                </div>
-
-                <div class="field">
-                    <label for="exampleInput">示例输入</label>
-                    <textarea class="tall mono" id="exampleInput"></textarea>
-                </div>
-
-                <div class="field">
-                    <label for="expectedOutput">期望输出</label>
-                    <textarea class="tall mono" id="expectedOutput"></textarea>
-                </div>
-            </section>
-
-            <div class="actions">
-                <button class="primary" id="saveScenarioButton" type="button">保存到 MySQL</button>
-                <button id="reloadButton" type="button">重新加载</button>
-            </div>
-            <div class="message" id="editMessage"></div>
-            <div class="note">保存会写入当前场景及所有示例。删除示例后点击保存，MySQL 中对应示例也会被移除。</div>
+        <div class="sidebar-foot">
+            <span>模型运行接口</span>
+            <span class="endpoint">POST /few-shot/run</span>
         </div>
     </aside>
-</main>
+
+    <div class="workspace">
+        <header class="topbar">
+            <div>
+                <h2 class="page-title" id="pageTitle">功能总览</h2>
+                <p class="page-subtitle" id="pageSubtitle">主提示词、输出结构和 few-shot 示例已经分层管理。</p>
+            </div>
+            <div class="scenario-picker">
+                <label for="scenarioSelect">当前场景</label>
+                <select id="scenarioSelect"></select>
+            </div>
+        </header>
+
+        <main class="content">
+            <section class="view active" data-view="overview">
+                <div class="overview-grid">
+                    <button class="feature-tile" type="button" data-view-target="mainPrompt">
+                        <span class="tile-icon">主</span>
+                        <span><strong class="tile-title">主提示词</strong><span class="tile-text">来自 llm_prompt，由研发维护，业务侧只读。</span></span>
+                    </button>
+                    <button class="feature-tile" type="button" data-view-target="examples">
+                        <span class="tile-icon">例</span>
+                        <span><strong class="tile-title">Few-shot 示例</strong><span class="tile-text">业务维护输入和期望输出样例。</span></span>
+                    </button>
+                    <button class="feature-tile" type="button" data-view-target="outputSchema">
+                        <span class="tile-icon">构</span>
+                        <span><strong class="tile-title">输出结构</strong><span class="tile-text">来自 llm_output_schema，业务可读。</span></span>
+                    </button>
+                    <button class="feature-tile" type="button" data-view-target="prompt">
+                        <span class="tile-icon">预</span>
+                        <span><strong class="tile-title">最终 Prompt</strong><span class="tile-text">查看研发模板加业务示例后的真实内容。</span></span>
+                    </button>
+                    <button class="feature-tile" type="button" data-view-target="run">
+                        <span class="tile-icon">行</span>
+                        <span><strong class="tile-title">运行调试</strong><span class="tile-text">输入邮件正文，查看模型返回结果。</span></span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="view" data-view="run">
+                <div class="run-grid">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">运行输入</h3>
+                                <p class="panel-kicker" id="runInputLabelText">邮件正文</p>
+                            </div>
+                            <div class="message" id="runMessage"></div>
+                        </div>
+                        <div class="panel-body">
+                            <textarea class="mono tall" id="runInput" spellcheck="false"></textarea>
+                            <div class="actions">
+                                <button class="primary" id="processButton" type="button">运行场景</button>
+                                <button id="sampleButton" type="button">填入当前示例</button>
+                                <button id="clearButton" type="button">清空</button>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">识别结果</h3>
+                                <p class="panel-kicker">模型返回内容</p>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="result" id="result">处理结果会显示在这里。</div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="view" data-view="mainPrompt">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">主提示词</h3>
+                            <p class="panel-kicker">读取 llm_prompt 中启用且优先级最高的模板</p>
+                        </div>
+                        <span class="readonly-badge">研发维护</span>
+                    </div>
+                    <div class="panel-body form-grid">
+                        <div class="two-cols">
+                            <div class="field">
+                                <label for="mainPromptCode">prompt_code</label>
+                                <input id="mainPromptCode" readonly>
+                            </div>
+                            <div class="field">
+                                <label for="mainPromptMeta">类型 / 优先级</label>
+                                <input id="mainPromptMeta" readonly>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="mainSystemPrompt">system_prompt</label>
+                            <textarea class="tall mono" id="mainSystemPrompt" readonly></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="mainUserPrompt">user_prompt</label>
+                            <textarea class="tall mono" id="mainUserPrompt" readonly></textarea>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section class="view" data-view="outputSchema">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">输出结构配置</h3>
+                            <p class="panel-kicker">读取 llm_output_schema 中启用的目标 JSON 和字段说明</p>
+                        </div>
+                        <span class="readonly-badge">研发/产品维护</span>
+                    </div>
+                    <div class="panel-body form-grid">
+                        <div class="two-cols">
+                            <div class="field">
+                                <label for="schemaCodeView">schema_code</label>
+                                <input id="schemaCodeView" readonly>
+                            </div>
+                            <div class="field">
+                                <label for="schemaNameView">结构名称</label>
+                                <input id="schemaNameView" readonly>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="schemaJsonView">目标 JSON 结构</label>
+                            <textarea class="tall mono" id="schemaJsonView" readonly></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="fieldDescriptionView">字段业务说明</label>
+                            <textarea class="tall mono" id="fieldDescriptionView" readonly></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="emptyValueRuleView">空值规则</label>
+                            <textarea class="mono" id="emptyValueRuleView" readonly></textarea>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section class="view" data-view="examples">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Few-shot 示例</h3>
+                            <p class="panel-kicker">业务只维护示例，不维护主提示词；期望输出按生产 JSON 结构填写</p>
+                        </div>
+                    </div>
+                    <div class="panel-body form-grid">
+                        <div class="example-bar">
+                            <select id="exampleSelect"></select>
+                            <button id="addExampleButton" type="button">新增示例</button>
+                            <button class="danger" id="deleteExampleButton" type="button">删除示例</button>
+                        </div>
+                        <div id="exampleForm" class="form-grid">
+                            <div class="two-cols">
+                                <div class="field">
+                                    <label for="exampleId">示例 ID</label>
+                                    <input id="exampleId" autocomplete="off">
+                                </div>
+                                <div class="field">
+                                    <label for="exampleTitle">标题</label>
+                                    <input id="exampleTitle" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label for="exampleTags">标签</label>
+                                <input id="exampleTags" autocomplete="off" placeholder="多个标签用逗号分隔">
+                            </div>
+                            <div class="field">
+                                <label for="exampleInput">示例输入</label>
+                                <textarea class="tall mono" id="exampleInput"></textarea>
+                            </div>
+                            <div class="field">
+                                <label for="expectedOutput">期望输出 JSON</label>
+                                <textarea class="tall mono" id="expectedOutput"></textarea>
+                            </div>
+                        </div>
+                        <div id="exampleEmpty" class="empty-state">当前场景还没有示例。</div>
+                    </div>
+                    <div class="sticky-actions">
+                        <div class="message" id="editMessage"></div>
+                        <div class="actions">
+                            <button class="primary" id="saveScenarioButton" type="button">保存业务示例</button>
+                            <button id="reloadButton" type="button">重新加载</button>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section class="view" data-view="prompt">
+                <div class="preview-grid">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">最终 System Prompt</h3>
+                            <p class="panel-kicker">研发 system_prompt + 输出结构 + 业务 few-shot 示例</p>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <textarea class="mono prompt-preview" id="systemPromptPreview" readonly></textarea>
+                        </div>
+                    </section>
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">最终 User Prompt</h3>
+                                <p class="panel-kicker">研发 user_prompt 占位符替换后的内容</p>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <textarea class="mono prompt-preview" id="userPromptPreview" readonly></textarea>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="view" data-view="scenario">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">场景绑定</h3>
+                            <p class="panel-kicker">场景元信息、主提示词和输出结构绑定关系</p>
+                        </div>
+                        <button id="newScenarioButton" type="button">新建场景</button>
+                    </div>
+                    <div class="panel-body form-grid">
+                        <div class="two-cols">
+                            <div class="field">
+                                <label for="scenarioCode">场景编码</label>
+                                <input id="scenarioCode" autocomplete="off">
+                            </div>
+                            <div class="field">
+                                <label for="scenarioName">场景名称</label>
+                                <input id="scenarioName" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="two-cols">
+                            <div class="field">
+                                <label for="inputLabel">输入标签</label>
+                                <input id="inputLabel" autocomplete="off">
+                            </div>
+                            <div class="field">
+                                <label for="promptCode">绑定 prompt_code</label>
+                                <input id="promptCode" readonly>
+                            </div>
+                            <div class="field">
+                                <label for="schemaCode">绑定 schema_code</label>
+                                <input id="schemaCode" readonly>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="description">场景说明</label>
+                            <textarea id="description"></textarea>
+                        </div>
+                    </div>
+                    <div class="sticky-actions">
+                        <div></div>
+                        <div class="actions">
+                            <button class="primary" id="saveScenarioMetaButton" type="button">保存场景配置</button>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+</div>
 
 <script>
+    const DEFAULT_PROMPT_CODE = "3131132944@qq.com";
+    const DEFAULT_SCHEMA_CODE = "flight_change_extract";
     let scenarios = [];
     let currentScenario = null;
     let currentExampleIndex = 0;
 
+    const viewMeta = {
+        overview: ["功能总览", "主提示词、输出结构和 few-shot 示例已经分层管理。"],
+        run: ["运行调试", "选择场景，输入邮件正文，查看识别结果。"],
+        mainPrompt: ["主提示词", "研发维护 llm_prompt，业务侧只读。"],
+        outputSchema: ["输出结构", "研发/产品维护 llm_output_schema，业务侧只读。"],
+        examples: ["Few-shot 示例", "业务维护当前场景的输入和期望输出样例。"],
+        prompt: ["最终 Prompt", "查看真实发送给模型的两段 Prompt。"],
+        scenario: ["场景绑定", "维护场景元信息，绑定关系只读展示。"]
+    };
+
+    const pageTitle = document.querySelector("#pageTitle");
+    const pageSubtitle = document.querySelector("#pageSubtitle");
+    const navButtons = [...document.querySelectorAll("[data-view-target]")];
+    const views = [...document.querySelectorAll("[data-view]")];
+
     const scenarioSelect = document.querySelector("#scenarioSelect");
     const runInput = document.querySelector("#runInput");
+    const runInputLabelText = document.querySelector("#runInputLabelText");
     const result = document.querySelector("#result");
     const processButton = document.querySelector("#processButton");
     const sampleButton = document.querySelector("#sampleButton");
     const clearButton = document.querySelector("#clearButton");
     const runMessage = document.querySelector("#runMessage");
 
-    const newScenarioButton = document.querySelector("#newScenarioButton");
-    const saveScenarioButton = document.querySelector("#saveScenarioButton");
-    const reloadButton = document.querySelector("#reloadButton");
-    const editMessage = document.querySelector("#editMessage");
-
     const scenarioCode = document.querySelector("#scenarioCode");
     const scenarioName = document.querySelector("#scenarioName");
     const inputLabel = document.querySelector("#inputLabel");
+    const promptCode = document.querySelector("#promptCode");
+    const schemaCode = document.querySelector("#schemaCode");
     const description = document.querySelector("#description");
-    const systemInstruction = document.querySelector("#systemInstruction");
-    const outputContract = document.querySelector("#outputContract");
+    const newScenarioButton = document.querySelector("#newScenarioButton");
+    const saveScenarioButton = document.querySelector("#saveScenarioButton");
+    const saveScenarioMetaButton = document.querySelector("#saveScenarioMetaButton");
+    const reloadButton = document.querySelector("#reloadButton");
+    const editMessage = document.querySelector("#editMessage");
+
+    const mainPromptCode = document.querySelector("#mainPromptCode");
+    const mainPromptMeta = document.querySelector("#mainPromptMeta");
+    const mainSystemPrompt = document.querySelector("#mainSystemPrompt");
+    const mainUserPrompt = document.querySelector("#mainUserPrompt");
+    const schemaCodeView = document.querySelector("#schemaCodeView");
+    const schemaNameView = document.querySelector("#schemaNameView");
+    const schemaJsonView = document.querySelector("#schemaJsonView");
+    const fieldDescriptionView = document.querySelector("#fieldDescriptionView");
+    const emptyValueRuleView = document.querySelector("#emptyValueRuleView");
     const systemPromptPreview = document.querySelector("#systemPromptPreview");
     const userPromptPreview = document.querySelector("#userPromptPreview");
 
     const exampleSelect = document.querySelector("#exampleSelect");
     const addExampleButton = document.querySelector("#addExampleButton");
     const deleteExampleButton = document.querySelector("#deleteExampleButton");
+    const exampleForm = document.querySelector("#exampleForm");
+    const exampleEmpty = document.querySelector("#exampleEmpty");
     const exampleId = document.querySelector("#exampleId");
     const exampleTitle = document.querySelector("#exampleTitle");
     const exampleTags = document.querySelector("#exampleTags");
     const exampleInput = document.querySelector("#exampleInput");
     const expectedOutput = document.querySelector("#expectedOutput");
-    const tabButtons = [...document.querySelectorAll("[data-config-tab]")];
-    const tabPanels = [...document.querySelectorAll("[data-config-panel]")];
 
     loadScenarios();
 
-    tabButtons.forEach((button) => {
-        button.addEventListener("click", () => setConfigTab(button.dataset.configTab));
-    });
+    navButtons.forEach((button) => button.addEventListener("click", () => setView(button.dataset.viewTarget)));
 
     scenarioSelect.addEventListener("change", () => {
         persistFormToCurrent();
@@ -591,40 +587,18 @@
     });
 
     exampleSelect.addEventListener("change", () => {
-        const nextExampleIndex = Number(exampleSelect.value || 0);
         persistExampleForm();
-        currentExampleIndex = nextExampleIndex;
+        currentExampleIndex = Number(exampleSelect.value || 0);
         fillExampleForm();
     });
 
-    [
-        scenarioCode,
-        scenarioName,
-        inputLabel,
-        description,
-        systemInstruction,
-        outputContract,
-        exampleId,
-        exampleTitle,
-        exampleTags,
-        exampleInput,
-        expectedOutput
-    ].forEach((element) => element.addEventListener("input", () => setEditMessage("有未保存修改。")));
+    [scenarioCode, scenarioName, inputLabel, description, exampleId, exampleTitle, exampleTags, exampleInput, expectedOutput]
+        .forEach((element) => {
+            element.addEventListener("input", () => setEditMessage("有未保存修改。"));
+            element.addEventListener("input", updatePromptPreview);
+        });
 
-    [
-        scenarioCode,
-        scenarioName,
-        inputLabel,
-        description,
-        systemInstruction,
-        outputContract,
-        exampleId,
-        exampleTitle,
-        exampleTags,
-        exampleInput,
-        expectedOutput,
-        runInput
-    ].forEach((element) => element.addEventListener("input", updatePromptPreview));
+    runInput.addEventListener("input", updatePromptPreview);
 
     sampleButton.addEventListener("click", () => {
         persistExampleForm();
@@ -650,22 +624,17 @@
         processButton.disabled = true;
         processButton.textContent = "运行中";
         runMessage.textContent = "";
-        result.textContent = "AI 正在按场景指令和 few-shot 示例处理...";
+        result.textContent = "AI 正在按主提示词和业务 few-shot 示例处理...";
 
         try {
             const response = await fetch("/few-shot/run", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    scenarioCode: scenarioSelect.value,
-                    input: content
-                })
+                body: JSON.stringify({scenarioCode: scenarioSelect.value, input: content})
             });
-
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-
             const data = await response.json();
             result.textContent = data.result || "没有返回处理结果。";
             runMessage.textContent = "运行完成";
@@ -684,18 +653,21 @@
             code,
             name: "新场景",
             description: "",
-            inputLabel: "输入内容",
+            inputLabel: "邮件正文",
             systemInstruction: "",
             outputContract: "",
             toolProfile: "none",
+            promptCode: DEFAULT_PROMPT_CODE,
+            mainPrompt: null,
+            schemaCode: DEFAULT_SCHEMA_CODE,
+            outputSchema: null,
             examples: []
         };
         scenarios.push(currentScenario);
         currentExampleIndex = 0;
         renderScenarioOptions(code);
         fillForm();
-        runInput.value = "";
-        updatePromptPreview();
+        setView("scenario");
         setEditMessage("新场景已创建，编辑后保存。");
     });
 
@@ -724,18 +696,24 @@
         currentExampleIndex = Math.max(0, currentExampleIndex - 1);
         renderExampleOptions();
         fillExampleForm();
+        updatePromptPreview();
         setEditMessage("示例已删除，保存后生效。");
     });
 
-    saveScenarioButton.addEventListener("click", async () => {
+    saveScenarioButton.addEventListener("click", saveCurrentScenario);
+    saveScenarioMetaButton.addEventListener("click", saveCurrentScenario);
+
+    async function saveCurrentScenario() {
         persistFormToCurrent();
         if (!currentScenario.code || !currentScenario.name) {
-            setEditMessage("编码和名称不能为空。", true);
+            setEditMessage("场景编码和名称不能为空。", true);
             return;
         }
 
         saveScenarioButton.disabled = true;
+        saveScenarioMetaButton.disabled = true;
         saveScenarioButton.textContent = "保存中";
+        saveScenarioMetaButton.textContent = "保存中";
         try {
             const response = await fetch("/few-shot/scenarios", {
                 method: "POST",
@@ -745,7 +723,6 @@
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-
             const saved = await response.json();
             const index = scenarios.findIndex((scenario) => scenario.code === saved.code);
             if (index >= 0) {
@@ -756,14 +733,16 @@
             currentScenario = cloneScenario(saved);
             renderScenarioOptions(saved.code);
             fillForm();
-            setEditMessage("已保存到 MySQL。", false, true);
+            setEditMessage("业务示例已保存。", false, true);
         } catch (error) {
             setEditMessage(`保存失败：${error.message}`, true);
         } finally {
             saveScenarioButton.disabled = false;
-            saveScenarioButton.textContent = "保存到 MySQL";
+            saveScenarioMetaButton.disabled = false;
+            saveScenarioButton.textContent = "保存业务示例";
+            saveScenarioMetaButton.textContent = "保存场景配置";
         }
-    });
+    }
 
     reloadButton.addEventListener("click", loadScenarios);
 
@@ -784,10 +763,20 @@
             setEditMessage("配置已加载。", false, true);
         } catch (error) {
             scenarioSelect.innerHTML = "<option>加载失败</option>";
+            setFormDisabled(true);
             setEditMessage(`场景加载失败：${error.message}`, true);
         } finally {
-            processButton.disabled = false;
+            processButton.disabled = !currentScenario;
         }
+    }
+
+    function setView(viewName) {
+        const [title, subtitle] = viewMeta[viewName] || viewMeta.overview;
+        pageTitle.textContent = title;
+        pageSubtitle.textContent = subtitle;
+        views.forEach((view) => view.classList.toggle("active", view.dataset.view === viewName));
+        navButtons.forEach((button) => button.classList.toggle("active", button.dataset.viewTarget === viewName));
+        updatePromptPreview();
     }
 
     function renderScenarioOptions(selectedCode) {
@@ -807,13 +796,35 @@
         setFormDisabled(false);
         scenarioCode.value = currentScenario.code || "";
         scenarioName.value = currentScenario.name || "";
-        inputLabel.value = currentScenario.inputLabel || "输入内容";
+        inputLabel.value = currentScenario.inputLabel || "邮件正文";
+        promptCode.value = currentScenario.promptCode || "";
+        schemaCode.value = currentScenario.schemaCode || "";
         description.value = currentScenario.description || "";
-        systemInstruction.value = currentScenario.systemInstruction || "";
-        outputContract.value = currentScenario.outputContract || "";
+        runInputLabelText.textContent = currentScenario.inputLabel || "邮件正文";
+        fillMainPrompt();
+        fillOutputSchema();
         renderExampleOptions();
         fillExampleForm();
         updatePromptPreview();
+    }
+
+    function fillMainPrompt() {
+        const mainPrompt = currentScenario?.mainPrompt;
+        mainPromptCode.value = mainPrompt?.promptCode || currentScenario?.promptCode || "";
+        mainPromptMeta.value = mainPrompt
+            ? `code_type=${mainPrompt.codeType || ""} / template_type=${mainPrompt.templateType || ""} / priority=${mainPrompt.priority} / mail_type=${mainPrompt.mailType}`
+            : "未找到启用主提示词，运行时会使用兼容兜底模板";
+        mainSystemPrompt.value = mainPrompt?.systemPrompt || "";
+        mainUserPrompt.value = mainPrompt?.userPrompt || "";
+    }
+
+    function fillOutputSchema() {
+        const outputSchema = currentScenario?.outputSchema;
+        schemaCodeView.value = outputSchema?.schemaCode || currentScenario?.schemaCode || "";
+        schemaNameView.value = outputSchema?.schemaName || "未找到启用输出结构，运行时会使用兼容兜底输出契约";
+        schemaJsonView.value = outputSchema?.schemaJson || currentScenario?.outputContract || "";
+        fieldDescriptionView.value = outputSchema?.fieldDescriptionJson || "";
+        emptyValueRuleView.value = outputSchema?.emptyValueRule || "";
     }
 
     function fillExampleForm() {
@@ -822,6 +833,8 @@
         [exampleId, exampleTitle, exampleTags, exampleInput, expectedOutput, deleteExampleButton].forEach((element) => {
             element.disabled = disabled;
         });
+        exampleForm.style.display = disabled ? "none" : "grid";
+        exampleEmpty.style.display = disabled ? "grid" : "none";
         if (!example) {
             exampleId.value = "";
             exampleTitle.value = "";
@@ -862,11 +875,14 @@
         persistExampleForm();
         currentScenario.code = normalizeCode(scenarioCode.value);
         currentScenario.name = scenarioName.value.trim();
-        currentScenario.inputLabel = inputLabel.value.trim() || "输入内容";
-        currentScenario.toolProfile = "none";
+        currentScenario.inputLabel = inputLabel.value.trim() || "邮件正文";
         currentScenario.description = description.value.trim();
-        currentScenario.systemInstruction = systemInstruction.value.trim();
-        currentScenario.outputContract = outputContract.value.trim();
+        currentScenario.promptCode = promptCode.value.trim() || DEFAULT_PROMPT_CODE;
+        currentScenario.schemaCode = schemaCode.value.trim() || DEFAULT_SCHEMA_CODE;
+        currentScenario.toolProfile = currentScenario.toolProfile || "none";
+        currentScenario.systemInstruction = currentScenario.systemInstruction || "";
+        currentScenario.outputContract = currentScenario.outputContract || "";
+        runInputLabelText.textContent = currentScenario.inputLabel;
     }
 
     function persistExampleForm() {
@@ -878,10 +894,7 @@
         example.title = exampleTitle.value.trim() || example.id;
         example.input = exampleInput.value.trim();
         example.expectedOutput = expectedOutput.value.trim();
-        example.tags = exampleTags.value
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter(Boolean);
+        example.tags = exampleTags.value.split(",").map((tag) => tag.trim()).filter(Boolean);
         renderExampleOptions();
     }
 
@@ -897,10 +910,14 @@
                 code: `new-scenario-${Date.now()}`,
                 name: "新场景",
                 description: "",
-                inputLabel: "输入内容",
+                inputLabel: "邮件正文",
                 systemInstruction: "",
                 outputContract: "",
                 toolProfile: "none",
+                promptCode: DEFAULT_PROMPT_CODE,
+                mainPrompt: null,
+                schemaCode: DEFAULT_SCHEMA_CODE,
+                outputSchema: null,
                 examples: []
             };
         }
@@ -910,35 +927,15 @@
     }
 
     function setFormDisabled(disabled) {
-        [
-            scenarioCode,
-            scenarioName,
-            inputLabel,
-            description,
-            systemInstruction,
-            outputContract,
-            systemPromptPreview,
-            userPromptPreview,
-            exampleSelect,
-            addExampleButton,
-            saveScenarioButton
-        ].forEach((element) => {
-            element.disabled = disabled;
-        });
+        [scenarioCode, scenarioName, inputLabel, description, exampleSelect, addExampleButton, saveScenarioButton, saveScenarioMetaButton, sampleButton, processButton]
+            .forEach((element) => {
+                element.disabled = disabled;
+            });
     }
 
     function setEditMessage(message, isError = false, isOk = false) {
         editMessage.textContent = message;
         editMessage.className = `message${isError ? " error" : ""}${isOk ? " ok" : ""}`;
-    }
-
-    function setConfigTab(tabName) {
-        tabButtons.forEach((button) => {
-            button.classList.toggle("active", button.dataset.configTab === tabName);
-        });
-        tabPanels.forEach((panel) => {
-            panel.classList.toggle("active", panel.dataset.configPanel === tabName);
-        });
     }
 
     function clearMessages() {
@@ -967,40 +964,59 @@
     }
 
     function buildSystemPrompt(scenario) {
-        return `你是一个可复用的 few-shot 任务执行器。你会收到一个业务场景配置、输出契约和若干示例。
-请优先遵守当前业务场景配置，其次参考示例中的表达方式和边界条件。
-不要把示例中的具体姓名、订单号、日期、票号等实体套用到新输入里。
+        const base = scenario.mainPrompt?.systemPrompt || scenario.systemInstruction || "";
+        const outputSchema = renderOutputSchema(scenario.outputSchema, scenario.outputContract);
+        const examples = renderExamples(scenario.examples || []);
+        return [base, outputSchema, examples ? `以下 Few-shot 示例由业务维护，只作为当前场景的补充样例。请学习输入和期望输出之间的映射关系，不要照抄示例中的姓名、订单号、日期、票号、PNR 等实体到新输入。
 
-场景编码：${scenario.code || ""}
-场景名称：${scenario.name || ""}
-场景说明：${scenario.description || ""}
+${examples}` : ""].filter((section) => section && section.trim()).join("\n\n");
+    }
 
-业务指令：
-${scenario.systemInstruction || ""}
+    function renderOutputSchema(outputSchema, fallbackOutputContract) {
+        if (!outputSchema) {
+            return fallbackOutputContract ? `输出结构配置：\n${fallbackOutputContract}` : "";
+        }
+        return [`输出结构配置（由 llm_output_schema 维护）：
+schema_code：${outputSchema.schemaCode || ""}
+schema_name：${outputSchema.schemaName || ""}
 
-输出契约：
-${scenario.outputContract || ""}
-
-Few-shot 示例：
-${renderExamples(scenario.examples || [])}`;
+目标JSON结构：
+${outputSchema.schemaJson || ""}`,
+            outputSchema.fieldDescriptionJson ? `字段业务说明：\n${outputSchema.fieldDescriptionJson}` : "",
+            outputSchema.emptyValueRule ? `空值规则：\n${outputSchema.emptyValueRule}` : ""]
+            .filter((section) => section && section.trim())
+            .join("\n\n");
     }
 
     function buildUserPrompt(scenario, input) {
-        return `请按当前 few-shot 场景配置处理下面输入。
-
-${scenario.inputLabel || "输入内容"}：
+        const template = scenario.mainPrompt?.userPrompt;
+        if (!template) {
+            return `请按当前 few-shot 场景配置处理下面输入。
+${scenario.inputLabel || "邮件正文"}：
 ${input || ""}`;
+        }
+        return template
+            .replaceAll("{current_time}", formatCurrentTime())
+            .replaceAll("{email_content}", input || "")
+            .trim();
     }
 
     function renderExamples(examples) {
         if (!examples.length) {
-            return "无。";
+            return "";
         }
-        return examples.map((example, index) => `示例 ${index + 1}：${example.title || ""}
+        return `业务 Few-shot 示例：
+${examples.map((example, index) => `示例 ${index + 1}：${example.title || ""}
 输入：
 ${example.input || ""}
-期望输出/处理方式：
-${example.expectedOutput || ""}`).join("\n\n");
+期望输出：
+${example.expectedOutput || ""}`).join("\n\n")}`;
+    }
+
+    function formatCurrentTime() {
+        const pad = (value) => String(value).padStart(2, "0");
+        const now = new Date();
+        return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     }
 
     function escapeHtml(value) {

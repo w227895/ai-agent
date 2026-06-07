@@ -1,5 +1,7 @@
 package com.ke.deepseektools.fewshot;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.ai.chat.client.ChatClient;
@@ -7,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FewShotPlatformService {
+
+    private static final DateTimeFormatter PROMPT_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final ChatClient chatClient;
     private final FewShotScenarioRepository scenarioRepository;
@@ -67,10 +71,35 @@ public class FewShotPlatformService {
     }
 
     private String buildSystemPrompt(FewShotScenario scenario) {
+        String baseSystemPrompt = scenario.mainPrompt() == null || isBlank(scenario.mainPrompt().systemPrompt())
+                ? buildLegacySystemPrompt(scenario)
+                : scenario.mainPrompt().systemPrompt().trim();
+        return joinPromptSections(
+                baseSystemPrompt,
+                renderOutputSchema(scenario.outputSchema(), scenario.outputContract()),
+                renderExamples(scenario.examples()));
+    }
+
+    private String buildUserPrompt(FewShotScenario scenario, String input) {
+        String effectiveInput = input == null ? "" : input;
+        LlmPromptTemplate mainPrompt = scenario.mainPrompt();
+        if (mainPrompt == null || isBlank(mainPrompt.userPrompt())) {
+            return """
+                    请按当前场景配置处理下面输入。
+                    %s：
+                    %s
+                    """.formatted(scenario.inputLabel(), effectiveInput).trim();
+        }
+        return mainPrompt.userPrompt()
+                .replace("{current_time}", LocalDateTime.now().format(PROMPT_TIME_FORMATTER))
+                .replace("{email_content}", effectiveInput)
+                .trim();
+    }
+
+    private String buildLegacySystemPrompt(FewShotScenario scenario) {
         return """
-                你是一个可复用的 few-shot 任务执行器。你会收到一个业务场景配置、输出契约和若干示例。
-                请优先遵守当前业务场景配置，其次参考示例中的表达方式和边界条件。
-                不要把示例中的具体姓名、订单号、日期、票号等实体套用到新输入里。
+                你是一个可复用的任务执行器。
+                请严格遵守当前场景配置和输出结构配置，只返回符合要求的结果。
 
                 场景编码：%s
                 场景名称：%s
@@ -78,43 +107,81 @@ public class FewShotPlatformService {
 
                 业务指令：
                 %s
-
-                输出契约：
-                %s
-
-                Few-shot 示例：
-                %s
                 """.formatted(
                 scenario.code(),
                 scenario.name(),
                 scenario.description(),
-                scenario.systemInstruction(),
-                scenario.outputContract(),
-                renderExamples(scenario.examples()));
+                scenario.systemInstruction()).trim();
     }
 
-    private String buildUserPrompt(FewShotScenario scenario, String input) {
-        return """
-                请按当前 few-shot 场景配置处理下面输入。
+    private String renderOutputSchema(LlmOutputSchema outputSchema, String fallbackOutputContract) {
+        if (outputSchema == null) {
+            if (isBlank(fallbackOutputContract)) {
+                return "";
+            }
+            return """
+                    输出结构配置：
+                    %s
+                    """.formatted(fallbackOutputContract).trim();
+        }
 
-                %s：
-                %s
-                """.formatted(scenario.inputLabel(), input == null ? "" : input);
+        return joinPromptSections(
+                """
+                        输出结构配置（由 llm_output_schema 维护）：
+                        schema_code：%s
+                        schema_name：%s
+
+                        目标JSON结构：
+                        %s
+                        """.formatted(
+                        outputSchema.schemaCode(),
+                        outputSchema.schemaName(),
+                        outputSchema.schemaJson()),
+                isBlank(outputSchema.fieldDescriptionJson()) ? "" : """
+                        字段业务说明：
+                        %s
+                        """.formatted(outputSchema.fieldDescriptionJson()),
+                isBlank(outputSchema.emptyValueRule()) ? "" : """
+                        空值规则：
+                        %s
+                        """.formatted(outputSchema.emptyValueRule()));
     }
 
     private String renderExamples(List<FewShotExample> examples) {
         if (examples == null || examples.isEmpty()) {
-            return "无。";
+            return "";
         }
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder("""
+                以下 Few-shot 示例由业务维护，只作为当前场景的补充样例。请学习输入和期望输出之间的映射关系，不要照抄示例中的姓名、订单号、日期、票号、PNR 等实体到新输入。
+
+                业务 Few-shot 示例：
+                """);
         for (int i = 0; i < examples.size(); i++) {
             FewShotExample example = examples.get(i);
             builder.append("示例 ").append(i + 1).append("：").append(example.title()).append('\n')
                     .append("输入：\n").append(example.input()).append('\n')
-                    .append("期望输出/处理方式：\n").append(example.expectedOutput()).append("\n\n");
+                    .append("期望输出：\n").append(example.expectedOutput()).append("\n\n");
         }
         return builder.toString().trim();
+    }
+
+    private String joinPromptSections(String... sections) {
+        StringBuilder builder = new StringBuilder();
+        for (String section : sections) {
+            if (isBlank(section)) {
+                continue;
+            }
+            if (!builder.isEmpty()) {
+                builder.append("\n\n");
+            }
+            builder.append(section.trim());
+        }
+        return builder.toString();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     public record FewShotRunResult(
