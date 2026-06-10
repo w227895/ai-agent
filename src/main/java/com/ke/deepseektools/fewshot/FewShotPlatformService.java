@@ -189,7 +189,13 @@ public class FewShotPlatformService {
     }
 
     public PromptPreview previewPrompt(String scenarioCode, String input) {
-        FewShotScenario scenario = getScenario(scenarioCode);
+        return previewPrompt(getScenario(scenarioCode), input);
+    }
+
+    public PromptPreview previewPrompt(FewShotScenario scenario, String input) {
+        if (scenario == null) {
+            throw new IllegalArgumentException("场景配置不能为空");
+        }
         String effectiveInput = input == null ? "" : input.trim();
         return new PromptPreview(
                 scenario.code(),

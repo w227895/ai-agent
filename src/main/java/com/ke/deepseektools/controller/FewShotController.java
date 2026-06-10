@@ -57,6 +57,11 @@ public class FewShotController {
         return fewShotPlatformService.previewPrompt(code, "");
     }
 
+    @PostMapping("/prompt-preview")
+    public PromptPreview previewPrompt(@RequestBody PromptPreviewRequest request) {
+        return fewShotPlatformService.previewPrompt(request.scenario(), request.input());
+    }
+
     @PostMapping("/scenarios")
     public FewShotScenario saveScenario(@RequestBody FewShotScenario scenario) {
         return fewShotPlatformService.saveScenario(scenario);
@@ -135,6 +140,9 @@ public class FewShotController {
     }
 
     public record FewShotRunRequest(String scenarioCode, String input) {
+    }
+
+    public record PromptPreviewRequest(FewShotScenario scenario, String input) {
     }
 
     public record FailureCaseImportRequest(List<FewShotFailureCase> cases) {
