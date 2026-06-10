@@ -58,12 +58,21 @@ public class FewShotPlatformService {
         return scenarioRepository.savePromptTemplate(promptTemplate);
     }
 
+    public List<LlmPromptTemplate> listPromptTemplatesByScenario(String scenarioCode) {
+        getScenario(scenarioCode);
+        return scenarioRepository.findPromptTemplatesByScenario(scenarioCode);
+    }
+
     public List<LlmOutputSchema> listOutputSchemas() {
         return scenarioRepository.findAllOutputSchemas();
     }
 
     public LlmOutputSchema saveOutputSchema(LlmOutputSchema outputSchema) {
         return scenarioRepository.saveOutputSchema(outputSchema);
+    }
+
+    public List<LlmOutputSchema> listOutputSchemasByPrompt(String promptCode) {
+        return scenarioRepository.findOutputSchemasByPrompt(promptCode);
     }
 
     public FewShotScenario addExample(String scenarioCode, FewShotExample example) {
@@ -166,7 +175,11 @@ public class FewShotPlatformService {
     }
 
     public FewShotRunResult run(String scenarioCode, String input) {
-        FewShotScenario scenario = getScenario(scenarioCode);
+        return run(scenarioCode, input, null, null);
+    }
+
+    public FewShotRunResult run(String scenarioCode, String input, String promptCode, String schemaCode) {
+        FewShotScenario scenario = selectScenarioVariant(getScenario(scenarioCode), promptCode, schemaCode);
         String effectiveInput = input == null || input.isBlank()
                 ? scenario.examples().stream().findFirst().map(FewShotExample::input).orElse("")
                 : input.trim();
@@ -190,6 +203,10 @@ public class FewShotPlatformService {
 
     public PromptPreview previewPrompt(String scenarioCode, String input) {
         return previewPrompt(getScenario(scenarioCode), input);
+    }
+
+    public PromptPreview previewPrompt(String scenarioCode, String input, String promptCode, String schemaCode) {
+        return previewPrompt(selectScenarioVariant(getScenario(scenarioCode), promptCode, schemaCode), input);
     }
 
     public PromptPreview previewPrompt(FewShotScenario scenario, String input) {
@@ -235,6 +252,34 @@ public class FewShotPlatformService {
                 currentUserPrompt,
                 currentFieldDescription,
                 renderFailureCases(failureCases));
+    }
+
+    private FewShotScenario selectScenarioVariant(FewShotScenario scenario, String promptCode, String schemaCode) {
+        LlmPromptTemplate prompt = scenario.mainPrompt();
+        if (!isBlank(promptCode)) {
+            prompt = scenarioRepository.findActivePromptByCode(promptCode)
+                    .orElseThrow(() -> new IllegalArgumentException("prompt not found: " + promptCode));
+        }
+        LlmOutputSchema outputSchema = scenario.outputSchema();
+        if (!isBlank(schemaCode)) {
+            outputSchema = scenarioRepository.findActiveOutputSchemaByCode(schemaCode)
+                    .orElseThrow(() -> new IllegalArgumentException("output schema not found: " + schemaCode));
+        }
+        List<FewShotExample> examples = prompt == null || prompt.examples() == null ? scenario.examples() : prompt.examples();
+        return new FewShotScenario(
+                scenario.code(),
+                scenario.name(),
+                scenario.description(),
+                scenario.inputLabel(),
+                scenario.systemInstruction(),
+                scenario.outputContract(),
+                scenario.toolProfile(),
+                prompt == null ? scenario.promptCode() : prompt.promptCode(),
+                prompt,
+                scenario.prompts(),
+                outputSchema == null ? scenario.schemaCode() : outputSchema.schemaCode(),
+                outputSchema,
+                examples);
     }
 
     private String renderFailureCases(List<FewShotFailureCase> failureCases) {

@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS llm_prompt (
     id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    scenario_code VARCHAR(128) NOT NULL DEFAULT '' COMMENT '所属场景编码',
     prompt_code VARCHAR(500) NOT NULL DEFAULT '' COMMENT '代码',
     code_type VARCHAR(50) NOT NULL DEFAULT '' COMMENT '代码类型，1为供应商，2为邮箱',
     template_type VARCHAR(50) NOT NULL DEFAULT '' COMMENT '模板类型',
@@ -11,6 +12,7 @@ CREATE TABLE IF NOT EXISTS llm_prompt (
     system_prompt VARCHAR(8000) NOT NULL DEFAULT '' COMMENT '系统提示词',
     mail_type INT(11) NOT NULL DEFAULT 0 COMMENT '邮件识别类型，第二段字段提取使用。第一段类型识别为0',
     PRIMARY KEY (id) USING BTREE,
+    KEY idx_llm_prompt_scenario_code (scenario_code) USING BTREE,
     KEY idx_supplier_code (prompt_code) USING BTREE,
     KEY idx_is_active (is_active) USING BTREE,
     KEY idx_priority (priority) USING BTREE
@@ -40,6 +42,7 @@ CREATE TABLE IF NOT EXISTS llm_scenario (
 
 CREATE TABLE IF NOT EXISTS llm_output_schema (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    prompt_id BIGINT(20) UNSIGNED NULL COMMENT '所属主提示词ID',
     schema_code VARCHAR(128) NOT NULL DEFAULT '' COMMENT '输出结构编码',
     schema_name VARCHAR(255) NOT NULL DEFAULT '' COMMENT '输出结构名称',
     schema_json MEDIUMTEXT NOT NULL COMMENT '目标JSON结构',
@@ -49,6 +52,7 @@ CREATE TABLE IF NOT EXISTS llm_output_schema (
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uk_llm_output_schema_code (schema_code),
+    KEY idx_llm_output_schema_prompt_id (prompt_id),
     KEY idx_llm_output_schema_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='大模型输出结构配置表';
 
@@ -64,6 +68,7 @@ CREATE TABLE IF NOT EXISTS llm_prompt_few_shot (
     enabled TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
     UNIQUE KEY uk_llm_prompt_few_shot_key (prompt_id, example_key),
     KEY idx_llm_prompt_few_shot_prompt (prompt_id, sort_order),
     CONSTRAINT fk_llm_prompt_few_shot_prompt

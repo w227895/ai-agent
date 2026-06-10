@@ -12,6 +12,7 @@ public record FewShotScenario(
         String toolProfile,
         String promptCode,
         LlmPromptTemplate mainPrompt,
+        List<LlmPromptTemplate> prompts,
         String schemaCode,
         LlmOutputSchema outputSchema,
         List<FewShotExample> examples) {
@@ -20,18 +21,27 @@ public record FewShotScenario(
 
     public FewShotScenario withExamples(List<FewShotExample> newExamples) {
         return new FewShotScenario(code, name, description, inputLabel, systemInstruction, outputContract,
-                toolProfile, promptCode, mainPrompt, schemaCode, outputSchema, List.copyOf(newExamples));
+                toolProfile, promptCode, mainPrompt, prompts == null ? List.of() : List.copyOf(prompts),
+                schemaCode, outputSchema, List.copyOf(newExamples));
     }
 
     public FewShotScenario withMainPrompt(LlmPromptTemplate newMainPrompt) {
         return new FewShotScenario(code, name, description, inputLabel, systemInstruction, outputContract,
-                toolProfile, promptCode, newMainPrompt, schemaCode, outputSchema,
+                toolProfile, promptCode, newMainPrompt, prompts == null ? List.of() : List.copyOf(prompts),
+                schemaCode, outputSchema,
+                examples == null ? List.of() : List.copyOf(examples));
+    }
+
+    public FewShotScenario withPrompts(List<LlmPromptTemplate> newPrompts) {
+        return new FewShotScenario(code, name, description, inputLabel, systemInstruction, outputContract,
+                toolProfile, promptCode, mainPrompt, List.copyOf(newPrompts), schemaCode, outputSchema,
                 examples == null ? List.of() : List.copyOf(examples));
     }
 
     public FewShotScenario withOutputSchema(LlmOutputSchema newOutputSchema) {
         return new FewShotScenario(code, name, description, inputLabel, systemInstruction, outputContract,
-                toolProfile, promptCode, mainPrompt, schemaCode, newOutputSchema,
+                toolProfile, promptCode, mainPrompt, prompts == null ? List.of() : List.copyOf(prompts),
+                schemaCode, newOutputSchema,
                 examples == null ? List.of() : List.copyOf(examples));
     }
 }

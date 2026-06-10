@@ -15,7 +15,7 @@ spring:
       encoding: UTF-8
   ai:
     deepseek:
-      api-key: ${DEEPSEEK_API_KEY:}
+      api-key: ${DEEPSEEK_API_KEY:not-configured}
       chat:
         options:
           model: deepseek-chat

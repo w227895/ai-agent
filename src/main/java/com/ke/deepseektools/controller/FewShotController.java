@@ -57,6 +57,11 @@ public class FewShotController {
         return fewShotPlatformService.previewPrompt(code, "");
     }
 
+    @GetMapping("/scenarios/{code}/prompts")
+    public List<LlmPromptTemplate> listScenarioPrompts(@PathVariable("code") String code) {
+        return fewShotPlatformService.listPromptTemplatesByScenario(code);
+    }
+
     @PostMapping("/prompt-preview")
     public PromptPreview previewPrompt(@RequestBody PromptPreviewRequest request) {
         return fewShotPlatformService.previewPrompt(request.scenario(), request.input());
@@ -81,6 +86,11 @@ public class FewShotController {
     @PostMapping("/prompts")
     public LlmPromptTemplate savePromptTemplate(@RequestBody LlmPromptTemplate promptTemplate) {
         return fewShotPlatformService.savePromptTemplate(promptTemplate);
+    }
+
+    @GetMapping("/prompts/{promptCode}/output-schemas")
+    public List<LlmOutputSchema> listPromptOutputSchemas(@PathVariable("promptCode") String promptCode) {
+        return fewShotPlatformService.listOutputSchemasByPrompt(promptCode);
     }
 
     @GetMapping("/output-schemas")
@@ -124,7 +134,7 @@ public class FewShotController {
 
     @PostMapping("/run")
     public FewShotRunResult run(@RequestBody FewShotRunRequest request) {
-        return fewShotPlatformService.run(request.scenarioCode(), request.input());
+        return fewShotPlatformService.run(request.scenarioCode(), request.input(), request.promptCode(), request.schemaCode());
     }
 
     @ExceptionHandler(FewShotScenarioNotFoundException.class)
@@ -139,7 +149,7 @@ public class FewShotController {
         return new ErrorResponse(exception.getMessage());
     }
 
-    public record FewShotRunRequest(String scenarioCode, String input) {
+    public record FewShotRunRequest(String scenarioCode, String promptCode, String schemaCode, String input) {
     }
 
     public record PromptPreviewRequest(FewShotScenario scenario, String input) {
