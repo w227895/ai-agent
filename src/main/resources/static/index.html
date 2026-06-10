@@ -201,9 +201,182 @@
         .pager { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
         .pager-actions { display: flex; gap: 8px; align-items: center; }
         .truncate { max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .top-meta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; align-items: center; }
+        .env-badge, .tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            border-radius: 999px;
+            padding: 0 10px;
+            color: var(--primary);
+            background: var(--primary-soft);
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .stat-card {
+            min-height: 112px;
+            display: grid;
+            gap: 8px;
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+        .stat-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; color: var(--muted); font-size: 12px; font-weight: 800; }
+        .stat-icon {
+            width: 31px;
+            height: 31px;
+            display: grid;
+            place-items: center;
+            border-radius: 8px;
+            color: var(--accent, var(--primary));
+            background: var(--tone, var(--primary-soft));
+            font-weight: 900;
+        }
+        .stat-value { font-size: 26px; line-height: 1; font-weight: 900; }
+        .stat-note { color: var(--muted); font-size: 12px; }
+        .result-tabs {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+        }
+        .result-tab {
+            min-height: 30px;
+            border-color: transparent;
+            border-radius: 7px;
+            background: transparent;
+            padding: 0 10px;
+            font-size: 12px;
+        }
+        .result-tab.active { color: #fff; border-color: var(--primary); background: var(--primary); }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .metric {
+            min-height: 70px;
+            display: grid;
+            gap: 5px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+        }
+        .metric span { color: var(--muted); font-size: 11px; font-weight: 800; }
+        .metric strong { font-size: 18px; line-height: 1.2; }
+        .result pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: Consolas, "Microsoft YaHei", monospace;
+        }
+
+        :root {
+            --bg: #f4f6f8;
+            --surface: #fff;
+            --soft: #f8fafc;
+            --line: #e4e8ef;
+            --line-strong: #cfd6e2;
+            --text: #172033;
+            --muted: #7b8497;
+            --primary: #5b5ce2;
+            --primary-dark: #4546c8;
+            --primary-soft: #eeefff;
+            --danger: #dd4f55;
+            --ok: #16a36a;
+            --mono-bg: #171c31;
+            --mono-text: #f3f6ff;
+            --shadow: 0 10px 30px rgba(29, 38, 64, 0.06);
+        }
+        body { font-family: Inter, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; }
+        button { min-height: 38px; border-color: var(--line); border-radius: 8px; transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease; }
+        button:hover { border-color: var(--line-strong); background: #fafaff; }
+        button.primary { box-shadow: 0 6px 18px rgba(91, 92, 226, 0.2); }
+        button.primary:hover { transform: translateY(-1px); }
+        input, select, textarea { border-color: #dfe3ea; }
+        input:focus, select:focus, textarea:focus {
+            border-color: #9b9cf2;
+            box-shadow: 0 0 0 3px rgba(91, 92, 226, 0.09);
+        }
+        .app-shell { grid-template-columns: 236px minmax(0, 1fr); }
+        .sidebar {
+            position: sticky;
+            top: 0;
+            padding: 24px 16px 18px;
+            border-right: 0;
+            color: #fff;
+            background: linear-gradient(180deg, #202641 0%, #171c31 100%);
+        }
+        .brand { gap: 6px; padding: 0 8px 26px; border-bottom: 0; }
+        .brand::before {
+            content: "PS";
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #7778ff, #4f50d8);
+            box-shadow: 0 8px 24px rgba(91, 92, 226, 0.35);
+            font-weight: 900;
+        }
+        .brand-title { color: #fff; font-size: 16px; }
+        .brand-subtitle { color: #9299b4; font-size: 11px; }
+        .menu-title { color: #737b97; font-size: 11px; letter-spacing: 1px; }
+        .nav-button { color: #aeb4c9; border-radius: 8px; }
+        .nav-button:hover { color: #fff; border-color: transparent; background: rgba(255, 255, 255, 0.06); }
+        .nav-icon { color: inherit; background: rgba(255, 255, 255, 0.08); font-weight: 900; }
+        .nav-button.active {
+            color: #fff;
+            border-color: transparent;
+            background: linear-gradient(90deg, rgba(91, 92, 226, 0.95), rgba(91, 92, 226, 0.62));
+            box-shadow: 0 8px 22px rgba(31, 33, 100, 0.26);
+        }
+        .sidebar-foot {
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #9da4bc;
+            background: rgba(255, 255, 255, 0.035);
+        }
+        .endpoint { color: #dde1ee; }
+        .workspace { background: var(--bg); }
+        .topbar {
+            min-height: 72px;
+            grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+        }
+        .page-title { font-size: 24px; letter-spacing: 0; }
+        .content { max-width: 1520px; width: 100%; margin: 0 auto; padding: 28px 30px 42px; }
+        .panel { border-radius: 8px; }
+        .panel-header { min-height: 60px; padding: 16px 18px; }
+        .panel-title { font-size: 15px; }
+        .panel-kicker { color: #8a93a7; }
+        .workflow-tabs { border-radius: 8px; }
+        .workflow-tab { border-radius: 7px; }
+        .workflow-tab.active { color: #fff; border-color: var(--primary); background: var(--primary); }
+        .table-wrap { border-color: var(--line); border-radius: 8px; }
+        th { background: #fafbfc; }
+        td { border-bottom-color: #f0f2f5; vertical-align: middle; }
+        tbody tr:hover { background: #fafaff; }
+        .table-code { color: #394258; font-size: 12px; }
+        .global-message { top: auto; right: 24px; bottom: 24px; color: #fff; border: 0; background: #242a3d; }
+        .global-message.ok, .global-message.error { color: #fff; border: 0; background: #242a3d; }
 
         @media (max-width: 1180px) {
-            .run-grid, .preview-grid { grid-template-columns: 1fr 1fr; }
+            .run-grid, .preview-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 860px) {
             .app-shell { grid-template-columns: 1fr; }
@@ -214,7 +387,8 @@
         }
         @media (max-width: 640px) {
             .content, .topbar { padding-left: 16px; padding-right: 16px; }
-            .menu, .two-cols, .three-cols, .example-bar, .scenario-picker, .list-toolbar { grid-template-columns: 1fr; }
+            .menu, .two-cols, .three-cols, .example-bar, .scenario-picker, .list-toolbar, .stats-grid, .metric-grid { grid-template-columns: 1fr; }
+            .top-meta { justify-content: flex-start; }
             .sticky-actions { position: static; display: grid; }
             .message { text-align: left; }
             .pager { display: grid; }
@@ -254,14 +428,39 @@
                 <h2 class="page-title" id="pageTitle">场景管理</h2>
                 <p class="page-subtitle" id="pageSubtitle">选择场景后，按配置、示例、预览和调试的顺序完成工作。</p>
             </div>
-            <div class="scenario-picker">
-                <label for="scenarioSelect">当前场景</label>
-                <select id="scenarioSelect"></select>
+            <div class="top-meta">
+                <span class="env-badge">本地调试</span>
+                <div class="scenario-picker">
+                    <label for="scenarioSelect">当前场景</label>
+                    <select id="scenarioSelect"></select>
+                </div>
             </div>
         </header>
 
         <main class="content">
             <section class="view active" data-view="scenarioList">
+                <div class="stats-grid" aria-label="平台统计">
+                    <div class="stat-card">
+                        <div class="stat-top"><span>场景总数</span><span class="stat-icon">场</span></div>
+                        <div class="stat-value" id="statScenarioCount">0</div>
+                        <div class="stat-note" id="statScenarioNote">当前可维护场景</div>
+                    </div>
+                    <div class="stat-card" style="--accent:#16a36a;--tone:#e8f8f1;">
+                        <div class="stat-top"><span>主提示词</span><span class="stat-icon">主</span></div>
+                        <div class="stat-value" id="statPromptCount">0</div>
+                        <div class="stat-note" id="statPromptNote">启用 0 个</div>
+                    </div>
+                    <div class="stat-card" style="--accent:#3084e8;--tone:#ebf4ff;">
+                        <div class="stat-top"><span>输出结构</span><span class="stat-icon">构</span></div>
+                        <div class="stat-value" id="statSchemaCount">0</div>
+                        <div class="stat-note" id="statSchemaNote">启用 0 个</div>
+                    </div>
+                    <div class="stat-card" style="--accent:#ea8b25;--tone:#fff3e2;">
+                        <div class="stat-top"><span>Few-shot 示例</span><span class="stat-icon">例</span></div>
+                        <div class="stat-value" id="statExampleCount">0</div>
+                        <div class="stat-note">来自当前已加载配置</div>
+                    </div>
+                </div>
                 <section class="panel">
                     <div class="panel-header">
                         <div>
@@ -339,11 +538,22 @@
                     <section class="panel">
                         <div class="panel-header">
                             <div>
-                                <h3 class="panel-title">识别结果</h3>
-                                <p class="panel-kicker">模型返回内容</p>
+                                <h3 class="panel-title">调试输出</h3>
+                                <p class="panel-kicker">可切换最终 Prompt、结构化结果和原始响应</p>
+                            </div>
+                            <div class="result-tabs" aria-label="结果视图">
+                                <button class="result-tab active" type="button" data-run-result-tab="preview">Prompt</button>
+                                <button class="result-tab" type="button" data-run-result-tab="result">结果</button>
+                                <button class="result-tab" type="button" data-run-result-tab="raw">原始</button>
                             </div>
                         </div>
                         <div class="panel-body">
+                            <div class="metric-grid">
+                                <div class="metric"><span>状态</span><strong id="runMetricStatus">待运行</strong></div>
+                                <div class="metric"><span>耗时</span><strong id="runMetricTime">-</strong></div>
+                                <div class="metric"><span>输入字符</span><strong id="runMetricInput">0</strong></div>
+                                <div class="metric"><span>输出字符</span><strong id="runMetricOutput">0</strong></div>
+                            </div>
                             <div class="result" id="result">处理结果会显示在这里。</div>
                         </div>
                     </section>
@@ -403,7 +613,7 @@
                                 <textarea class="tall mono" id="suggestedExamplesView" readonly></textarea>
                             </div>
                             <div class="actions">
-                                <button class="primary" id="applySuggestedExamplesButton" type="button">加入当前场景示例</button>
+                                <button class="primary" id="applySuggestedExamplesButton" type="button">加入当前提示词示例</button>
                             </div>
                             <div class="field">
                                 <label for="suggestedSystemPrompt">建议 system_prompt</label>
@@ -542,7 +752,7 @@
                     <div class="panel-header">
                         <div>
                             <h3 class="panel-title">Few-shot 示例</h3>
-                            <p class="panel-kicker">业务维护示例输入和期望输出 JSON</p>
+                            <p class="panel-kicker">维护当前场景所关联提示词的示例输入和期望输出 JSON</p>
                         </div>
                     </div>
                     <div class="panel-body form-grid">
@@ -575,7 +785,7 @@
                                 <textarea class="tall mono" id="expectedOutput"></textarea>
                             </div>
                         </div>
-                        <div id="exampleEmpty" class="empty-state">当前场景还没有示例。</div>
+                        <div id="exampleEmpty" class="empty-state">当前提示词还没有示例。</div>
                     </div>
                     <div class="sticky-actions">
                         <div class="message" id="editMessage"></div>
@@ -698,6 +908,8 @@
     let promptPreviewTimer = null;
     let promptPreviewRequestId = 0;
     let scenarioPage = {page: 1, size: 10, keyword: "", total: 0, totalPages: 1};
+    let runResultTab = "preview";
+    let lastRunResult = null;
 
     const viewMeta = {
         run: ["运行调试", "选择场景，输入邮件正文，查看识别结果。"],
@@ -705,7 +917,7 @@
         scenarioList: ["场景管理", "选择场景后，按配置、示例、预览和调试的顺序完成工作。"],
         mainPrompt: ["主提示词", "维护 llm_prompt 的 system_prompt 和 user_prompt。"],
         outputSchema: ["输出结构", "维护 llm_output_schema 的目标 JSON、字段说明和空值规则。"],
-        examples: ["Few-shot 示例", "业务维护当前场景的输入和期望输出样例。"],
+        examples: ["Few-shot 示例", "维护当前场景所关联提示词的输入和期望输出样例。"],
         prompt: ["最终 Prompt", "查看真实发送给模型的两段 Prompt。"],
         scenario: ["场景绑定", "维护场景元信息和绑定关系。"]
     };
@@ -727,9 +939,21 @@
     const scenarioListMessage = document.querySelector("#scenarioListMessage");
     const scenarioPrevPageButton = document.querySelector("#scenarioPrevPageButton");
     const scenarioNextPageButton = document.querySelector("#scenarioNextPageButton");
+    const statScenarioCount = document.querySelector("#statScenarioCount");
+    const statScenarioNote = document.querySelector("#statScenarioNote");
+    const statPromptCount = document.querySelector("#statPromptCount");
+    const statPromptNote = document.querySelector("#statPromptNote");
+    const statSchemaCount = document.querySelector("#statSchemaCount");
+    const statSchemaNote = document.querySelector("#statSchemaNote");
+    const statExampleCount = document.querySelector("#statExampleCount");
     const runInput = document.querySelector("#runInput");
     const runInputLabelText = document.querySelector("#runInputLabelText");
     const result = document.querySelector("#result");
+    const runResultTabs = [...document.querySelectorAll("[data-run-result-tab]")];
+    const runMetricStatus = document.querySelector("#runMetricStatus");
+    const runMetricTime = document.querySelector("#runMetricTime");
+    const runMetricInput = document.querySelector("#runMetricInput");
+    const runMetricOutput = document.querySelector("#runMetricOutput");
     const processButton = document.querySelector("#processButton");
     const sampleButton = document.querySelector("#sampleButton");
     const clearButton = document.querySelector("#clearButton");
@@ -808,6 +1032,8 @@
         scenarioDirty = false;
         fillForm();
         fillSelectedExampleToRunInput();
+        lastRunResult = null;
+        renderRunResult("preview");
         loadFailureCases();
         clearOptimizationResult();
         clearMessages();
@@ -894,7 +1120,10 @@
             element.addEventListener("input", markSchemaDirty);
             element.addEventListener("change", markSchemaDirty);
         });
-    runInput.addEventListener("input", updatePromptPreview);
+    runInput.addEventListener("input", () => {
+        runMetricInput.textContent = String(runInput.value.trim().length);
+        updatePromptPreview();
+    });
 
     sampleButton.addEventListener("click", () => {
         persistExampleForm();
@@ -903,10 +1132,16 @@
     });
     clearButton.addEventListener("click", () => {
         runInput.value = "";
-        result.textContent = "处理结果会显示在这里。";
+        lastRunResult = null;
+        runMetricStatus.textContent = "待运行";
+        runMetricTime.textContent = "-";
+        runMetricInput.textContent = "0";
+        runMetricOutput.textContent = "0";
+        renderRunResult("preview");
         updatePromptPreview();
         runInput.focus();
     });
+    runResultTabs.forEach((button) => button.addEventListener("click", () => renderRunResult(button.dataset.runResultTab)));
     processButton.addEventListener("click", runScenario);
     importFailureCasesButton.addEventListener("click", importFailureCases);
     loadFailureCasesButton.addEventListener("click", loadFailureCases);
@@ -956,6 +1191,7 @@
             schemaDirty = false;
             renderScenarioOptions(currentScenario?.code);
             renderTemplateOptions();
+            updateDashboardStats();
             fillForm();
             fillSelectedExampleToRunInput();
             await loadScenarioPage();
@@ -971,34 +1207,28 @@
     }
 
     async function loadScenarioPage() {
-        scenarioTableBody.innerHTML = "<tr><td colspan=\"6\" class=\"table-muted\">加载中...</td></tr>";
         setScenarioListMessage("");
-        try {
-            const params = new URLSearchParams({
-                page: String(scenarioPage.page),
-                size: String(scenarioPage.size),
-                keyword: scenarioPage.keyword
-            });
-            const response = await fetch(`/few-shot/scenarios/page?${params.toString()}`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            scenarioPageItems = data.items || [];
-            scenarioPage.total = Number(data.total || 0);
-            scenarioPage.page = Number(data.page || 1);
-            scenarioPage.size = Number(data.size || scenarioPage.size);
-            scenarioPage.totalPages = Math.max(Number(data.totalPages || 0), 1);
-            if (scenarioPageItems.length === 0 && scenarioPage.page > 1) {
-                scenarioPage.page -= 1;
-                await loadScenarioPage();
-                return;
-            }
-            renderScenarioTable();
-        } catch (error) {
-            scenarioPageItems = [];
-            scenarioTableBody.innerHTML = `<tr><td colspan="6" class="error">列表加载失败：${escapeHtml(error.message)}</td></tr>`;
-            setScenarioListMessage("列表加载失败", true);
-            updateScenarioPager();
+        const keyword = String(scenarioPage.keyword || "").trim().toLowerCase();
+        const filtered = scenarios.filter((scenario) => {
+            if (!keyword) return true;
+            return [
+                scenario.code,
+                scenario.name,
+                scenario.description,
+                scenario.inputLabel,
+                scenario.promptCode,
+                scenario.schemaCode
+            ].some((value) => String(value || "").toLowerCase().includes(keyword));
+        });
+        scenarioPage.total = filtered.length;
+        scenarioPage.totalPages = Math.max(Math.ceil(filtered.length / scenarioPage.size), 1);
+        if (scenarioPage.page > scenarioPage.totalPages) {
+            scenarioPage.page = scenarioPage.totalPages;
         }
+        const start = (scenarioPage.page - 1) * scenarioPage.size;
+        scenarioPageItems = filtered.slice(start, start + scenarioPage.size);
+        updateDashboardStats();
+        renderScenarioTable();
     }
 
     function renderScenarioTable() {
@@ -1060,12 +1290,18 @@
         renderScenarioOptions(code);
         fillForm();
         fillSelectedExampleToRunInput();
+        lastRunResult = null;
+        runMetricStatus.textContent = "待运行";
+        runMetricTime.textContent = "-";
+        runMetricInput.textContent = String(runInput.value.trim().length);
+        runMetricOutput.textContent = "0";
+        renderRunResult("preview");
         clearMessages();
         setView(viewName);
     }
 
     async function deleteScenario(code) {
-        if (!code || !confirm(`确定删除场景「${code}」吗？该场景下的 few-shot 示例也会一起删除。`)) {
+        if (!code || !confirm(`确定删除场景「${code}」吗？关联提示词及其 few-shot 示例会保留。`)) {
             return;
         }
         if (!confirmDiscardScenarioChanges()) {
@@ -1122,7 +1358,54 @@
         setEditMessage("新输出结构已创建，填写后保存。");
     }
 
+    function updateDashboardStats() {
+        const exampleCount = scenarios.reduce((total, scenario) => total + (scenario.examples || []).length, 0);
+        const activePromptCount = promptTemplates.filter((prompt) => prompt.active !== false).length;
+        const activeSchemaCount = outputSchemas.filter((schema) => schema.active !== false).length;
+        statScenarioCount.textContent = scenarios.length;
+        statScenarioNote.textContent = scenarioPage.total ? `列表共 ${scenarioPage.total} 条` : "当前可维护场景";
+        statPromptCount.textContent = promptTemplates.length;
+        statPromptNote.textContent = `启用 ${activePromptCount} 个`;
+        statSchemaCount.textContent = outputSchemas.length;
+        statSchemaNote.textContent = `启用 ${activeSchemaCount} 个`;
+        statExampleCount.textContent = exampleCount;
+    }
+
+    function renderRunResult(tab = runResultTab) {
+        runResultTab = tab;
+        runResultTabs.forEach((button) => {
+            button.classList.toggle("active", button.dataset.runResultTab === tab);
+        });
+        if (tab === "preview") {
+            const systemPrompt = systemPromptPreview.value || "正在生成最终 System Prompt 预览...";
+            const userPrompt = userPromptPreview.value || "正在生成最终 User Prompt 预览...";
+            result.innerHTML = `<pre>SYSTEM\n${escapeHtml(systemPrompt)}\n\nUSER\n${escapeHtml(userPrompt)}</pre>`;
+            return;
+        }
+        if (tab === "raw") {
+            if (!lastRunResult) {
+                result.innerHTML = "<span class=\"table-muted\">还没有运行记录。</span>";
+                return;
+            }
+            result.innerHTML = `<pre>${escapeHtml(JSON.stringify(lastRunResult.raw, null, 2))}</pre>`;
+            return;
+        }
+        result.innerHTML = lastRunResult
+                ? `<pre>${escapeHtml(lastRunResult.result || "没有返回处理结果。")}</pre>`
+                : "<span class=\"table-muted\">运行后会显示模型返回内容。</span>";
+    }
+
     async function runScenario() {
+        persistFormToCurrent();
+        if (hasUnsavedChanges()) {
+            const message = "当前场景、主提示词或输出结构存在未保存修改。请先保存后再运行，避免最终 Prompt 预览和实际模型请求不一致。";
+            runMessage.textContent = "请先保存当前草稿";
+            runMessage.className = "message error";
+            lastRunResult = {result: message, raw: {status: "UNSAVED_CHANGES", message}};
+            runMetricStatus.textContent = "待保存";
+            renderRunResult("result");
+            return;
+        }
         const content = runInput.value.trim();
         if (!content) {
             runInput.focus();
@@ -1132,7 +1415,17 @@
         processButton.disabled = true;
         processButton.textContent = "运行中";
         runMessage.textContent = "";
-        result.textContent = "AI 正在按当前提示词、输出结构和 few-shot 示例处理...";
+        runMessage.className = "message";
+        runMetricStatus.textContent = "运行中";
+        runMetricTime.textContent = "-";
+        runMetricInput.textContent = String(content.length);
+        runMetricOutput.textContent = "0";
+        lastRunResult = {
+            result: "AI 正在按当前提示词、输出结构和 few-shot 示例处理...",
+            raw: {status: "RUNNING", scenarioCode: scenarioSelect.value, inputLength: content.length}
+        };
+        renderRunResult("result");
+        const startedAt = performance.now();
         try {
             const response = await fetch("/few-shot/run", {
                 method: "POST",
@@ -1143,9 +1436,24 @@
                 throw new Error(`HTTP ${response.status}`);
             }
             const data = await response.json();
-            result.textContent = data.result || "没有返回处理结果。";
+            lastRunResult = {
+                result: data.result || "没有返回处理结果。",
+                raw: data,
+                elapsedMs: Math.round(performance.now() - startedAt),
+                inputLength: content.length,
+                outputLength: String(data.result || "").length
+            };
+            runMetricStatus.textContent = "成功";
+            runMetricTime.textContent = `${lastRunResult.elapsedMs} ms`;
+            runMetricInput.textContent = String(lastRunResult.inputLength);
+            runMetricOutput.textContent = String(lastRunResult.outputLength);
             runMessage.textContent = "运行完成";
+            runMessage.className = "message ok";
+            renderRunResult("result");
         } catch (error) {
+            lastRunResult = null;
+            runMetricStatus.textContent = "失败";
+            runMetricTime.textContent = `${Math.round(performance.now() - startedAt)} ms`;
             result.innerHTML = `<span class="error">请求失败：${escapeHtml(error.message)}</span>`;
         } finally {
             processButton.disabled = false;
@@ -1338,6 +1646,7 @@
         try {
             const saved = await postJson("/few-shot/prompts", payload);
             upsertBy(promptTemplates, saved, "promptCode");
+            updateDashboardStats();
             if (currentScenario?.promptCode === saved.promptCode) {
                 currentScenario.mainPrompt = saved;
             }
@@ -1370,6 +1679,7 @@
         try {
             const saved = await postJson("/few-shot/output-schemas", payload);
             upsertBy(outputSchemas, saved, "schemaCode");
+            updateDashboardStats();
             if (currentScenario?.schemaCode === saved.schemaCode) {
                 currentScenario.outputSchema = saved;
             }
@@ -1413,6 +1723,7 @@
             currentScenario = cloneScenario(saved);
             selectedScenarioCode = saved.code;
             scenarioDirty = false;
+            updateDashboardStats();
             renderScenarioOptions(saved.code);
             renderTemplateOptions();
             fillForm();
@@ -1643,6 +1954,7 @@
     function fillSelectedExampleToRunInput() {
         const example = currentScenario?.examples?.[currentExampleIndex] || currentScenario?.examples?.[0];
         runInput.value = example?.input || "";
+        runMetricInput.textContent = String(runInput.value.trim().length);
         updatePromptPreview();
     }
 
@@ -1720,10 +2032,16 @@
             if (requestId !== promptPreviewRequestId) return;
             systemPromptPreview.value = preview.systemPrompt || "";
             userPromptPreview.value = preview.userPrompt || "";
+            if (runResultTab === "preview") {
+                renderRunResult("preview");
+            }
         } catch (error) {
             if (requestId !== promptPreviewRequestId) return;
             systemPromptPreview.value = `预览生成失败：${error.message}`;
             userPromptPreview.value = "";
+            if (runResultTab === "preview") {
+                renderRunResult("preview");
+            }
         }
     }
 

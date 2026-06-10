@@ -41,19 +41,19 @@ public class FewShotController {
 
     @GetMapping("/scenarios/page")
     public FewShotPlatformService.PageResult<FewShotScenario> listScenariosPage(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "") String keyword) {
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword) {
         return fewShotPlatformService.listScenariosPage(page, size, keyword);
     }
 
     @GetMapping("/scenarios/{code}")
-    public FewShotScenario getScenario(@PathVariable String code) {
+    public FewShotScenario getScenario(@PathVariable("code") String code) {
         return fewShotPlatformService.getScenario(code);
     }
 
     @GetMapping("/scenarios/{code}/prompt-preview")
-    public PromptPreview previewPrompt(@PathVariable String code) {
+    public PromptPreview previewPrompt(@PathVariable("code") String code) {
         return fewShotPlatformService.previewPrompt(code, "");
     }
 
@@ -69,7 +69,7 @@ public class FewShotController {
 
     @DeleteMapping("/scenarios/{code}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteScenario(@PathVariable String code) {
+    public void deleteScenario(@PathVariable("code") String code) {
         fewShotPlatformService.deleteScenario(code);
     }
 
@@ -94,31 +94,31 @@ public class FewShotController {
     }
 
     @PostMapping("/scenarios/{code}/examples")
-    public FewShotScenario addExample(@PathVariable String code, @RequestBody FewShotExample example) {
+    public FewShotScenario addExample(@PathVariable("code") String code, @RequestBody FewShotExample example) {
         return fewShotPlatformService.addExample(code, example);
     }
 
     @GetMapping("/scenarios/{code}/failure-cases")
-    public List<FewShotFailureCase> listFailureCases(@PathVariable String code) {
+    public List<FewShotFailureCase> listFailureCases(@PathVariable("code") String code) {
         return fewShotPlatformService.listFailureCases(code);
     }
 
     @PostMapping("/scenarios/{code}/failure-cases/import")
     public List<FewShotFailureCase> importFailureCases(
-            @PathVariable String code,
+            @PathVariable("code") String code,
             @RequestBody FailureCaseImportRequest request) {
         return fewShotPlatformService.importFailureCases(code, request.cases());
     }
 
     @PostMapping("/scenarios/{code}/failure-cases/import-text")
     public List<FewShotFailureCase> importFailureCasesFromText(
-            @PathVariable String code,
+            @PathVariable("code") String code,
             @RequestBody FailureCaseTextImportRequest request) {
         return fewShotPlatformService.importFailureCasesFromText(code, request.text());
     }
 
     @PostMapping("/scenarios/{code}/optimize-prompt")
-    public PromptOptimizationResult optimizePrompt(@PathVariable String code) {
+    public PromptOptimizationResult optimizePrompt(@PathVariable("code") String code) {
         return fewShotPlatformService.optimizePrompt(code);
     }
 
