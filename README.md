@@ -1,18 +1,19 @@
 # Few-shot 邮件识别平台
 
-一个 Spring Boot + Spring AI + DeepSeek 的 few-shot 场景平台。
+一个 Spring Boot + Spring AI + DeepSeek 的提示词场景平台。
 
 当前只保留两类能力：
 
-- 管理 few-shot 场景、业务指令、输出契约和示例。
+- 管理场景与提示词的关联关系。
+- 在提示词下维护并组装 few-shot 示例。
 - 运行航变邮件识别场景，提取邮件里的关键字段。
 
 ## 核心链路
 
 ```text
 输入邮件/文本
-→ 选择 few-shot 场景
-→ 拼装平台 System Prompt + 业务指令 + 输出契约 + few-shot 示例
+→ 选择场景并定位关联提示词
+→ 拼装提示词 System Prompt + 输出契约 + 提示词的 few-shot 示例
 → 拼装 User Prompt
 → 调用 DeepSeek
 → 返回识别结果并记录运行日志
@@ -42,7 +43,17 @@ $env:MYSQL_USERNAME="root"
 $env:MYSQL_PASSWORD="root123456"
 ```
 
-应用启动时会执行 `schema.sql`，自动创建 `few_shot_scenario`、`few_shot_example`、`few_shot_run_log`。
+应用启动时会执行 `schema.sql`，自动创建 `llm_scenario`、`llm_prompt`、
+`llm_prompt_few_shot`、`llm_output_schema` 和运行日志表。
+
+核心关系：
+
+```text
+llm_scenario.prompt_id → llm_prompt.id
+llm_prompt_few_shot.prompt_id → llm_prompt.id
+```
+
+已有库中的 `few_shot_scenario`、`few_shot_example` 会在启动时迁移到新表，旧表不会自动删除。
 
 ## 运行
 
@@ -104,8 +115,9 @@ Invoke-RestMethod "http://localhost:8080/mail/process" `
 
 ## 代码边界
 
-- `fewshot/FewShotScenario`：场景定义，包含业务指令、输出契约和示例。
-- `fewshot/FewShotScenarioRepository`：基于 MySQL/JdbcTemplate 持久化场景、样例和运行日志。
+- `fewshot/FewShotScenario`：场景定义，负责关联提示词和输出结构。
+- `fewshot/LlmPromptTemplate`：提示词定义，并持有用于组装的 few-shot 示例。
+- `fewshot/FewShotScenarioRepository`：基于 MySQL/JdbcTemplate 持久化场景、提示词样例和运行日志。
 - `fewshot/FewShotPlatformService`：统一拼装提示词并调用模型。
 - `controller/FewShotController`：通用 few-shot 平台接口。
 - `controller/MailController`：航变邮件识别兼容入口。

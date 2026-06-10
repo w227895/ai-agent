@@ -44,6 +44,7 @@ public class FewShotScenarioRepository {
         seedDefaultAfterSalesPrompt();
         seedDefaultAfterSalesOutputSchema();
         migrateDefaultMainPromptToSchemaLayer();
+        migrateLegacyScenarioTables();
 
         Optional<FewShotScenario> flightChangeMail = findByCode("flight-change-mail");
         if (flightChangeMail.isEmpty() || isLegacyFlightChangeScenario(flightChangeMail.get())) {
@@ -51,11 +52,16 @@ public class FewShotScenarioRepository {
         }
 
         jdbcTemplate.update("""
-                UPDATE few_shot_scenario
-                SET prompt_code = ?,
+                UPDATE llm_scenario
+                SET prompt_id = (
+                        SELECT id
+                        FROM llm_prompt
+                        WHERE prompt_code = ?
+                        ORDER BY is_active DESC, priority ASC, id DESC
+                        LIMIT 1
+                    ),
                     schema_code = CASE WHEN schema_code IS NULL OR schema_code = '' THEN ? ELSE schema_code END
-                WHERE code = 'flight-change-mail'
-                  AND ((prompt_code IS NULL OR prompt_code = '') OR (schema_code IS NULL OR schema_code = ''))
+                WHERE scenario_code = 'flight-change-mail'
                 """, DEFAULT_FLIGHT_CHANGE_PROMPT_CODE, DEFAULT_FLIGHT_CHANGE_SCHEMA_CODE);
         migrateLegacyFlightChangeExample();
         removeDefaultCustomerIntentScenario();
@@ -67,12 +73,15 @@ public class FewShotScenarioRepository {
 
     public List<FewShotScenario> findAll() {
         return jdbcTemplate.query("""
-                SELECT id, code, prompt_code, schema_code, name, description, input_label,
-                       system_instruction, output_contract, tool_profile
-                FROM few_shot_scenario
-                ORDER BY code
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                       s.schema_code, s.scenario_name AS name, s.description, s.input_label,
+                       s.system_instruction, s.output_contract, s.tool_profile
+                FROM llm_scenario s
+                JOIN llm_prompt p ON p.id = s.prompt_id
+                WHERE s.is_active = 1
+                ORDER BY s.scenario_code
                 """, this::mapScenarioRow).stream()
-                .map(row -> attachPromptLayers(row.scenario().withExamples(findExamples(row.id()))))
+                .map(this::attachPromptLayers)
                 .toList();
     }
 
@@ -80,13 +89,15 @@ public class FewShotScenarioRepository {
         SearchTerm searchTerm = toSearchTerm(keyword);
         Long total = jdbcTemplate.queryForObject("""
                 SELECT COUNT(*)
-                FROM few_shot_scenario
+                FROM llm_scenario s
+                JOIN llm_prompt p ON p.id = s.prompt_id
                 WHERE (? = ''
-                    OR code LIKE ?
-                    OR name LIKE ?
-                    OR description LIKE ?
-                    OR prompt_code LIKE ?
-                    OR schema_code LIKE ?)
+                    OR s.scenario_code LIKE ?
+                    OR s.scenario_name LIKE ?
+                    OR s.description LIKE ?
+                    OR p.prompt_code LIKE ?
+                    OR s.schema_code LIKE ?)
+                  AND s.is_active = 1
                 """,
                 Long.class,
                 searchTerm.raw(),
@@ -102,16 +113,19 @@ public class FewShotScenarioRepository {
         SearchTerm searchTerm = toSearchTerm(keyword);
         int offset = (Math.max(page, 1) - 1) * size;
         return jdbcTemplate.query("""
-                SELECT id, code, prompt_code, schema_code, name, description, input_label,
-                       system_instruction, output_contract, tool_profile
-                FROM few_shot_scenario
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                       s.schema_code, s.scenario_name AS name, s.description, s.input_label,
+                       s.system_instruction, s.output_contract, s.tool_profile
+                FROM llm_scenario s
+                JOIN llm_prompt p ON p.id = s.prompt_id
                 WHERE (? = ''
-                    OR code LIKE ?
-                    OR name LIKE ?
-                    OR description LIKE ?
-                    OR prompt_code LIKE ?
-                    OR schema_code LIKE ?)
-                ORDER BY updated_at DESC, code
+                    OR s.scenario_code LIKE ?
+                    OR s.scenario_name LIKE ?
+                    OR s.description LIKE ?
+                    OR p.prompt_code LIKE ?
+                    OR s.schema_code LIKE ?)
+                  AND s.is_active = 1
+                ORDER BY s.update_time DESC, s.scenario_code
                 LIMIT ? OFFSET ?
                 """,
                 this::mapScenarioRow,
@@ -123,7 +137,7 @@ public class FewShotScenarioRepository {
                 searchTerm.like(),
                 size,
                 offset).stream()
-                .map(row -> attachPromptLayers(row.scenario().withExamples(findExamples(row.id()))))
+                .map(this::attachPromptLayers)
                 .toList();
     }
 
@@ -133,46 +147,49 @@ public class FewShotScenarioRepository {
         }
 
         return jdbcTemplate.query("""
-                SELECT id, code, prompt_code, schema_code, name, description, input_label,
-                       system_instruction, output_contract, tool_profile
-                FROM few_shot_scenario
-                WHERE code = ?
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                       s.schema_code, s.scenario_name AS name, s.description, s.input_label,
+                       s.system_instruction, s.output_contract, s.tool_profile
+                FROM llm_scenario s
+                JOIN llm_prompt p ON p.id = s.prompt_id
+                WHERE s.scenario_code = ? AND s.is_active = 1
                 """, this::mapScenarioRow, normalizeCode(code)).stream()
                 .findFirst()
-                .map(row -> attachPromptLayers(row.scenario().withExamples(findExamples(row.id()))));
+                .map(this::attachPromptLayers);
     }
 
     @Transactional
     public FewShotScenario save(FewShotScenario scenario) {
         FewShotScenario normalized = normalizeScenario(scenario);
+        long promptId = findPromptId(normalized.promptCode());
         jdbcTemplate.update("""
-                INSERT INTO few_shot_scenario
-                    (code, prompt_code, schema_code, name, description, input_label,
-                     system_instruction, output_contract, tool_profile)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO llm_scenario
+                    (scenario_code, scenario_name, description, input_label, prompt_id, schema_code,
+                     system_instruction, output_contract, tool_profile, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
                 ON DUPLICATE KEY UPDATE
-                    prompt_code = VALUES(prompt_code),
-                    schema_code = VALUES(schema_code),
-                    name = VALUES(name),
+                    scenario_name = VALUES(scenario_name),
                     description = VALUES(description),
                     input_label = VALUES(input_label),
+                    prompt_id = VALUES(prompt_id),
+                    schema_code = VALUES(schema_code),
                     system_instruction = VALUES(system_instruction),
                     output_contract = VALUES(output_contract),
-                    tool_profile = VALUES(tool_profile)
+                    tool_profile = VALUES(tool_profile),
+                    is_active = 1
                 """,
                 normalized.code(),
-                normalized.promptCode(),
-                normalized.schemaCode(),
                 normalized.name(),
                 normalized.description(),
                 normalized.inputLabel(),
+                promptId,
+                normalized.schemaCode(),
                 normalized.systemInstruction(),
                 normalized.outputContract(),
                 normalized.toolProfile());
 
-        long scenarioId = findScenarioId(normalized.code());
-        jdbcTemplate.update("DELETE FROM few_shot_example WHERE scenario_id = ?", scenarioId);
-        insertExamples(scenarioId, normalized.examples());
+        jdbcTemplate.update("DELETE FROM llm_prompt_few_shot WHERE prompt_id = ?", promptId);
+        insertExamples(promptId, normalized.examples());
         return findByCode(normalized.code()).orElse(normalized);
     }
 
@@ -181,7 +198,7 @@ public class FewShotScenarioRepository {
         if (code == null || code.isBlank()) {
             throw new FewShotScenarioNotFoundException("");
         }
-        int deleted = jdbcTemplate.update("DELETE FROM few_shot_scenario WHERE code = ?", normalizeCode(code));
+        int deleted = jdbcTemplate.update("DELETE FROM llm_scenario WHERE scenario_code = ?", normalizeCode(code));
         if (deleted == 0) {
             throw new FewShotScenarioNotFoundException(code);
         }
@@ -198,7 +215,9 @@ public class FewShotScenarioRepository {
                 WHERE prompt_code = ? AND is_active = 1
                 ORDER BY priority ASC, id DESC
                 LIMIT 1
-                """, this::mapPromptTemplate, promptCode.trim()).stream().findFirst();
+                """, this::mapPromptTemplate, promptCode.trim()).stream()
+                .findFirst()
+                .map(prompt -> prompt.withExamples(findExamples(findPromptId(prompt.promptCode()))));
     }
 
     public List<LlmPromptTemplate> findAllPromptTemplates() {
@@ -207,7 +226,9 @@ public class FewShotScenarioRepository {
                        is_active, system_prompt, mail_type
                 FROM llm_prompt
                 ORDER BY priority ASC, prompt_code
-                """, this::mapPromptTemplate);
+                """, this::mapPromptTemplate).stream()
+                .map(prompt -> prompt.withExamples(findExamples(findPromptId(prompt.promptCode()))))
+                .toList();
     }
 
     @Transactional
@@ -251,6 +272,11 @@ public class FewShotScenarioRepository {
                     normalized.active() ? 1 : 0,
                     normalized.systemPrompt(),
                     normalized.mailType());
+        }
+        if (promptTemplate.examples() != null) {
+            long promptId = findPromptId(normalized.promptCode());
+            jdbcTemplate.update("DELETE FROM llm_prompt_few_shot WHERE prompt_id = ?", promptId);
+            insertExamples(promptId, normalized.examples());
         }
         return findActivePromptByCode(normalized.promptCode()).orElse(normalized);
     }
@@ -306,10 +332,10 @@ public class FewShotScenarioRepository {
                 .orElseThrow(() -> new FewShotScenarioNotFoundException(scenarioCode));
         FewShotExample normalized = normalizeExample(example);
         Integer nextSortOrder = jdbcTemplate.queryForObject(
-                "SELECT COALESCE(MAX(sort_order), 0) + 1 FROM few_shot_example WHERE scenario_id = ?",
+                "SELECT COALESCE(MAX(sort_order), 0) + 1 FROM llm_prompt_few_shot WHERE prompt_id = ?",
                 Integer.class,
-                scenario.id());
-        insertExample(scenario.id(), normalized, nextSortOrder == null ? 1 : nextSortOrder);
+                scenario.promptId());
+        insertExample(scenario.promptId(), normalized, nextSortOrder == null ? 1 : nextSortOrder);
         return findByCode(scenario.scenario().code()).orElseThrow(() -> new FewShotScenarioNotFoundException(scenarioCode));
     }
 
@@ -379,31 +405,39 @@ public class FewShotScenarioRepository {
             return Optional.empty();
         }
         return jdbcTemplate.query("""
-                SELECT id, code, prompt_code, schema_code, name, description, input_label,
-                       system_instruction, output_contract, tool_profile
-                FROM few_shot_scenario
-                WHERE code = ?
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                       s.schema_code, s.scenario_name AS name, s.description, s.input_label,
+                       s.system_instruction, s.output_contract, s.tool_profile
+                FROM llm_scenario s
+                JOIN llm_prompt p ON p.id = s.prompt_id
+                WHERE s.scenario_code = ? AND s.is_active = 1
                 """, this::mapScenarioRow, normalizeCode(code)).stream().findFirst();
     }
 
-    private long findScenarioId(String code) {
-        Long id = jdbcTemplate.queryForObject("SELECT id FROM few_shot_scenario WHERE code = ?", Long.class, code);
+    private long findPromptId(String promptCode) {
+        Long id = jdbcTemplate.query("""
+                SELECT id
+                FROM llm_prompt
+                WHERE prompt_code = ?
+                ORDER BY is_active DESC, priority ASC, id DESC
+                LIMIT 1
+                """, rs -> rs.next() ? rs.getLong("id") : null, promptCode);
         if (id == null) {
-            throw new FewShotScenarioNotFoundException(code);
+            throw new IllegalArgumentException("llm_prompt not found: " + promptCode);
         }
         return id;
     }
 
-    private void insertExamples(long scenarioId, List<FewShotExample> examples) {
+    private void insertExamples(long promptId, List<FewShotExample> examples) {
         for (int i = 0; i < examples.size(); i++) {
-            insertExample(scenarioId, examples.get(i), i + 1);
+            insertExample(promptId, examples.get(i), i + 1);
         }
     }
 
-    private void insertExample(long scenarioId, FewShotExample example, int sortOrder) {
+    private void insertExample(long promptId, FewShotExample example, int sortOrder) {
         jdbcTemplate.update("""
-                INSERT INTO few_shot_example
-                    (scenario_id, example_key, title, input_text, expected_output, tags_json, sort_order)
+                INSERT INTO llm_prompt_few_shot
+                    (prompt_id, example_key, title, input_text, expected_output, tags_json, sort_order)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     title = VALUES(title),
@@ -413,7 +447,7 @@ public class FewShotScenarioRepository {
                     sort_order = VALUES(sort_order),
                     enabled = 1
                 """,
-                scenarioId,
+                promptId,
                 example.id(),
                 example.title(),
                 example.input(),
@@ -422,13 +456,13 @@ public class FewShotScenarioRepository {
                 sortOrder);
     }
 
-    private List<FewShotExample> findExamples(long scenarioId) {
+    private List<FewShotExample> findExamples(long promptId) {
         return jdbcTemplate.query("""
                 SELECT example_key, title, input_text, expected_output, tags_json
-                FROM few_shot_example
-                WHERE scenario_id = ? AND enabled = 1
+                FROM llm_prompt_few_shot
+                WHERE prompt_id = ? AND enabled = 1
                 ORDER BY sort_order, id
-                """, this::mapExample, scenarioId);
+                """, this::mapExample, promptId);
     }
 
     private ScenarioRow mapScenarioRow(ResultSet rs, int rowNum) throws SQLException {
@@ -445,7 +479,7 @@ public class FewShotScenarioRepository {
                 rs.getString("schema_code"),
                 null,
                 List.of());
-        return new ScenarioRow(rs.getLong("id"), scenario);
+        return new ScenarioRow(rs.getLong("id"), rs.getLong("prompt_id"), scenario);
     }
 
     private LlmPromptTemplate mapPromptTemplate(ResultSet rs, int rowNum) throws SQLException {
@@ -457,7 +491,8 @@ public class FewShotScenarioRepository {
                 rs.getInt("priority"),
                 rs.getInt("is_active") == 1,
                 rs.getString("system_prompt"),
-                rs.getInt("mail_type"));
+                rs.getInt("mail_type"),
+                List.of());
     }
 
     private LlmOutputSchema mapOutputSchema(ResultSet rs, int rowNum) throws SQLException {
@@ -514,11 +549,25 @@ public class FewShotScenarioRepository {
                 List.copyOf(examples));
     }
 
-    private FewShotScenario attachPromptLayers(FewShotScenario scenario) {
-        String promptCode = blankToDefault(scenario.promptCode(), scenario.code());
+    private FewShotScenario attachPromptLayers(ScenarioRow row) {
+        FewShotScenario scenario = row.scenario();
         String schemaCode = blankToDefault(scenario.schemaCode(), scenario.code());
-        return scenario.withMainPrompt(findActivePromptByCode(promptCode).orElse(null))
+        List<FewShotExample> examples = findExamples(row.promptId());
+        LlmPromptTemplate prompt = findPromptById(row.promptId())
+                .map(item -> item.withExamples(examples))
+                .orElse(null);
+        return scenario.withExamples(examples)
+                .withMainPrompt(prompt)
                 .withOutputSchema(findActiveOutputSchemaByCode(schemaCode).orElse(null));
+    }
+
+    private Optional<LlmPromptTemplate> findPromptById(long promptId) {
+        return jdbcTemplate.query("""
+                SELECT prompt_code, code_type, template_type, user_prompt, priority,
+                       is_active, system_prompt, mail_type
+                FROM llm_prompt
+                WHERE id = ?
+                """, this::mapPromptTemplate, promptId).stream().findFirst();
     }
 
     private FewShotExample normalizeExample(FewShotExample example) {
@@ -556,7 +605,9 @@ public class FewShotScenarioRepository {
                 promptTemplate.priority(),
                 promptTemplate.active(),
                 blankToDefault(promptTemplate.systemPrompt(), ""),
-                promptTemplate.mailType());
+                promptTemplate.mailType(),
+                promptTemplate.examples() == null ? null
+                        : promptTemplate.examples().stream().map(this::normalizeExample).toList());
     }
 
     private LlmOutputSchema normalizeOutputSchema(LlmOutputSchema outputSchema) {
@@ -574,12 +625,56 @@ public class FewShotScenarioRepository {
     }
 
     private void ensureSchemaCompatibility() {
-        if (!columnExists("few_shot_scenario", "prompt_code")) {
+        if (tableExists("few_shot_scenario") && !columnExists("few_shot_scenario", "prompt_code")) {
             jdbcTemplate.execute("ALTER TABLE few_shot_scenario ADD COLUMN prompt_code VARCHAR(500) NOT NULL DEFAULT '' AFTER code");
         }
-        if (!columnExists("few_shot_scenario", "schema_code")) {
+        if (tableExists("few_shot_scenario") && !columnExists("few_shot_scenario", "schema_code")) {
             jdbcTemplate.execute("ALTER TABLE few_shot_scenario ADD COLUMN schema_code VARCHAR(128) NOT NULL DEFAULT '' AFTER prompt_code");
         }
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS llm_scenario (
+                    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+                    scenario_code VARCHAR(128) NOT NULL DEFAULT '',
+                    scenario_name VARCHAR(255) NOT NULL DEFAULT '',
+                    description TEXT NULL,
+                    input_label VARCHAR(128) NOT NULL DEFAULT '邮件正文',
+                    prompt_id BIGINT(20) UNSIGNED NOT NULL,
+                    schema_code VARCHAR(128) NOT NULL DEFAULT '',
+                    system_instruction TEXT NULL,
+                    output_contract TEXT NULL,
+                    tool_profile VARCHAR(128) NOT NULL DEFAULT 'none',
+                    is_active TINYINT(4) NOT NULL DEFAULT 1,
+                    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    UNIQUE KEY uk_llm_scenario_code (scenario_code),
+                    KEY idx_llm_scenario_prompt_id (prompt_id),
+                    KEY idx_llm_scenario_active (is_active),
+                    CONSTRAINT fk_llm_scenario_prompt
+                        FOREIGN KEY (prompt_id) REFERENCES llm_prompt (id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """);
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS llm_prompt_few_shot (
+                    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+                    prompt_id BIGINT(20) UNSIGNED NOT NULL,
+                    example_key VARCHAR(128) NOT NULL,
+                    title VARCHAR(255) NOT NULL,
+                    input_text MEDIUMTEXT NOT NULL,
+                    expected_output MEDIUMTEXT NOT NULL,
+                    tags_json TEXT NULL,
+                    sort_order INT NOT NULL DEFAULT 0,
+                    enabled TINYINT(1) NOT NULL DEFAULT 1,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    UNIQUE KEY uk_llm_prompt_few_shot_key (prompt_id, example_key),
+                    KEY idx_llm_prompt_few_shot_prompt (prompt_id, sort_order),
+                    CONSTRAINT fk_llm_prompt_few_shot_prompt
+                        FOREIGN KEY (prompt_id) REFERENCES llm_prompt (id)
+                        ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """);
         jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS llm_output_schema (
                     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -607,6 +702,53 @@ public class FewShotScenarioRepository {
                     KEY idx_few_shot_failure_case_scenario_created (scenario_code, created_at)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """);
+    }
+
+    private void migrateLegacyScenarioTables() {
+        if (!tableExists("few_shot_scenario")) {
+            return;
+        }
+        jdbcTemplate.update("""
+                INSERT IGNORE INTO llm_scenario
+                    (scenario_code, scenario_name, description, input_label, prompt_id, schema_code,
+                     system_instruction, output_contract, tool_profile, is_active)
+                SELECT s.code, s.name, s.description, s.input_label,
+                       (
+                           SELECT p.id
+                           FROM llm_prompt p
+                           WHERE p.prompt_code = s.prompt_code
+                           ORDER BY p.is_active DESC, p.priority ASC, p.id DESC
+                           LIMIT 1
+                       ),
+                       s.schema_code, s.system_instruction, s.output_contract, s.tool_profile, 1
+                FROM few_shot_scenario s
+                WHERE EXISTS (
+                    SELECT 1 FROM llm_prompt p WHERE p.prompt_code = s.prompt_code
+                )
+                """);
+        if (!tableExists("few_shot_example")) {
+            return;
+        }
+        jdbcTemplate.update("""
+                INSERT IGNORE INTO llm_prompt_few_shot
+                    (prompt_id, example_key, title, input_text, expected_output, tags_json,
+                     sort_order, enabled, created_at, updated_at)
+                SELECT ns.prompt_id, e.example_key, e.title, e.input_text, e.expected_output,
+                       e.tags_json, e.sort_order, e.enabled, e.created_at, e.updated_at
+                FROM few_shot_example e
+                JOIN few_shot_scenario os ON os.id = e.scenario_id
+                JOIN llm_scenario ns ON ns.scenario_code = os.code
+                """);
+    }
+
+    private boolean tableExists(String tableName) {
+        Boolean exists = jdbcTemplate.execute((ConnectionCallback<Boolean>) connection -> {
+            try (ResultSet tables = connection.getMetaData().getTables(
+                    connection.getCatalog(), null, tableName, new String[] {"TABLE"})) {
+                return tables.next();
+            }
+        });
+        return Boolean.TRUE.equals(exists);
     }
 
     private boolean columnExists(String tableName, String columnName) {
@@ -1097,22 +1239,23 @@ public class FewShotScenarioRepository {
 
     private void removeDefaultCustomerIntentScenario() {
         jdbcTemplate.update("""
-                DELETE FROM few_shot_scenario
-                WHERE code = 'customer-intent' AND name IN ('客户意图识别', '瀹㈡埛鎰忓浘璇嗗埆')
+                DELETE FROM llm_scenario
+                WHERE scenario_code = 'customer-intent'
+                  AND scenario_name IN ('客户意图识别', '瀹㈡埛鎰忓浘璇嗗埆')
                 """);
     }
 
     private void migrateLegacyFlightChangeExample() {
         findScenarioRow("flight-change-mail").ifPresent(row -> jdbcTemplate.update("""
-                UPDATE few_shot_example
+                UPDATE llm_prompt_few_shot
                 SET title = ?, input_text = ?, expected_output = ?, tags_json = ?
-                WHERE scenario_id = ? AND example_key = ? AND expected_output LIKE '%isFlightChangeMail%'
+                WHERE prompt_id = ? AND example_key = ? AND expected_output LIKE '%isFlightChangeMail%'
                 """,
                 "标准航班时间变更",
                 defaultFlightChangeExampleInput(),
                 defaultFlightChangeExampleOutput(),
                 toJson(List.of("航变", "邮件识别")),
-                row.id(),
+                row.promptId(),
                 "flight-change-mail-001"));
     }
 
@@ -1160,7 +1303,7 @@ public class FewShotScenarioRepository {
         }
     }
 
-    private record ScenarioRow(long id, FewShotScenario scenario) {
+    private record ScenarioRow(long id, long promptId, FewShotScenario scenario) {
     }
 
     private record SearchTerm(String raw, String like) {

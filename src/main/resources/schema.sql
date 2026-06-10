@@ -1,19 +1,3 @@
-CREATE TABLE IF NOT EXISTS few_shot_scenario (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    code VARCHAR(128) NOT NULL,
-    prompt_code VARCHAR(500) NOT NULL DEFAULT '',
-    schema_code VARCHAR(128) NOT NULL DEFAULT '',
-    name VARCHAR(255) NOT NULL,
-    description TEXT NULL,
-    input_label VARCHAR(128) NOT NULL,
-    system_instruction TEXT NULL,
-    output_contract TEXT NULL,
-    tool_profile VARCHAR(128) NOT NULL DEFAULT 'none',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_few_shot_scenario_code (code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS llm_prompt (
     id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     prompt_code VARCHAR(500) NOT NULL DEFAULT '' COMMENT '代码',
@@ -32,6 +16,28 @@ CREATE TABLE IF NOT EXISTS llm_prompt (
     KEY idx_priority (priority) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='大模型配置表';
 
+CREATE TABLE IF NOT EXISTS llm_scenario (
+    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    scenario_code VARCHAR(128) NOT NULL DEFAULT '' COMMENT '场景编码',
+    scenario_name VARCHAR(255) NOT NULL DEFAULT '' COMMENT '场景名称',
+    description TEXT NULL COMMENT '场景说明',
+    input_label VARCHAR(128) NOT NULL DEFAULT '邮件正文' COMMENT '输入标签',
+    prompt_id BIGINT(20) UNSIGNED NOT NULL COMMENT '关联llm_prompt主键ID',
+    schema_code VARCHAR(128) NOT NULL DEFAULT '' COMMENT '输出结构编码',
+    system_instruction TEXT NULL COMMENT '兼容旧业务指令',
+    output_contract TEXT NULL COMMENT '兼容旧输出契约',
+    tool_profile VARCHAR(128) NOT NULL DEFAULT 'none' COMMENT '工具配置',
+    is_active TINYINT(4) NOT NULL DEFAULT 1 COMMENT '是否启用(1:启用,0:禁用)',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id) USING BTREE,
+    UNIQUE KEY uk_llm_scenario_code (scenario_code) USING BTREE,
+    KEY idx_llm_scenario_prompt_id (prompt_id) USING BTREE,
+    KEY idx_llm_scenario_active (is_active) USING BTREE,
+    CONSTRAINT fk_llm_scenario_prompt
+        FOREIGN KEY (prompt_id) REFERENCES llm_prompt (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='大模型场景表';
+
 CREATE TABLE IF NOT EXISTS llm_output_schema (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     schema_code VARCHAR(128) NOT NULL DEFAULT '' COMMENT '输出结构编码',
@@ -46,9 +52,9 @@ CREATE TABLE IF NOT EXISTS llm_output_schema (
     KEY idx_llm_output_schema_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='大模型输出结构配置表';
 
-CREATE TABLE IF NOT EXISTS few_shot_example (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    scenario_id BIGINT NOT NULL,
+CREATE TABLE IF NOT EXISTS llm_prompt_few_shot (
+    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    prompt_id BIGINT(20) UNSIGNED NOT NULL,
     example_key VARCHAR(128) NOT NULL,
     title VARCHAR(255) NOT NULL,
     input_text MEDIUMTEXT NOT NULL,
@@ -58,12 +64,12 @@ CREATE TABLE IF NOT EXISTS few_shot_example (
     enabled TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_few_shot_example_key (scenario_id, example_key),
-    KEY idx_few_shot_example_scenario (scenario_id, sort_order),
-    CONSTRAINT fk_few_shot_example_scenario
-        FOREIGN KEY (scenario_id) REFERENCES few_shot_scenario (id)
+    UNIQUE KEY uk_llm_prompt_few_shot_key (prompt_id, example_key),
+    KEY idx_llm_prompt_few_shot_prompt (prompt_id, sort_order),
+    CONSTRAINT fk_llm_prompt_few_shot_prompt
+        FOREIGN KEY (prompt_id) REFERENCES llm_prompt (id)
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='提示词Few-shot示例表';
 
 CREATE TABLE IF NOT EXISTS few_shot_run_log (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,

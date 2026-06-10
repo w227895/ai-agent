@@ -327,7 +327,7 @@ public class FewShotPlatformService {
         return joinPromptSections(
                 baseSystemPrompt,
                 renderOutputSchema(scenario.outputSchema(), scenario.outputContract()),
-                renderExamples(scenario.examples()));
+                renderExamples(promptExamples(scenario)));
     }
 
     private String buildUserPrompt(FewShotScenario scenario, String input) {
@@ -344,6 +344,13 @@ public class FewShotPlatformService {
                 .replace("{current_time}", LocalDateTime.now().format(PROMPT_TIME_FORMATTER))
                 .replace("{email_content}", effectiveInput)
                 .trim();
+    }
+
+    private List<FewShotExample> promptExamples(FewShotScenario scenario) {
+        if (scenario.mainPrompt() != null && scenario.mainPrompt().examples() != null) {
+            return scenario.mainPrompt().examples();
+        }
+        return scenario.examples();
     }
 
     private String buildLegacySystemPrompt(FewShotScenario scenario) {
