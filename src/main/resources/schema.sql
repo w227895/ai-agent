@@ -81,13 +81,21 @@ CREATE TABLE IF NOT EXISTS few_shot_run_log (
     scenario_code VARCHAR(128) NOT NULL,
     scenario_name VARCHAR(255) NOT NULL,
     tool_profile VARCHAR(128) NOT NULL,
+    prompt_code VARCHAR(500) NOT NULL DEFAULT '',
+    schema_code VARCHAR(128) NOT NULL DEFAULT '',
     input_text MEDIUMTEXT NOT NULL,
+    final_prompt LONGTEXT NULL,
     output_text MEDIUMTEXT NULL,
+    input_tokens INT NOT NULL DEFAULT 0,
+    output_tokens INT NOT NULL DEFAULT 0,
+    total_tokens INT NOT NULL DEFAULT 0,
     status VARCHAR(32) NOT NULL,
     error_message TEXT NULL,
     elapsed_ms BIGINT NOT NULL DEFAULT 0,
+    model_time_ms BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    KEY idx_few_shot_run_log_scenario_created (scenario_code, created_at)
+    KEY idx_few_shot_run_log_scenario_created (scenario_code, created_at),
+    KEY idx_few_shot_run_log_status_created (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS few_shot_failure_case (

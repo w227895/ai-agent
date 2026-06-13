@@ -209,8 +209,39 @@
             font-size: 12px;
             font-weight: 800;
         }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(110px, 1fr));
+            gap: 10px;
+        }
+        .metric {
+            min-height: 62px;
+            display: grid;
+            align-content: center;
+            gap: 3px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+        }
+        .metric strong { font-size: 17px; }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+        .table th, .table td {
+            padding: 10px 11px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+        }
+        .table th { color: var(--muted); font-size: 12px; background: var(--soft); }
+        .table td { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .table .actions-cell { width: 190px; white-space: normal; }
         @media (max-width: 1080px) {
-            .shell, .list-edit, .split, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .shell, .list-edit, .split, .grid-2, .grid-3, .metrics { grid-template-columns: 1fr; }
             .side { position: static; height: auto; }
             .list { max-height: none; }
             .topbar { position: static; display: grid; }
@@ -230,6 +261,7 @@
             <button type="button" data-view="examples"><span class="nav-icon">F</span><span>Few-shot 列表</span></button>
             <button type="button" data-view="schemas"><span class="nav-icon">J</span><span>输出结构列表</span></button>
             <button type="button" data-view="run"><span class="nav-icon">R</span><span>运行测试</span></button>
+            <button type="button" data-view="results"><span class="nav-icon">T</span><span>测试结果</span></button>
         </nav>
         <div class="side-foot">
             <div>当前场景</div>
@@ -268,7 +300,7 @@
                             <span class="pill" id="scenarioCount">0 个场景</span>
                         </div>
                         <div class="panel-body">
-                            <div class="grid-2">
+                            <div class="grid-3">
                                 <div class="field">
                                     <label for="scenarioCode">场景编码</label>
                                     <input id="scenarioCode">
@@ -276,6 +308,13 @@
                                 <div class="field">
                                     <label for="scenarioName">场景名称</label>
                                     <input id="scenarioName">
+                                </div>
+                                <div class="field">
+                                    <label for="scenarioActive">状态</label>
+                                    <select id="scenarioActive">
+                                        <option value="true">启用</option>
+                                        <option value="false">禁用</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="grid-3">
@@ -298,6 +337,8 @@
                             </div>
                         </div>
                         <div class="actions editor-actions">
+                            <button id="disableScenarioButton" type="button">禁用场景</button>
+                            <button class="danger" id="deleteScenarioButton" type="button">删除场景</button>
                             <button class="primary" id="saveScenarioButton" type="button">保存场景</button>
                         </div>
                     </div>
@@ -367,6 +408,8 @@
                             </div>
                         </div>
                         <div class="actions editor-actions">
+                            <button id="copyPromptButton" type="button">复制主提示词</button>
+                            <button class="danger" id="deletePromptButton" type="button">删除主提示词</button>
                             <button class="primary" id="savePromptButton" type="button">保存主提示词</button>
                         </div>
                     </div>
@@ -421,6 +464,7 @@
                             </div>
                         </div>
                         <div class="actions editor-actions">
+                            <button id="copyExampleButton" type="button">复制示例</button>
                             <button class="danger" id="deleteExampleButton" type="button">删除示例</button>
                             <button class="primary" id="saveExamplesButton" type="button">保存 Few-shot</button>
                         </div>
@@ -481,6 +525,8 @@
                             </div>
                         </div>
                         <div class="actions editor-actions">
+                            <button id="copySchemaButton" type="button">复制输出结构</button>
+                            <button class="danger" id="deleteSchemaButton" type="button">删除输出结构</button>
                             <button class="primary" id="saveSchemaButton" type="button">保存输出结构</button>
                         </div>
                     </div>
@@ -525,6 +571,56 @@
                     </div>
                 </div>
             </section>
+
+            <section class="view" data-panel="results">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h3>测试结果</h3>
+                        <div class="actions">
+                            <button id="refreshResultsButton" type="button">刷新</button>
+                            <button class="primary" id="exportResultsButton" type="button">导出</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="search-row">
+                            <input id="resultSearch" placeholder="搜索场景、提示词、模板、输入或状态">
+                            <button id="resultSearchButton" type="button">查询</button>
+                        </div>
+                        <div style="overflow:auto">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>场景</th>
+                                    <th>主提示词</th>
+                                    <th>返回模板</th>
+                                    <th>状态</th>
+                                    <th>Token</th>
+                                    <th>耗时</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody id="resultList"></tbody>
+                            </table>
+                        </div>
+                        <div class="split">
+                            <div class="field">
+                                <label for="resultRequest">测试输入</label>
+                                <textarea class="tall" id="resultRequest" readonly></textarea>
+                            </div>
+                            <div class="field">
+                                <label for="resultResponse">响应结果</label>
+                                <textarea class="tall mono" id="resultResponse" readonly></textarea>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="resultPrompt">最终 Prompt</label>
+                            <textarea class="tall mono" id="resultPrompt" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </section>
     </main>
 </div>
@@ -532,11 +628,13 @@
 <script>
 const state = {
     scenarios: [],
+    runLogs: [],
     view: "scenarios",
     scenarioCode: "",
     promptCode: "",
     schemaCode: "",
     exampleIndex: 0,
+    resultKeyword: "",
     searches: { scenarios: "", prompts: "", examples: "", schemas: "" }
 };
 
@@ -551,6 +649,7 @@ const els = {
     scenarioCount: $("scenarioCount"),
     scenarioCode: $("scenarioCode"),
     scenarioName: $("scenarioName"),
+    scenarioActive: $("scenarioActive"),
     inputLabel: $("inputLabel"),
     activePrompt: $("activePrompt"),
     activeSchema: $("activeSchema"),
@@ -590,7 +689,12 @@ const els = {
     runPromptSelect: $("runPromptSelect"),
     runSchemaSelect: $("runSchemaSelect"),
     runInput: $("runInput"),
-    runResult: $("runResult")
+    runResult: $("runResult"),
+    resultSearch: $("resultSearch"),
+    resultList: $("resultList"),
+    resultRequest: $("resultRequest"),
+    resultResponse: $("resultResponse"),
+    resultPrompt: $("resultPrompt")
 };
 
 const viewCopy = {
@@ -598,7 +702,8 @@ const viewCopy = {
     prompts: ["主提示词列表", "按场景维护多个主提示词"],
     examples: ["Few-shot 列表", "按主提示词维护示例"],
     schemas: ["输出结构列表", "按主提示词维护多个输出结构"],
-    run: ["运行测试", "选择场景、主提示词和输出结构进行测试"]
+    run: ["运行测试", "选择场景、主提示词和输出结构进行测试"],
+    results: ["测试结果", "查询、查看详情、删除或导出测试记录"]
 };
 
 document.querySelectorAll(".nav button").forEach((button) => {
@@ -607,16 +712,35 @@ document.querySelectorAll(".nav button").forEach((button) => {
 $("refreshButton").addEventListener("click", loadAll);
 $("newScenarioButton").addEventListener("click", newScenario);
 $("saveScenarioButton").addEventListener("click", saveScenario);
+$("disableScenarioButton").addEventListener("click", disableScenario);
+$("deleteScenarioButton").addEventListener("click", deleteScenario);
 $("newPromptButton").addEventListener("click", newPrompt);
 $("savePromptButton").addEventListener("click", savePrompt);
+$("copyPromptButton").addEventListener("click", copyPrompt);
+$("deletePromptButton").addEventListener("click", deletePrompt);
 $("newExampleButton").addEventListener("click", newExample);
+$("copyExampleButton").addEventListener("click", copyExample);
 $("deleteExampleButton").addEventListener("click", deleteExample);
 $("saveExamplesButton").addEventListener("click", savePrompt);
 $("newSchemaButton").addEventListener("click", newSchema);
 $("saveSchemaButton").addEventListener("click", saveSchema);
+$("copySchemaButton").addEventListener("click", copySchema);
+$("deleteSchemaButton").addEventListener("click", deleteSchema);
 $("useExampleButton").addEventListener("click", useCurrentExample);
 $("previewButton").addEventListener("click", previewPrompt);
 $("runButton").addEventListener("click", runTest);
+$("refreshResultsButton").addEventListener("click", loadRunLogs);
+$("resultSearchButton").addEventListener("click", () => {
+    state.resultKeyword = els.resultSearch.value.trim();
+    loadRunLogs();
+});
+$("exportResultsButton").addEventListener("click", exportRunLogs);
+els.resultSearch.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        state.resultKeyword = els.resultSearch.value.trim();
+        loadRunLogs();
+    }
+});
 
 [
     ["scenarioSearch", "scenarios"],
@@ -671,6 +795,7 @@ function setView(view) {
     els.pageSubtitle.textContent = subtitle;
     document.querySelectorAll(".nav button").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
     document.querySelectorAll(".view").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === view));
+    if (view === "results") loadRunLogs();
     renderAll();
 }
 
@@ -701,6 +826,7 @@ function renderAll() {
     renderSchemaList();
     renderSchemaEditor();
     renderRunPanel();
+    renderRunLogs();
     const scenario = currentScenario();
     els.sideCurrent.textContent = scenario ? `${scenario.name || scenario.code}` : "-";
 }
@@ -740,7 +866,7 @@ function renderScenarioList() {
         <button class="item ${scenario.code === state.scenarioCode ? "active" : ""}" type="button" data-code="${escapeHtml(scenario.code)}">
             <strong class="item-title">${escapeHtml(scenario.name || scenario.code)}</strong>
             <span class="item-meta">${escapeHtml(scenario.code)}</span>
-            <span class="item-note">${(scenario.prompts || []).length} 个主提示词</span>
+            <span class="item-note">${scenario.active ? "启用" : "禁用"} · ${(scenario.prompts || []).length} 个主提示词</span>
         </button>
     `).join("") || `<div class="empty">没有匹配的场景</div>`;
     els.scenarioList.querySelectorAll("button[data-code]").forEach((button) => {
@@ -753,6 +879,8 @@ function renderScenarioEditor() {
     if (!scenario) return;
     els.scenarioCode.value = scenario.code || "";
     els.scenarioName.value = scenario.name || "";
+    els.scenarioActive.value = String(scenario.active ?? true);
+    $("disableScenarioButton").textContent = scenario.active ? "禁用场景" : "启用场景";
     els.inputLabel.value = scenario.inputLabel || "邮件正文";
     els.scenarioDescription.value = scenario.description || "";
     els.activePrompt.innerHTML = (scenario.prompts || []).map((prompt) =>
@@ -859,6 +987,32 @@ function renderRunPanel() {
     els.runSchemaSelect.value = state.schemaCode;
 }
 
+function renderRunLogs() {
+    if (!els.resultList) return;
+    els.resultList.innerHTML = state.runLogs.map((record) => `
+        <tr>
+            <td>${record.id}</td>
+            <td title="${escapeHtml(record.scenarioName || record.scenarioCode)}">${escapeHtml(record.scenarioName || record.scenarioCode)}</td>
+            <td title="${escapeHtml(record.promptCode || "")}">${escapeHtml(record.promptCode || "-")}</td>
+            <td title="${escapeHtml(record.schemaCode || "")}">${escapeHtml(record.schemaCode || "-")}</td>
+            <td>${escapeHtml(record.status || "")}</td>
+            <td>${record.totalTokens ?? 0}</td>
+            <td>${record.costTime ?? record.totalTime ?? 0} ms</td>
+            <td>${formatTime(record.createTime)}</td>
+            <td class="actions-cell">
+                <button type="button" data-result-view="${record.id}">详情</button>
+                <button class="danger" type="button" data-result-delete="${record.id}">删除</button>
+            </td>
+        </tr>
+    `).join("") || `<tr><td colspan="9">暂无测试结果</td></tr>`;
+    els.resultList.querySelectorAll("button[data-result-view]").forEach((button) => {
+        button.addEventListener("click", () => viewRunLog(button.dataset.resultView));
+    });
+    els.resultList.querySelectorAll("button[data-result-delete]").forEach((button) => {
+        button.addEventListener("click", () => deleteRunLog(button.dataset.resultDelete));
+    });
+}
+
 function selectScenario(code, keepView = false) {
     persistExampleForm();
     state.scenarioCode = code;
@@ -894,7 +1048,8 @@ function newScenario() {
         prompts: [],
         schemaCode: "",
         outputSchema: null,
-        examples: []
+        examples: [],
+        active: true
     });
     state.scenarioCode = code;
     state.promptCode = "";
@@ -980,6 +1135,7 @@ async function saveScenario() {
     if (!scenario) return;
     scenario.code = normalizeCode(els.scenarioCode.value);
     scenario.name = els.scenarioName.value.trim() || scenario.code;
+    scenario.active = els.scenarioActive.value === "true";
     scenario.inputLabel = els.inputLabel.value.trim() || "邮件正文";
     scenario.description = els.scenarioDescription.value.trim();
     scenario.promptCode = els.activePrompt.value || state.promptCode || scenario.promptCode;
@@ -993,6 +1149,33 @@ async function saveScenario() {
         setMessage("场景已保存", "ok");
     } catch (error) {
         setMessage(`场景保存失败：${error.message}`, "error");
+    }
+}
+
+async function disableScenario() {
+    const scenario = currentScenario();
+    if (!scenario) return;
+    const nextActive = !(scenario.active ?? true);
+    if (!confirm(`确认${nextActive ? "启用" : "禁用"}场景 ${scenario.name || scenario.code}？`)) return;
+    try {
+        await postJson(`/few-shot/scenarios/${encodeURIComponent(scenario.code)}/status?active=${nextActive}`, {});
+        await loadAll();
+        setMessage(`场景已${nextActive ? "启用" : "禁用"}`, "ok");
+    } catch (error) {
+        setMessage(`场景状态更新失败：${error.message}`, "error");
+    }
+}
+
+async function deleteScenario() {
+    const scenario = currentScenario();
+    if (!scenario || !confirm(`确认删除场景 ${scenario.name || scenario.code}？`)) return;
+    try {
+        await deleteRequest(`/few-shot/scenarios/${encodeURIComponent(scenario.code)}`);
+        state.scenarioCode = "";
+        await loadAll();
+        setMessage("场景已删除", "ok");
+    } catch (error) {
+        setMessage(`场景删除失败：${error.message}`, "error");
     }
 }
 
@@ -1022,6 +1205,32 @@ async function savePrompt() {
     }
 }
 
+async function copyPrompt() {
+    const prompt = currentPrompt();
+    if (!prompt) return;
+    try {
+        const saved = await postJson(`/few-shot/prompts/${encodeURIComponent(prompt.promptCode)}/copy`, {});
+        state.promptCode = saved.promptCode;
+        await loadAll();
+        setMessage("主提示词已复制", "ok");
+    } catch (error) {
+        setMessage(`主提示词复制失败：${error.message}`, "error");
+    }
+}
+
+async function deletePrompt() {
+    const prompt = currentPrompt();
+    if (!prompt || !confirm(`确认删除主提示词 ${prompt.promptCode}？`)) return;
+    try {
+        await deleteRequest(`/few-shot/prompts/${encodeURIComponent(prompt.promptCode)}`);
+        state.promptCode = "";
+        await loadAll();
+        setMessage("主提示词已删除", "ok");
+    } catch (error) {
+        setMessage(`主提示词删除失败：${error.message}`, "error");
+    }
+}
+
 async function saveSchema() {
     const schema = currentSchema();
     const prompt = currentPrompt();
@@ -1048,6 +1257,32 @@ async function saveSchema() {
     }
 }
 
+async function copySchema() {
+    const schema = currentSchema();
+    if (!schema) return;
+    try {
+        const saved = await postJson(`/few-shot/output-schemas/${encodeURIComponent(schema.schemaCode)}/copy`, {});
+        state.schemaCode = saved.schemaCode;
+        await loadAll();
+        setMessage("输出结构已复制", "ok");
+    } catch (error) {
+        setMessage(`输出结构复制失败：${error.message}`, "error");
+    }
+}
+
+async function deleteSchema() {
+    const schema = currentSchema();
+    if (!schema || !confirm(`确认删除输出结构 ${schema.schemaName || schema.schemaCode}？`)) return;
+    try {
+        await deleteRequest(`/few-shot/output-schemas/${encodeURIComponent(schema.schemaCode)}`);
+        state.schemaCode = "";
+        await loadAll();
+        setMessage("输出结构已删除", "ok");
+    } catch (error) {
+        setMessage(`输出结构删除失败：${error.message}`, "error");
+    }
+}
+
 function persistExampleForm() {
     const example = currentExample();
     if (!example) return;
@@ -1056,6 +1291,22 @@ function persistExampleForm() {
     example.tags = els.exampleTags.value.split(",").map((tag) => tag.trim()).filter(Boolean);
     example.input = els.exampleInput.value;
     example.expectedOutput = els.exampleExpected.value;
+}
+
+function copyExample() {
+    const prompt = currentPrompt();
+    const example = currentExample();
+    if (!prompt || !example) return;
+    persistExampleForm();
+    prompt.examples = prompt.examples || [];
+    prompt.examples.splice(state.exampleIndex + 1, 0, {
+        ...example,
+        id: `${example.id || "example"}-copy-${Date.now()}`,
+        title: `${example.title || "示例"} 副本`
+    });
+    state.exampleIndex += 1;
+    renderAll();
+    setMessage("示例已复制，保存 Few-shot 后生效", "ok");
 }
 
 function useCurrentExample() {
@@ -1088,10 +1339,64 @@ async function runTest() {
             schemaCode: state.schemaCode,
             input: els.runInput.value
         });
-        els.runResult.textContent = result.result || "";
+        els.runResult.textContent = [
+            `状态：${result.status || "SUCCESS"}`,
+            `输入 Token：${result.inputTokens ?? 0}`,
+            `输出 Token：${result.outputTokens ?? 0}`,
+            `总 Token：${result.totalTokens ?? 0}`,
+            `调用耗时：${result.costTime ?? 0} ms`,
+            `模型耗时：${result.modelTime ?? 0} ms`,
+            "",
+            "响应结果",
+            "",
+            result.result || ""
+        ].join("\n");
+        if (state.view === "results") loadRunLogs();
     } catch (error) {
         els.runResult.textContent = `运行失败：${error.message}`;
     }
+}
+
+async function loadRunLogs() {
+    try {
+        const page = await getJson(`/few-shot/run-logs?page=1&size=50&keyword=${encodeURIComponent(state.resultKeyword || "")}`);
+        state.runLogs = page.items || [];
+        renderRunLogs();
+        if (state.view === "results") setMessage(`已加载 ${state.runLogs.length} 条测试结果`, "ok");
+    } catch (error) {
+        setMessage(`测试结果加载失败：${error.message}`, "error");
+    }
+}
+
+async function viewRunLog(id) {
+    try {
+        const record = await getJson(`/few-shot/run-logs/${id}`);
+        els.resultRequest.value = record.requestContent || "";
+        els.resultResponse.value = record.responseContent || record.errorMessage || "";
+        els.resultPrompt.value = record.finalPrompt || "";
+        setMessage(`正在查看测试结果 #${id}`, "ok");
+    } catch (error) {
+        setMessage(`测试结果详情加载失败：${error.message}`, "error");
+    }
+}
+
+async function deleteRunLog(id) {
+    if (!confirm(`确认删除测试结果 #${id}？`)) return;
+    try {
+        await deleteRequest(`/few-shot/run-logs/${id}`);
+        await loadRunLogs();
+        els.resultRequest.value = "";
+        els.resultResponse.value = "";
+        els.resultPrompt.value = "";
+        setMessage("测试结果已删除", "ok");
+    } catch (error) {
+        setMessage(`测试结果删除失败：${error.message}`, "error");
+    }
+}
+
+function exportRunLogs() {
+    const url = `/few-shot/run-logs/export?keyword=${encodeURIComponent(state.resultKeyword || "")}`;
+    window.location.href = url;
 }
 
 function buildPreviewScenario() {
@@ -1124,7 +1429,8 @@ function scenarioPayload(scenario) {
         prompts: [],
         schemaCode: scenario.schemaCode || state.schemaCode,
         outputSchema: null,
-        examples: []
+        examples: [],
+        active: scenario.active ?? true
     };
 }
 
@@ -1145,17 +1451,17 @@ function currentExample() {
 }
 
 function setPromptDisabled(disabled) {
-    [els.promptCode, els.promptActive, els.priority, els.codeType, els.templateType, els.mailType, els.systemPrompt, els.userPrompt, $("savePromptButton")]
+    [els.promptCode, els.promptActive, els.priority, els.codeType, els.templateType, els.mailType, els.systemPrompt, els.userPrompt, $("copyPromptButton"), $("deletePromptButton"), $("savePromptButton")]
         .forEach((element) => element.disabled = disabled);
 }
 
 function setExampleDisabled(disabled) {
-    [els.exampleId, els.exampleTitle, els.exampleTags, els.exampleInput, els.exampleExpected, $("deleteExampleButton"), $("saveExamplesButton")]
+    [els.exampleId, els.exampleTitle, els.exampleTags, els.exampleInput, els.exampleExpected, $("copyExampleButton"), $("deleteExampleButton"), $("saveExamplesButton")]
         .forEach((element) => element.disabled = disabled);
 }
 
 function setSchemaDisabled(disabled) {
-    [els.schemaCode, els.schemaName, els.schemaActive, els.schemaJson, els.fieldDescriptionJson, els.emptyValueRule, $("saveSchemaButton")]
+    [els.schemaCode, els.schemaName, els.schemaActive, els.schemaJson, els.fieldDescriptionJson, els.emptyValueRule, $("copySchemaButton"), $("deleteSchemaButton"), $("saveSchemaButton")]
         .forEach((element) => element.disabled = disabled);
 }
 
@@ -1184,6 +1490,15 @@ async function postJson(url, payload) {
     return response.status === 204 ? null : response.json();
 }
 
+async function deleteRequest(url) {
+    const response = await fetch(url, {method: "DELETE"});
+    if (!response.ok) {
+        let detail = "";
+        try { detail = (await response.json()).message || ""; } catch (ignore) {}
+        throw new Error(detail || `HTTP ${response.status}`);
+    }
+}
+
 function setMessage(text, type = "") {
     els.message.textContent = text || "";
     els.message.className = `message ${type}`.trim();
@@ -1209,6 +1524,11 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+function formatTime(value) {
+    if (!value) return "-";
+    return String(value).replace("T", " ").slice(0, 19);
 }
 </script>
 </body>

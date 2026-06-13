@@ -72,6 +72,12 @@ public class FewShotController {
         return fewShotPlatformService.saveScenario(scenario);
     }
 
+    @PostMapping("/scenarios/{code}/status")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setScenarioStatus(@PathVariable("code") String code, @RequestParam("active") boolean active) {
+        fewShotPlatformService.setScenarioActive(code, active);
+    }
+
     @DeleteMapping("/scenarios/{code}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteScenario(@PathVariable("code") String code) {
@@ -88,6 +94,23 @@ public class FewShotController {
         return fewShotPlatformService.savePromptTemplate(promptTemplate);
     }
 
+    @PostMapping("/prompts/{promptCode}/copy")
+    public LlmPromptTemplate copyPromptTemplate(@PathVariable("promptCode") String promptCode) {
+        return fewShotPlatformService.copyPromptTemplate(promptCode);
+    }
+
+    @PostMapping("/prompts/{promptCode}/status")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setPromptStatus(@PathVariable("promptCode") String promptCode, @RequestParam("active") boolean active) {
+        fewShotPlatformService.setPromptActive(promptCode, active);
+    }
+
+    @DeleteMapping("/prompts/{promptCode}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePromptTemplate(@PathVariable("promptCode") String promptCode) {
+        fewShotPlatformService.deletePromptTemplate(promptCode);
+    }
+
     @GetMapping("/prompts/{promptCode}/output-schemas")
     public List<LlmOutputSchema> listPromptOutputSchemas(@PathVariable("promptCode") String promptCode) {
         return fewShotPlatformService.listOutputSchemasByPrompt(promptCode);
@@ -101,6 +124,23 @@ public class FewShotController {
     @PostMapping("/output-schemas")
     public LlmOutputSchema saveOutputSchema(@RequestBody LlmOutputSchema outputSchema) {
         return fewShotPlatformService.saveOutputSchema(outputSchema);
+    }
+
+    @PostMapping("/output-schemas/{schemaCode}/copy")
+    public LlmOutputSchema copyOutputSchema(@PathVariable("schemaCode") String schemaCode) {
+        return fewShotPlatformService.copyOutputSchema(schemaCode);
+    }
+
+    @PostMapping("/output-schemas/{schemaCode}/status")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setOutputSchemaStatus(@PathVariable("schemaCode") String schemaCode, @RequestParam("active") boolean active) {
+        fewShotPlatformService.setOutputSchemaActive(schemaCode, active);
+    }
+
+    @DeleteMapping("/output-schemas/{schemaCode}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteOutputSchema(@PathVariable("schemaCode") String schemaCode) {
+        fewShotPlatformService.deleteOutputSchema(schemaCode);
     }
 
     @PostMapping("/scenarios/{code}/examples")
@@ -135,6 +175,30 @@ public class FewShotController {
     @PostMapping("/run")
     public FewShotRunResult run(@RequestBody FewShotRunRequest request) {
         return fewShotPlatformService.run(request.scenarioCode(), request.input(), request.promptCode(), request.schemaCode());
+    }
+
+    @GetMapping("/run-logs")
+    public FewShotPlatformService.PageResult<com.ke.deepseektools.fewshot.PromptTestRecord> listRunLogs(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword) {
+        return fewShotPlatformService.listRunLogsPage(page, size, keyword);
+    }
+
+    @GetMapping("/run-logs/{id}")
+    public com.ke.deepseektools.fewshot.PromptTestRecord getRunLog(@PathVariable("id") long id) {
+        return fewShotPlatformService.getRunLog(id);
+    }
+
+    @DeleteMapping("/run-logs/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRunLog(@PathVariable("id") long id) {
+        fewShotPlatformService.deleteRunLog(id);
+    }
+
+    @GetMapping(value = "/run-logs/export", produces = "text/csv;charset=UTF-8")
+    public String exportRunLogs(@RequestParam(name = "keyword", defaultValue = "") String keyword) {
+        return fewShotPlatformService.exportRunLogsCsv(keyword);
     }
 
     @ExceptionHandler(FewShotScenarioNotFoundException.class)

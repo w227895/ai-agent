@@ -73,12 +73,11 @@ public class FewShotScenarioRepository {
 
     public List<FewShotScenario> findAll() {
         return jdbcTemplate.query("""
-                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code, s.is_active,
                        s.schema_code, s.scenario_name AS name, s.description, s.input_label,
                        s.system_instruction, s.output_contract, s.tool_profile
                 FROM llm_scenario s
                 JOIN llm_prompt p ON p.id = s.prompt_id
-                WHERE s.is_active = 1
                 ORDER BY s.scenario_code
                 """, this::mapScenarioRow).stream()
                 .map(this::attachPromptLayers)
@@ -97,7 +96,6 @@ public class FewShotScenarioRepository {
                     OR s.description LIKE ?
                     OR p.prompt_code LIKE ?
                     OR s.schema_code LIKE ?)
-                  AND s.is_active = 1
                 """,
                 Long.class,
                 searchTerm.raw(),
@@ -113,7 +111,7 @@ public class FewShotScenarioRepository {
         SearchTerm searchTerm = toSearchTerm(keyword);
         int offset = (Math.max(page, 1) - 1) * size;
         return jdbcTemplate.query("""
-                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code, s.is_active,
                        s.schema_code, s.scenario_name AS name, s.description, s.input_label,
                        s.system_instruction, s.output_contract, s.tool_profile
                 FROM llm_scenario s
@@ -124,7 +122,6 @@ public class FewShotScenarioRepository {
                     OR s.description LIKE ?
                     OR p.prompt_code LIKE ?
                     OR s.schema_code LIKE ?)
-                  AND s.is_active = 1
                 ORDER BY s.update_time DESC, s.scenario_code
                 LIMIT ? OFFSET ?
                 """,
@@ -147,12 +144,12 @@ public class FewShotScenarioRepository {
         }
 
         return jdbcTemplate.query("""
-                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code, s.is_active,
                        s.schema_code, s.scenario_name AS name, s.description, s.input_label,
                        s.system_instruction, s.output_contract, s.tool_profile
                 FROM llm_scenario s
                 JOIN llm_prompt p ON p.id = s.prompt_id
-                WHERE s.scenario_code = ? AND s.is_active = 1
+                WHERE s.scenario_code = ?
                 """, this::mapScenarioRow, normalizeCode(code)).stream()
                 .findFirst()
                 .map(this::attachPromptLayers);
@@ -166,7 +163,7 @@ public class FewShotScenarioRepository {
                 INSERT INTO llm_scenario
                     (scenario_code, scenario_name, description, input_label, prompt_id, schema_code,
                      system_instruction, output_contract, tool_profile, is_active)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     scenario_name = VALUES(scenario_name),
                     description = VALUES(description),
@@ -176,7 +173,7 @@ public class FewShotScenarioRepository {
                     system_instruction = VALUES(system_instruction),
                     output_contract = VALUES(output_contract),
                     tool_profile = VALUES(tool_profile),
-                    is_active = 1
+                    is_active = VALUES(is_active)
                 """,
                 normalized.code(),
                 normalized.name(),
@@ -186,7 +183,8 @@ public class FewShotScenarioRepository {
                 normalized.schemaCode(),
                 normalized.systemInstruction(),
                 normalized.outputContract(),
-                normalized.toolProfile());
+                normalized.toolProfile(),
+                normalized.active() ? 1 : 0);
 
         jdbcTemplate.update("""
                 UPDATE llm_prompt
@@ -372,21 +370,203 @@ public class FewShotScenarioRepository {
                 .toList();
     }
 
-    public void recordRun(FewShotScenario scenario, String input, String output, String status, String errorMessage,
-            long elapsedMs) {
+    public void recordRun(FewShotScenario scenario, String input, String finalPrompt, String output, String status,
+            String errorMessage, int inputTokens, int outputTokens, long elapsedMs, long modelTimeMs) {
         jdbcTemplate.update("""
                 INSERT INTO few_shot_run_log
-                    (scenario_code, scenario_name, tool_profile, input_text, output_text, status, error_message, elapsed_ms)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    (scenario_code, scenario_name, tool_profile, prompt_code, schema_code, input_text, final_prompt,
+                     output_text, input_tokens, output_tokens, total_tokens, status, error_message, elapsed_ms, model_time_ms)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 scenario.code(),
                 scenario.name(),
                 scenario.toolProfile(),
+                scenario.promptCode(),
+                scenario.schemaCode(),
                 input == null ? "" : input,
+                finalPrompt,
                 output,
+                inputTokens,
+                outputTokens,
+                inputTokens + outputTokens,
                 status,
                 errorMessage,
-                elapsedMs);
+                elapsedMs,
+                modelTimeMs);
+    }
+
+    public long countRunLogs(String keyword) {
+        SearchTerm searchTerm = toSearchTerm(keyword);
+        Long total = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*)
+                FROM few_shot_run_log
+                WHERE (? = ''
+                    OR scenario_code LIKE ?
+                    OR scenario_name LIKE ?
+                    OR prompt_code LIKE ?
+                    OR schema_code LIKE ?
+                    OR input_text LIKE ?
+                    OR output_text LIKE ?
+                    OR status LIKE ?)
+                """,
+                Long.class,
+                searchTerm.raw(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like());
+        return total == null ? 0 : total;
+    }
+
+    public List<PromptTestRecord> findRunLogs(String keyword, int page, int size) {
+        SearchTerm searchTerm = toSearchTerm(keyword);
+        int offset = (Math.max(page, 1) - 1) * size;
+        return jdbcTemplate.query("""
+                SELECT id, scenario_code, scenario_name, prompt_code, schema_code, input_text, final_prompt,
+                       output_text, input_tokens, output_tokens, total_tokens, status, error_message,
+                       elapsed_ms, model_time_ms, created_at
+                FROM few_shot_run_log
+                WHERE (? = ''
+                    OR scenario_code LIKE ?
+                    OR scenario_name LIKE ?
+                    OR prompt_code LIKE ?
+                    OR schema_code LIKE ?
+                    OR input_text LIKE ?
+                    OR output_text LIKE ?
+                    OR status LIKE ?)
+                ORDER BY created_at DESC, id DESC
+                LIMIT ? OFFSET ?
+                """,
+                this::mapRunLog,
+                searchTerm.raw(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
+                size,
+                offset);
+    }
+
+    public Optional<PromptTestRecord> findRunLog(long id) {
+        return jdbcTemplate.query("""
+                SELECT id, scenario_code, scenario_name, prompt_code, schema_code, input_text, final_prompt,
+                       output_text, input_tokens, output_tokens, total_tokens, status, error_message,
+                       elapsed_ms, model_time_ms, created_at
+                FROM few_shot_run_log
+                WHERE id = ?
+                """, this::mapRunLog, id).stream().findFirst();
+    }
+
+    @Transactional
+    public void deleteRunLog(long id) {
+        jdbcTemplate.update("DELETE FROM few_shot_run_log WHERE id = ?", id);
+    }
+
+    @Transactional
+    public void setScenarioActive(String code, boolean active) {
+        int updated = jdbcTemplate.update(
+                "UPDATE llm_scenario SET is_active = ? WHERE scenario_code = ?",
+                active ? 1 : 0,
+                normalizeCode(code));
+        if (updated == 0) {
+            throw new FewShotScenarioNotFoundException(code);
+        }
+    }
+
+    @Transactional
+    public void deletePromptTemplate(String promptCode) {
+        jdbcTemplate.update("DELETE FROM llm_prompt WHERE prompt_code = ?", promptCode);
+    }
+
+    @Transactional
+    public LlmPromptTemplate copyPromptTemplate(String promptCode) {
+        LlmPromptTemplate source = findActivePromptByCode(promptCode)
+                .orElseThrow(() -> new IllegalArgumentException("prompt not found: " + promptCode));
+        String copiedCode = uniquePromptCode(source.promptCode() + "-copy");
+        LlmPromptTemplate copied = new LlmPromptTemplate(
+                copiedCode,
+                source.scenarioCode(),
+                source.codeType(),
+                source.templateType(),
+                source.userPrompt(),
+                source.priority() + 1,
+                false,
+                source.systemPrompt(),
+                source.mailType(),
+                List.of(),
+                source.examples());
+        savePromptTemplate(copied);
+        long sourceId = findPromptId(source.promptCode());
+        long targetId = findPromptId(copiedCode);
+        findOutputSchemasByPrompt(source.promptCode()).forEach(schema -> saveOutputSchema(new LlmOutputSchema(
+                uniqueSchemaCode(schema.schemaCode() + "-copy"),
+                copiedCode,
+                schema.schemaName() + " 副本",
+                schema.schemaJson(),
+                schema.fieldDescriptionJson(),
+                schema.emptyValueRule(),
+                false)));
+        jdbcTemplate.update("DELETE FROM llm_prompt_few_shot WHERE prompt_id = ?", targetId);
+        insertExamples(targetId, findExamples(sourceId));
+        return findPromptById(targetId).map(this::attachPromptChildren).orElse(copied);
+    }
+
+    @Transactional
+    public void setPromptActive(String promptCode, boolean active) {
+        jdbcTemplate.update("UPDATE llm_prompt SET is_active = ? WHERE prompt_code = ?", active ? 1 : 0, promptCode);
+    }
+
+    @Transactional
+    public void deleteOutputSchema(String schemaCode) {
+        jdbcTemplate.update("DELETE FROM llm_output_schema WHERE schema_code = ?", normalizeCode(schemaCode));
+    }
+
+    @Transactional
+    public LlmOutputSchema copyOutputSchema(String schemaCode) {
+        LlmOutputSchema source = findActiveOutputSchemaByCode(schemaCode)
+                .orElseThrow(() -> new IllegalArgumentException("output schema not found: " + schemaCode));
+        LlmOutputSchema copied = new LlmOutputSchema(
+                uniqueSchemaCode(source.schemaCode() + "-copy"),
+                source.promptCode(),
+                source.schemaName() + " 副本",
+                source.schemaJson(),
+                source.fieldDescriptionJson(),
+                source.emptyValueRule(),
+                false);
+        return saveOutputSchema(copied);
+    }
+
+    @Transactional
+    public void setOutputSchemaActive(String schemaCode, boolean active) {
+        jdbcTemplate.update("UPDATE llm_output_schema SET is_active = ? WHERE schema_code = ?",
+                active ? 1 : 0,
+                normalizeCode(schemaCode));
+    }
+
+    private String uniquePromptCode(String baseCode) {
+        String normalized = baseCode == null || baseCode.isBlank() ? "prompt-copy" : baseCode.trim();
+        String candidate = normalized;
+        int suffix = 2;
+        while (findPromptIdOrNull(candidate) != null) {
+            candidate = normalized + "-" + suffix++;
+        }
+        return candidate;
+    }
+
+    private String uniqueSchemaCode(String baseCode) {
+        String normalized = normalizeCode(baseCode == null || baseCode.isBlank() ? "schema-copy" : baseCode);
+        String candidate = normalized;
+        int suffix = 2;
+        while (findActiveOutputSchemaByCode(candidate).isPresent()) {
+            candidate = normalized + "-" + suffix++;
+        }
+        return candidate;
     }
 
     private FewShotFailureCase insertFailureCase(String scenarioCode, FewShotFailureCase failureCase) {
@@ -420,7 +600,7 @@ public class FewShotScenarioRepository {
             return Optional.empty();
         }
         return jdbcTemplate.query("""
-                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code,
+                SELECT s.id, s.scenario_code AS code, s.prompt_id, p.prompt_code, s.is_active,
                        s.schema_code, s.scenario_name AS name, s.description, s.input_label,
                        s.system_instruction, s.output_contract, s.tool_profile
                 FROM llm_scenario s
@@ -507,7 +687,8 @@ public class FewShotScenarioRepository {
                 List.of(),
                 rs.getString("schema_code"),
                 null,
-                List.of());
+                List.of(),
+                rs.getInt("is_active") == 1);
         return new ScenarioRow(rs.getLong("id"), rs.getLong("prompt_id"), scenario);
     }
 
@@ -558,6 +739,30 @@ public class FewShotScenarioRepository {
                 createdAt == null ? null : createdAt.toLocalDateTime());
     }
 
+    private PromptTestRecord mapRunLog(ResultSet rs, int rowNum) throws SQLException {
+        var createdAt = rs.getTimestamp("created_at");
+        long elapsedMs = rs.getLong("elapsed_ms");
+        long modelTimeMs = rs.getLong("model_time_ms");
+        return new PromptTestRecord(
+                rs.getLong("id"),
+                rs.getString("scenario_code"),
+                rs.getString("scenario_name"),
+                rs.getString("prompt_code"),
+                rs.getString("schema_code"),
+                rs.getString("input_text"),
+                rs.getString("final_prompt"),
+                rs.getString("output_text"),
+                rs.getInt("input_tokens"),
+                rs.getInt("output_tokens"),
+                rs.getInt("total_tokens"),
+                elapsedMs,
+                modelTimeMs,
+                elapsedMs,
+                rs.getString("status"),
+                rs.getString("error_message"),
+                createdAt == null ? null : createdAt.toLocalDateTime());
+    }
+
     private FewShotScenario normalizeScenario(FewShotScenario scenario) {
         String code = normalizeCode(scenario.code());
         String toolProfile = blankToDefault(scenario.toolProfile(), FewShotScenario.NO_TOOLS);
@@ -579,7 +784,8 @@ public class FewShotScenarioRepository {
                 scenario.prompts() == null ? List.of() : List.copyOf(scenario.prompts()),
                 schemaCode,
                 scenario.outputSchema(),
-                List.copyOf(examples));
+                List.copyOf(examples),
+                scenario.active());
     }
 
     private FewShotScenario attachPromptLayers(ScenarioRow row) {
@@ -775,6 +981,29 @@ public class FewShotScenarioRepository {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """);
         jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS few_shot_run_log (
+                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                    scenario_code VARCHAR(128) NOT NULL,
+                    scenario_name VARCHAR(255) NOT NULL,
+                    tool_profile VARCHAR(128) NOT NULL,
+                    prompt_code VARCHAR(500) NOT NULL DEFAULT '',
+                    schema_code VARCHAR(128) NOT NULL DEFAULT '',
+                    input_text MEDIUMTEXT NOT NULL,
+                    final_prompt LONGTEXT NULL,
+                    output_text MEDIUMTEXT NULL,
+                    input_tokens INT NOT NULL DEFAULT 0,
+                    output_tokens INT NOT NULL DEFAULT 0,
+                    total_tokens INT NOT NULL DEFAULT 0,
+                    status VARCHAR(32) NOT NULL,
+                    error_message TEXT NULL,
+                    elapsed_ms BIGINT NOT NULL DEFAULT 0,
+                    model_time_ms BIGINT NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    KEY idx_few_shot_run_log_scenario_created (scenario_code, created_at),
+                    KEY idx_few_shot_run_log_status_created (status, created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                """);
+        jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS few_shot_failure_case (
                     id BIGINT PRIMARY KEY AUTO_INCREMENT,
                     scenario_code VARCHAR(128) NOT NULL,
@@ -786,6 +1015,13 @@ public class FewShotScenarioRepository {
                     KEY idx_few_shot_failure_case_scenario_created (scenario_code, created_at)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """);
+        ensureRunLogColumn("prompt_code", "ALTER TABLE few_shot_run_log ADD COLUMN prompt_code VARCHAR(500) NOT NULL DEFAULT '' AFTER tool_profile");
+        ensureRunLogColumn("schema_code", "ALTER TABLE few_shot_run_log ADD COLUMN schema_code VARCHAR(128) NOT NULL DEFAULT '' AFTER prompt_code");
+        ensureRunLogColumn("final_prompt", "ALTER TABLE few_shot_run_log ADD COLUMN final_prompt LONGTEXT NULL AFTER input_text");
+        ensureRunLogColumn("input_tokens", "ALTER TABLE few_shot_run_log ADD COLUMN input_tokens INT NOT NULL DEFAULT 0 AFTER output_text");
+        ensureRunLogColumn("output_tokens", "ALTER TABLE few_shot_run_log ADD COLUMN output_tokens INT NOT NULL DEFAULT 0 AFTER input_tokens");
+        ensureRunLogColumn("total_tokens", "ALTER TABLE few_shot_run_log ADD COLUMN total_tokens INT NOT NULL DEFAULT 0 AFTER output_tokens");
+        ensureRunLogColumn("model_time_ms", "ALTER TABLE few_shot_run_log ADD COLUMN model_time_ms BIGINT NOT NULL DEFAULT 0 AFTER elapsed_ms");
         jdbcTemplate.update("""
                 UPDATE llm_prompt p
                 JOIN llm_scenario s ON s.prompt_id = p.id
@@ -854,6 +1090,12 @@ public class FewShotScenarioRepository {
             }
         });
         return Boolean.TRUE.equals(exists);
+    }
+
+    private void ensureRunLogColumn(String columnName, String ddl) {
+        if (tableExists("few_shot_run_log") && !columnExists("few_shot_run_log", columnName)) {
+            jdbcTemplate.execute(ddl);
+        }
     }
 
     private void seedDefaultMainPrompt() {

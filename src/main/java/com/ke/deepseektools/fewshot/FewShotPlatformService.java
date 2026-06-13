@@ -63,6 +63,10 @@ public class FewShotPlatformService {
         return scenarioRepository.findPromptTemplatesByScenario(scenarioCode);
     }
 
+    public void setScenarioActive(String code, boolean active) {
+        scenarioRepository.setScenarioActive(code, active);
+    }
+
     public List<LlmOutputSchema> listOutputSchemas() {
         return scenarioRepository.findAllOutputSchemas();
     }
@@ -73,6 +77,30 @@ public class FewShotPlatformService {
 
     public List<LlmOutputSchema> listOutputSchemasByPrompt(String promptCode) {
         return scenarioRepository.findOutputSchemasByPrompt(promptCode);
+    }
+
+    public void deletePromptTemplate(String promptCode) {
+        scenarioRepository.deletePromptTemplate(promptCode);
+    }
+
+    public LlmPromptTemplate copyPromptTemplate(String promptCode) {
+        return scenarioRepository.copyPromptTemplate(promptCode);
+    }
+
+    public void setPromptActive(String promptCode, boolean active) {
+        scenarioRepository.setPromptActive(promptCode, active);
+    }
+
+    public void deleteOutputSchema(String schemaCode) {
+        scenarioRepository.deleteOutputSchema(schemaCode);
+    }
+
+    public LlmOutputSchema copyOutputSchema(String schemaCode) {
+        return scenarioRepository.copyOutputSchema(schemaCode);
+    }
+
+    public void setOutputSchemaActive(String schemaCode, boolean active) {
+        scenarioRepository.setOutputSchemaActive(schemaCode, active);
     }
 
     public FewShotScenario addExample(String scenarioCode, FewShotExample example) {
@@ -184,21 +212,84 @@ public class FewShotPlatformService {
                 ? scenario.examples().stream().findFirst().map(FewShotExample::input).orElse("")
                 : input.trim();
         long startedAt = System.currentTimeMillis();
+        String systemPrompt = buildSystemPrompt(scenario);
+        String userPrompt = buildUserPrompt(scenario, effectiveInput);
+        String finalPrompt = renderFinalPrompt(systemPrompt, userPrompt);
+        int inputTokens = estimateTokens(finalPrompt);
 
         ChatClient.ChatClientRequestSpec request = chatClient.prompt()
-                .system(buildSystemPrompt(scenario))
-                .user(buildUserPrompt(scenario, effectiveInput));
+                .system(systemPrompt)
+                .user(userPrompt);
 
         try {
+            long modelStartedAt = System.currentTimeMillis();
             String output = request.call().content();
-            scenarioRepository.recordRun(scenario, effectiveInput, output, "SUCCESS", null,
-                    System.currentTimeMillis() - startedAt);
-            return new FewShotRunResult(scenario.code(), scenario.name(), scenario.toolProfile(), effectiveInput, output);
+            long modelTimeMs = System.currentTimeMillis() - modelStartedAt;
+            long elapsedMs = System.currentTimeMillis() - startedAt;
+            int outputTokens = estimateTokens(output);
+            scenarioRepository.recordRun(scenario, effectiveInput, finalPrompt, output, "SUCCESS", null,
+                    inputTokens, outputTokens, elapsedMs, modelTimeMs);
+            return new FewShotRunResult(
+                    scenario.code(),
+                    scenario.name(),
+                    scenario.promptCode(),
+                    scenario.schemaCode(),
+                    scenario.toolProfile(),
+                    effectiveInput,
+                    finalPrompt,
+                    output,
+                    inputTokens,
+                    outputTokens,
+                    inputTokens + outputTokens,
+                    elapsedMs,
+                    modelTimeMs,
+                    elapsedMs,
+                    "SUCCESS");
         } catch (RuntimeException exception) {
-            scenarioRepository.recordRun(scenario, effectiveInput, null, "FAILED", exception.getMessage(),
-                    System.currentTimeMillis() - startedAt);
+            long elapsedMs = System.currentTimeMillis() - startedAt;
+            scenarioRepository.recordRun(scenario, effectiveInput, finalPrompt, null, "FAIL", exception.getMessage(),
+                    inputTokens, 0, elapsedMs, elapsedMs);
             throw exception;
         }
+    }
+
+    public PageResult<PromptTestRecord> listRunLogsPage(int page, int size, String keyword) {
+        int normalizedPage = Math.max(page, 1);
+        int normalizedSize = Math.min(Math.max(size, 1), 100);
+        long total = scenarioRepository.countRunLogs(keyword);
+        List<PromptTestRecord> items = scenarioRepository.findRunLogs(keyword, normalizedPage, normalizedSize);
+        return new PageResult<>(items, total, normalizedPage, normalizedSize);
+    }
+
+    public PromptTestRecord getRunLog(long id) {
+        return scenarioRepository.findRunLog(id)
+                .orElseThrow(() -> new IllegalArgumentException("test result not found: " + id));
+    }
+
+    public void deleteRunLog(long id) {
+        scenarioRepository.deleteRunLog(id);
+    }
+
+    public String exportRunLogsCsv(String keyword) {
+        List<PromptTestRecord> records = scenarioRepository.findRunLogs(keyword, 1, 1000);
+        StringBuilder builder = new StringBuilder("\uFEFF");
+        builder.append("id,sceneCode,sceneName,promptCode,templateCode,status,inputTokens,outputTokens,totalTokens,costTime,createTime,requestContent,responseContent\n");
+        for (PromptTestRecord record : records) {
+            builder.append(csv(record.id())).append(',')
+                    .append(csv(record.scenarioCode())).append(',')
+                    .append(csv(record.scenarioName())).append(',')
+                    .append(csv(record.promptCode())).append(',')
+                    .append(csv(record.schemaCode())).append(',')
+                    .append(csv(record.status())).append(',')
+                    .append(csv(record.inputTokens())).append(',')
+                    .append(csv(record.outputTokens())).append(',')
+                    .append(csv(record.totalTokens())).append(',')
+                    .append(csv(record.costTime())).append(',')
+                    .append(csv(record.createTime())).append(',')
+                    .append(csv(record.requestContent())).append(',')
+                    .append(csv(record.responseContent())).append('\n');
+        }
+        return builder.toString();
     }
 
     public PromptPreview previewPrompt(String scenarioCode, String input) {
@@ -391,6 +482,40 @@ public class FewShotPlatformService {
                 .trim();
     }
 
+    private String renderFinalPrompt(String systemPrompt, String userPrompt) {
+        return """
+                System Prompt
+
+                %s
+
+                User Prompt
+
+                %s
+                """.formatted(blankToEmpty(systemPrompt), blankToEmpty(userPrompt)).trim();
+    }
+
+    private int estimateTokens(String text) {
+        if (text == null || text.isBlank()) {
+            return 0;
+        }
+        int cjkChars = 0;
+        int otherChars = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (Character.UnicodeScript.of(ch) == Character.UnicodeScript.HAN) {
+                cjkChars++;
+            } else if (!Character.isWhitespace(ch)) {
+                otherChars++;
+            }
+        }
+        return Math.max(1, cjkChars + (int) Math.ceil(otherChars / 4.0));
+    }
+
+    private String csv(Object value) {
+        String text = value == null ? "" : String.valueOf(value);
+        return "\"" + text.replace("\"", "\"\"") + "\"";
+    }
+
     private List<FewShotExample> promptExamples(FewShotScenario scenario) {
         if (scenario.mainPrompt() != null && scenario.mainPrompt().examples() != null) {
             return scenario.mainPrompt().examples();
@@ -493,9 +618,19 @@ public class FewShotPlatformService {
     public record FewShotRunResult(
             String scenarioCode,
             String scenarioName,
+            String promptCode,
+            String schemaCode,
             String toolProfile,
             String input,
-            String result) {
+            String finalPrompt,
+            String result,
+            int inputTokens,
+            int outputTokens,
+            int totalTokens,
+            long costTime,
+            long modelTime,
+            long totalTime,
+            String status) {
     }
 
     public record PromptPreview(
