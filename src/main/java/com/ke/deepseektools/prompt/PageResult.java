@@ -10,6 +10,6 @@ public record PageResult<T>(
         int totalPages) {
 
     public PageResult(List<T> items, long total, int page, int size) {
-        this(items, total, page, size, (int) Math.ceil((double) total / size));
+        this(items, total, page, size, Math.max(1, (int) Math.ceil((double) total / size)));
     }
 }

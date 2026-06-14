@@ -172,6 +172,7 @@
             margin-top: 14px;
             color: #64748b;
         }
+        .pager select { width: auto; min-width: 108px; padding: 8px 10px; }
         .test-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .field-block { margin-bottom: 16px; }
         .result-box {
@@ -235,6 +236,8 @@
         <div class="logo">大模型平台</div>
         <div class="menu-item active" data-page="scenes">场景管理</div>
         <div class="menu-item" data-page="prompts">提示词管理</div>
+        <div class="menu-item" data-page="outputSchemas">输出结构管理</div>
+        <div class="menu-item" data-page="fewShots">Few-shot管理</div>
         <div class="menu-item" data-page="test">提示词测试</div>
     </aside>
 
@@ -243,7 +246,7 @@
             <div class="top-line">
                 <div>
                     <h1 id="pageTitle">场景管理</h1>
-                    <p id="pageSubtitle">维护 code_type / template_type / mail_type 的业务场景含义，并供提示词直接关联。</p>
+                    <p id="pageSubtitle">维护航变邮件识别、航变短信识别、售后邮件识别三大业务场景。</p>
                 </div>
                 <div class="message" id="message"></div>
             </div>
@@ -252,6 +255,8 @@
         <div class="tabs">
             <div class="tab active" data-page="scenes">场景管理</div>
             <div class="tab" data-page="prompts">提示词管理</div>
+            <div class="tab" data-page="outputSchemas">输出结构管理</div>
+            <div class="tab" data-page="fewShots">Few-shot管理</div>
             <div class="tab" data-page="test">提示词测试</div>
         </div>
 
@@ -278,9 +283,6 @@
                         <tr>
                             <th>ID</th>
                             <th>场景</th>
-                            <th>代码类型</th>
-                            <th>模板类型</th>
-                            <th>邮件类型</th>
                             <th>状态</th>
                             <th>说明</th>
                             <th>更新时间</th>
@@ -337,6 +339,7 @@
                             <th>代码类型</th>
                             <th>模板类型</th>
                             <th>邮件类型</th>
+                            <th>输出结构</th>
                             <th>优先级</th>
                             <th>状态</th>
                             <th>用户提示词</th>
@@ -351,7 +354,116 @@
                     <span id="promptPageInfo">-</span>
                     <div class="btn-row">
                         <button class="btn-default" type="button" id="promptPrevButton">上一页</button>
+                        <select id="promptPageSelect"></select>
                         <button class="btn-default" type="button" id="promptNextButton">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-outputSchemas" class="hidden">
+            <div class="card">
+                <div class="search-grid">
+                    <div>
+                        <label>结构搜索</label>
+                        <input id="outputSchemaKeyword" placeholder="编码、名称、说明、结构内容">
+                    </div>
+                    <div>
+                        <label>场景</label>
+                        <select id="outputSchemaSceneFilter"></select>
+                    </div>
+                    <div>
+                        <label>启用状态</label>
+                        <select id="outputSchemaActiveFilter">
+                            <option value="">全部</option>
+                            <option value="true">启用</option>
+                            <option value="false">禁用</option>
+                        </select>
+                    </div>
+                    <div class="btn-row" style="align-self:end;">
+                        <button class="btn-primary" type="button" id="outputSchemaSearchButton">查询</button>
+                        <button class="btn-default" type="button" id="outputSchemaResetButton">重置</button>
+                        <button class="btn-primary" type="button" id="newOutputSchemaButton">新增结构</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>结构</th>
+                            <th>场景</th>
+                            <th>状态</th>
+                            <th>说明</th>
+                            <th>结构内容</th>
+                            <th>更新时间</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="outputSchemaRows"></tbody>
+                    </table>
+                </div>
+                <div class="pager">
+                    <span id="outputSchemaPageInfo">-</span>
+                    <div class="btn-row">
+                        <button class="btn-default" type="button" id="outputSchemaPrevButton">上一页</button>
+                        <button class="btn-default" type="button" id="outputSchemaNextButton">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-fewShots" class="hidden">
+            <div class="card">
+                <div class="search-grid">
+                    <div>
+                        <label>Few-shot 搜索</label>
+                        <input id="fewShotKeyword" placeholder="标题、内容、提示词代码">
+                    </div>
+                    <div>
+                        <label>提示词</label>
+                        <select id="fewShotPromptFilter"></select>
+                    </div>
+                    <div>
+                        <label>启用状态</label>
+                        <select id="fewShotActiveFilter">
+                            <option value="">全部</option>
+                            <option value="true">启用</option>
+                            <option value="false">禁用</option>
+                        </select>
+                    </div>
+                    <div class="btn-row" style="align-self:end;">
+                        <button class="btn-primary" type="button" id="fewShotSearchButton">查询</button>
+                        <button class="btn-default" type="button" id="fewShotResetButton">重置</button>
+                        <button class="btn-primary" type="button" id="newFewShotButton">新增 Few-shot</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>提示词</th>
+                            <th>标题</th>
+                            <th>排序</th>
+                            <th>状态</th>
+                            <th>内容</th>
+                            <th>更新时间</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="fewShotRows"></tbody>
+                    </table>
+                </div>
+                <div class="pager">
+                    <span id="fewShotPageInfo">-</span>
+                    <div class="btn-row">
+                        <button class="btn-default" type="button" id="fewShotPrevButton">上一页</button>
+                        <button class="btn-default" type="button" id="fewShotNextButton">下一页</button>
                     </div>
                 </div>
             </div>
@@ -425,30 +537,6 @@
                     <option value="false">禁用</option>
                 </select>
             </div>
-            <div>
-                <label>代码类型 code_type</label>
-                <input id="sceneCodeType" required maxlength="50">
-            </div>
-            <div>
-                <label>代码类型名称</label>
-                <input id="sceneCodeTypeName" required maxlength="100">
-            </div>
-            <div>
-                <label>模板类型 template_type</label>
-                <input id="sceneTemplateType" required maxlength="50">
-            </div>
-            <div>
-                <label>模板类型名称</label>
-                <input id="sceneTemplateTypeName" required maxlength="100">
-            </div>
-            <div>
-                <label>邮件类型 mail_type</label>
-                <input id="sceneMailType" type="number" step="1">
-            </div>
-            <div>
-                <label>邮件类型名称</label>
-                <input id="sceneMailTypeName" required maxlength="100">
-            </div>
             <div class="field-full">
                 <label>说明 description</label>
                 <textarea id="sceneDescription" maxlength="500"></textarea>
@@ -482,17 +570,21 @@
                 <label>场景</label>
                 <select id="promptScene" required></select>
             </div>
-            <div>
-                <label>代码类型</label>
-                <input id="promptCodeTypeDisplay" disabled>
+            <div class="field-full">
+                <label>输出结构 output_schema</label>
+                <select id="promptOutputSchema"></select>
             </div>
             <div>
-                <label>模板类型</label>
-                <input id="promptTemplateTypeDisplay" disabled>
+                <label>代码类型 code_type</label>
+                <select id="promptCodeType" required></select>
             </div>
             <div>
-                <label>邮件类型</label>
-                <input id="promptMailTypeDisplay" disabled>
+                <label>模板类型 template_type</label>
+                <select id="promptTemplateType" required></select>
+            </div>
+            <div>
+                <label>邮件类型 mail_type</label>
+                <select id="promptMailType" required></select>
             </div>
             <div>
                 <label>优先级 priority</label>
@@ -523,6 +615,106 @@
     </form>
 </div>
 
+<div class="drawer-mask" id="outputSchemaDrawerMask">
+    <form class="drawer" id="outputSchemaForm">
+        <div class="drawer-header">
+            <h2 id="outputSchemaDrawerTitle">编辑输出结构</h2>
+            <button class="btn-default" type="button" data-close-output-schema>关闭</button>
+        </div>
+        <div class="form-grid">
+            <div>
+                <label>ID</label>
+                <input id="outputSchemaId" disabled>
+            </div>
+            <div>
+                <label>结构编码 schema_code</label>
+                <input id="outputSchemaCode" required maxlength="100">
+            </div>
+            <div>
+                <label>结构名称 schema_name</label>
+                <input id="outputSchemaName" required maxlength="100">
+            </div>
+            <div>
+                <label>是否启用 is_active</label>
+                <select id="outputSchemaActive">
+                    <option value="true">启用</option>
+                    <option value="false">禁用</option>
+                </select>
+            </div>
+            <div class="field-full">
+                <label>场景</label>
+                <select id="outputSchemaScene"></select>
+            </div>
+            <div class="field-full">
+                <label>说明 description</label>
+                <textarea id="outputSchemaDescription" maxlength="500"></textarea>
+            </div>
+            <div class="field-full">
+                <label>提示词片段 prompt_fragment</label>
+                <textarea class="mono" id="outputSchemaPromptFragment" style="min-height:220px;"></textarea>
+            </div>
+            <div class="field-full">
+                <label>结构定义 schema_content</label>
+                <textarea class="mono" id="outputSchemaContent" style="min-height:220px;"></textarea>
+            </div>
+            <div class="field-full">
+                <label>示例输出 sample_output</label>
+                <textarea class="mono" id="outputSchemaSampleOutput" style="min-height:180px;"></textarea>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn-danger" type="button" id="deleteOutputSchemaButton">删除</button>
+            <button class="btn-default" type="button" id="toggleOutputSchemaButton">启停</button>
+            <button class="btn-default" type="button" data-close-output-schema>取消</button>
+            <button class="btn-primary" type="submit" id="saveOutputSchemaButton">保存</button>
+        </div>
+    </form>
+</div>
+
+<div class="drawer-mask" id="fewShotDrawerMask">
+    <form class="drawer" id="fewShotForm">
+        <div class="drawer-header">
+            <h2 id="fewShotDrawerTitle">编辑 Few-shot</h2>
+            <button class="btn-default" type="button" data-close-few-shot>关闭</button>
+        </div>
+        <div class="form-grid">
+            <div>
+                <label>ID</label>
+                <input id="fewShotId" disabled>
+            </div>
+            <div>
+                <label>排序 sort_order</label>
+                <input id="fewShotSortOrder" type="number" step="1">
+            </div>
+            <div class="field-full">
+                <label>关联提示词</label>
+                <select id="fewShotPrompt" required></select>
+            </div>
+            <div>
+                <label>标题 title</label>
+                <input id="fewShotTitle" maxlength="200">
+            </div>
+            <div>
+                <label>是否启用 is_active</label>
+                <select id="fewShotActive">
+                    <option value="true">启用</option>
+                    <option value="false">禁用</option>
+                </select>
+            </div>
+            <div class="field-full">
+                <label>示例内容 content</label>
+                <textarea class="mono" id="fewShotContent" style="min-height:260px;"></textarea>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn-danger" type="button" id="deleteFewShotButton">删除</button>
+            <button class="btn-default" type="button" id="toggleFewShotButton">启停</button>
+            <button class="btn-default" type="button" data-close-few-shot>取消</button>
+            <button class="btn-primary" type="submit" id="saveFewShotButton">保存</button>
+        </div>
+    </form>
+</div>
+
 <script>
 const state = {
     page: "scenes",
@@ -531,12 +723,22 @@ const state = {
     activeScenes: [],
     scenes: [],
     prompts: [],
+    promptOptions: [],
+    outputSchemas: [],
+    activeOutputSchemas: [],
+    fewShots: [],
     scenePage: {page: 1, size: 20, total: 0, totalPages: 1, keyword: ""},
     promptPage: {page: 1, size: 20, total: 0, totalPages: 1, keyword: ""},
+    outputSchemaPage: {page: 1, size: 20, total: 0, totalPages: 1, keyword: ""},
+    fewShotPage: {page: 1, size: 20, total: 0, totalPages: 1, keyword: ""},
     editingScene: null,
     sceneMode: "edit",
     editingPrompt: null,
-    promptMode: "edit"
+    promptMode: "edit",
+    editingOutputSchema: null,
+    outputSchemaMode: "edit",
+    editingFewShot: null,
+    fewShotMode: "edit"
 };
 
 const sampleMail = `Dear Agent,
@@ -567,7 +769,15 @@ const els = {
     promptRows: $("promptRows"),
     promptPageInfo: $("promptPageInfo"),
     promptPrevButton: $("promptPrevButton"),
+    promptPageSelect: $("promptPageSelect"),
     promptNextButton: $("promptNextButton"),
+    fewShotKeyword: $("fewShotKeyword"),
+    fewShotPromptFilter: $("fewShotPromptFilter"),
+    fewShotActiveFilter: $("fewShotActiveFilter"),
+    fewShotRows: $("fewShotRows"),
+    fewShotPageInfo: $("fewShotPageInfo"),
+    fewShotPrevButton: $("fewShotPrevButton"),
+    fewShotNextButton: $("fewShotNextButton"),
     sceneDrawerMask: $("sceneDrawerMask"),
     sceneForm: $("sceneForm"),
     sceneDrawerTitle: $("sceneDrawerTitle"),
@@ -575,12 +785,6 @@ const els = {
     sceneCode: $("sceneCode"),
     sceneName: $("sceneName"),
     sceneActive: $("sceneActive"),
-    sceneCodeType: $("sceneCodeType"),
-    sceneCodeTypeName: $("sceneCodeTypeName"),
-    sceneTemplateType: $("sceneTemplateType"),
-    sceneTemplateTypeName: $("sceneTemplateTypeName"),
-    sceneMailType: $("sceneMailType"),
-    sceneMailTypeName: $("sceneMailTypeName"),
     sceneDescription: $("sceneDescription"),
     deleteSceneButton: $("deleteSceneButton"),
     toggleSceneButton: $("toggleSceneButton"),
@@ -591,9 +795,10 @@ const els = {
     promptId: $("promptId"),
     promptCode: $("promptCode"),
     promptScene: $("promptScene"),
-    promptCodeTypeDisplay: $("promptCodeTypeDisplay"),
-    promptTemplateTypeDisplay: $("promptTemplateTypeDisplay"),
-    promptMailTypeDisplay: $("promptMailTypeDisplay"),
+    promptOutputSchema: $("promptOutputSchema"),
+    promptCodeType: $("promptCodeType"),
+    promptTemplateType: $("promptTemplateType"),
+    promptMailType: $("promptMailType"),
     priority: $("priority"),
     promptActive: $("promptActive"),
     systemPrompt: $("systemPrompt"),
@@ -601,6 +806,40 @@ const els = {
     deletePromptButton: $("deletePromptButton"),
     togglePromptButton: $("togglePromptButton"),
     savePromptButton: $("savePromptButton"),
+    outputSchemaKeyword: $("outputSchemaKeyword"),
+    outputSchemaSceneFilter: $("outputSchemaSceneFilter"),
+    outputSchemaActiveFilter: $("outputSchemaActiveFilter"),
+    outputSchemaRows: $("outputSchemaRows"),
+    outputSchemaPageInfo: $("outputSchemaPageInfo"),
+    outputSchemaPrevButton: $("outputSchemaPrevButton"),
+    outputSchemaNextButton: $("outputSchemaNextButton"),
+    outputSchemaDrawerMask: $("outputSchemaDrawerMask"),
+    outputSchemaForm: $("outputSchemaForm"),
+    outputSchemaDrawerTitle: $("outputSchemaDrawerTitle"),
+    outputSchemaId: $("outputSchemaId"),
+    outputSchemaCode: $("outputSchemaCode"),
+    outputSchemaName: $("outputSchemaName"),
+    outputSchemaScene: $("outputSchemaScene"),
+    outputSchemaActive: $("outputSchemaActive"),
+    outputSchemaDescription: $("outputSchemaDescription"),
+    outputSchemaPromptFragment: $("outputSchemaPromptFragment"),
+    outputSchemaContent: $("outputSchemaContent"),
+    outputSchemaSampleOutput: $("outputSchemaSampleOutput"),
+    deleteOutputSchemaButton: $("deleteOutputSchemaButton"),
+    toggleOutputSchemaButton: $("toggleOutputSchemaButton"),
+    saveOutputSchemaButton: $("saveOutputSchemaButton"),
+    fewShotDrawerMask: $("fewShotDrawerMask"),
+    fewShotForm: $("fewShotForm"),
+    fewShotDrawerTitle: $("fewShotDrawerTitle"),
+    fewShotId: $("fewShotId"),
+    fewShotPrompt: $("fewShotPrompt"),
+    fewShotTitle: $("fewShotTitle"),
+    fewShotSortOrder: $("fewShotSortOrder"),
+    fewShotActive: $("fewShotActive"),
+    fewShotContent: $("fewShotContent"),
+    deleteFewShotButton: $("deleteFewShotButton"),
+    toggleFewShotButton: $("toggleFewShotButton"),
+    saveFewShotButton: $("saveFewShotButton"),
     testPrompt: $("testPrompt"),
     sender: $("sender"),
     emailContent: $("emailContent"),
@@ -618,6 +857,8 @@ document.querySelectorAll("[data-result-tab]").forEach((node) => {
 });
 document.querySelectorAll("[data-close-scene]").forEach((node) => node.addEventListener("click", closeSceneDrawer));
 document.querySelectorAll("[data-close-prompt]").forEach((node) => node.addEventListener("click", closePromptDrawer));
+document.querySelectorAll("[data-close-output-schema]").forEach((node) => node.addEventListener("click", closeOutputSchemaDrawer));
+document.querySelectorAll("[data-close-few-shot]").forEach((node) => node.addEventListener("click", closeFewShotDrawer));
 
 $("sceneSearchButton").addEventListener("click", () => {
     state.scenePage.keyword = els.sceneKeyword.value.trim();
@@ -640,13 +881,69 @@ $("promptSearchButton").addEventListener("click", () => {
 });
 $("promptResetButton").addEventListener("click", resetPromptSearch);
 $("newPromptButton").addEventListener("click", () => openPromptDrawer(emptyPrompt(), "edit"));
+els.promptSceneFilter.addEventListener("change", () => {
+    state.promptPage.page = 1;
+    loadPrompts();
+});
+els.promptActiveFilter.addEventListener("change", () => {
+    state.promptPage.page = 1;
+    loadPrompts();
+});
 els.promptPrevButton.addEventListener("click", () => changePromptPage(-1));
+els.promptPageSelect.addEventListener("change", () => {
+    state.promptPage.page = Number(els.promptPageSelect.value || 1);
+    loadPrompts();
+});
 els.promptNextButton.addEventListener("click", () => changePromptPage(1));
 els.promptRows.addEventListener("click", onPromptAction);
 els.promptForm.addEventListener("submit", savePrompt);
 els.deletePromptButton.addEventListener("click", () => deletePrompt(state.editingPrompt));
 els.togglePromptButton.addEventListener("click", () => togglePrompt(state.editingPrompt));
-els.promptScene.addEventListener("change", renderPromptSceneFields);
+els.promptScene.addEventListener("change", () => {});
+
+$("outputSchemaSearchButton").addEventListener("click", () => {
+    state.outputSchemaPage.keyword = els.outputSchemaKeyword.value.trim();
+    state.outputSchemaPage.page = 1;
+    loadOutputSchemas();
+});
+$("outputSchemaResetButton").addEventListener("click", resetOutputSchemaSearch);
+$("newOutputSchemaButton").addEventListener("click", () => openOutputSchemaDrawer(emptyOutputSchema(), "edit"));
+els.outputSchemaSceneFilter.addEventListener("change", () => {
+    state.outputSchemaPage.page = 1;
+    loadOutputSchemas();
+});
+els.outputSchemaActiveFilter.addEventListener("change", () => {
+    state.outputSchemaPage.page = 1;
+    loadOutputSchemas();
+});
+els.outputSchemaPrevButton.addEventListener("click", () => changeOutputSchemaPage(-1));
+els.outputSchemaNextButton.addEventListener("click", () => changeOutputSchemaPage(1));
+els.outputSchemaRows.addEventListener("click", onOutputSchemaAction);
+els.outputSchemaForm.addEventListener("submit", saveOutputSchema);
+els.deleteOutputSchemaButton.addEventListener("click", () => deleteOutputSchema(state.editingOutputSchema));
+els.toggleOutputSchemaButton.addEventListener("click", () => toggleOutputSchema(state.editingOutputSchema));
+
+$("fewShotSearchButton").addEventListener("click", () => {
+    state.fewShotPage.keyword = els.fewShotKeyword.value.trim();
+    state.fewShotPage.page = 1;
+    loadFewShots();
+});
+$("fewShotResetButton").addEventListener("click", resetFewShotSearch);
+$("newFewShotButton").addEventListener("click", () => openFewShotDrawer(emptyFewShot(), "edit"));
+els.fewShotPromptFilter.addEventListener("change", () => {
+    state.fewShotPage.page = 1;
+    loadFewShots();
+});
+els.fewShotActiveFilter.addEventListener("change", () => {
+    state.fewShotPage.page = 1;
+    loadFewShots();
+});
+els.fewShotPrevButton.addEventListener("click", () => changeFewShotPage(-1));
+els.fewShotNextButton.addEventListener("click", () => changeFewShotPage(1));
+els.fewShotRows.addEventListener("click", onFewShotAction);
+els.fewShotForm.addEventListener("submit", saveFewShot);
+els.deleteFewShotButton.addEventListener("click", () => deleteFewShot(state.editingFewShot));
+els.toggleFewShotButton.addEventListener("click", () => toggleFewShot(state.editingFewShot));
 
 $("runTestButton").addEventListener("click", runTest);
 $("sampleButton").addEventListener("click", () => els.emailContent.value = sampleMail);
@@ -657,8 +954,12 @@ bootstrap();
 
 async function bootstrap() {
     await refreshSceneData();
+    await refreshOutputSchemaData();
+    await loadPromptOptions();
     await loadScenes();
     await loadPrompts();
+    await loadOutputSchemas();
+    await loadFewShots();
 }
 
 async function refreshSceneData() {
@@ -667,18 +968,26 @@ async function refreshSceneData() {
     renderSceneControls();
 }
 
+async function refreshOutputSchemaData() {
+    state.activeOutputSchemas = await getJson("/api/output-schemas/active");
+    renderOutputSchemaControls();
+}
+
 function renderSceneControls() {
     const sceneOptions = [`<option value="">全部场景</option>`].concat(
         state.dictionaries.scenarios.map((scene) => `<option value="${scene.id}">${escapeHtml(scene.sceneName)}</option>`)
     );
     els.promptSceneFilter.innerHTML = sceneOptions.join("");
+    els.outputSchemaSceneFilter.innerHTML = sceneOptions.join("");
+    renderPromptDictionaryOptions();
     renderPromptSceneOptions();
+    renderOutputSchemaSceneOptions();
 }
 
 function renderPromptSceneOptions(selectedId = "") {
     const current = selectedId || els.promptScene.value;
     const options = [`<option value="">请选择场景</option>`].concat(
-        state.activeScenes.map((scene) => `<option value="${scene.id}">${escapeHtml(scene.sceneName)} (${escapeHtml(scene.codeType)}/${escapeHtml(scene.templateType)}/${escapeHtml(scene.mailType)})</option>`)
+        state.activeScenes.map((scene) => `<option value="${scene.id}">${escapeHtml(scene.sceneName)}</option>`)
     );
     const currentScene = findSceneById(current);
     if (current && currentScene && !currentScene.active && !state.activeScenes.some((scene) => String(scene.id) === String(current))) {
@@ -686,7 +995,55 @@ function renderPromptSceneOptions(selectedId = "") {
     }
     els.promptScene.innerHTML = options.join("");
     els.promptScene.value = current;
-    renderPromptSceneFields();
+}
+
+function renderOutputSchemaSceneOptions(selectedId = "") {
+    const current = selectedId || els.outputSchemaScene.value;
+    const options = [`<option value="">不限定场景</option>`].concat(
+        state.activeScenes.map((scene) => `<option value="${scene.id}">${escapeHtml(scene.sceneName)}</option>`)
+    );
+    const currentScene = findSceneById(current);
+    if (current && currentScene && !currentScene.active && !state.activeScenes.some((scene) => String(scene.id) === String(current))) {
+        options.push(`<option value="${currentScene.id}">${escapeHtml(currentScene.sceneName)}（已禁用）</option>`);
+    }
+    els.outputSchemaScene.innerHTML = options.join("");
+    els.outputSchemaScene.value = current;
+}
+
+function renderOutputSchemaControls() {
+    renderPromptOutputSchemaOptions();
+    renderOutputSchemaSceneOptions();
+}
+
+function renderPromptOutputSchemaOptions(selectedId = "") {
+    const current = selectedId || els.promptOutputSchema.value;
+    const options = [`<option value="">不关联输出结构</option>`].concat(
+        state.activeOutputSchemas.map((schema) => {
+            const scene = findSceneById(schema.sceneId);
+            const sceneName = scene ? ` / ${scene.sceneName}` : "";
+            return `<option value="${schema.id}">${escapeHtml(schema.schemaName)}${escapeHtml(sceneName)}</option>`;
+        })
+    );
+    const currentSchema = findOutputSchemaById(current);
+    if (current && currentSchema && !currentSchema.active && !state.activeOutputSchemas.some((schema) => String(schema.id) === String(current))) {
+        options.push(`<option value="${currentSchema.id}">${escapeHtml(currentSchema.schemaName)}（已禁用）</option>`);
+    }
+    els.promptOutputSchema.innerHTML = options.join("");
+    els.promptOutputSchema.value = current;
+}
+
+function renderPromptDictionaryOptions() {
+    renderDictionarySelect(els.promptCodeType, state.dictionaries.codeTypes);
+    renderDictionarySelect(els.promptTemplateType, state.dictionaries.templateTypes);
+    renderDictionarySelect(els.promptMailType, state.dictionaries.mailTypes);
+}
+
+function renderDictionarySelect(select, items) {
+    const current = select.value;
+    select.innerHTML = (items || []).map((item) =>
+        `<option value="${escapeHtml(item.value)}">${escapeHtml(item.value)} - ${escapeHtml(item.label)}</option>`
+    ).join("");
+    select.value = current;
 }
 
 function showPage(page) {
@@ -694,10 +1051,14 @@ function showPage(page) {
     document.querySelectorAll("[data-page]").forEach((node) => node.classList.toggle("active", node.dataset.page === page));
     $("page-scenes").classList.toggle("hidden", page !== "scenes");
     $("page-prompts").classList.toggle("hidden", page !== "prompts");
+    $("page-outputSchemas").classList.toggle("hidden", page !== "outputSchemas");
+    $("page-fewShots").classList.toggle("hidden", page !== "fewShots");
     $("page-test").classList.toggle("hidden", page !== "test");
     const titles = {
-        scenes: ["场景管理", "维护 code_type / template_type / mail_type 的业务场景含义，并供提示词直接关联。"],
-        prompts: ["提示词管理", "维护 llm_prompt 表配置，提示词通过 scene_id 关联场景。"],
+        scenes: ["场景管理", "维护航变邮件识别、航变短信识别、售后邮件识别三大业务场景。"],
+        prompts: ["提示词管理", "维护 llm_prompt 表配置，场景归类和数字分类字段分开管理。"],
+        outputSchemas: ["输出结构管理", "维护多条提示词共用的 JSON 输出结构，测试时自动拼入最终 Prompt。"],
+        fewShots: ["Few-shot管理", "维护每条提示词关联的 Few-shot 示例，测试时按排序自动拼入 Prompt。"],
         test: ["提示词测试", "选择提示词和邮件内容，直接调用大模型查看返回结果。"]
     };
     els.pageTitle.textContent = titles[page][0];
@@ -715,15 +1076,12 @@ async function loadScenes() {
 
 function renderSceneRows() {
     if (!state.scenes.length) {
-        els.sceneRows.innerHTML = `<tr><td colspan="9">暂无场景</td></tr>`;
+        els.sceneRows.innerHTML = `<tr><td colspan="6">暂无场景</td></tr>`;
     } else {
         els.sceneRows.innerHTML = state.scenes.map((scene) => `
             <tr>
                 <td>${scene.id}</td>
                 <td><div class="code-cell">${escapeHtml(scene.sceneName)}</div><div class="type-value">${escapeHtml(scene.sceneCode)}</div></td>
-                <td>${escapeHtml(scene.codeType)} - ${escapeHtml(scene.codeTypeName)}</td>
-                <td>${escapeHtml(scene.templateType)} - ${escapeHtml(scene.templateTypeName)}</td>
-                <td>${escapeHtml(scene.mailType)} - ${escapeHtml(scene.mailTypeName)}</td>
                 <td><span class="tag ${scene.active ? "tag-green" : "tag-red"}">${scene.active ? "启用" : "禁用"}</span></td>
                 <td><div class="prompt-text">${escapeHtml(scene.description)}</div></td>
                 <td>${formatTime(scene.updateTime)}</td>
@@ -742,29 +1100,40 @@ function renderSceneRows() {
 }
 
 async function loadPrompts() {
-    const page = await getJson(`/api/prompts?page=${state.promptPage.page}&size=${state.promptPage.size}&keyword=${encodeURIComponent(state.promptPage.keyword)}`);
-    state.prompts = (page.items || []).filter(matchesPromptFilters);
+    const params = new URLSearchParams({
+        page: state.promptPage.page,
+        size: state.promptPage.size,
+        keyword: state.promptPage.keyword
+    });
+    if (els.promptSceneFilter.value) params.set("sceneId", els.promptSceneFilter.value);
+    if (els.promptActiveFilter.value) params.set("active", els.promptActiveFilter.value);
+    const page = await getJson(`/api/prompts?${params.toString()}`);
+    state.prompts = page.items || [];
     state.promptPage.total = page.total || 0;
     state.promptPage.totalPages = page.totalPages || 1;
+    state.promptPage.page = page.page || 1;
     renderPromptRows();
-    renderTestOptions();
+    renderPromptSelectors();
 }
 
-function matchesPromptFilters(prompt) {
-    if (els.promptSceneFilter.value) {
-        const scene = resolvePromptScene(prompt);
-        if (!scene || String(scene.id) !== els.promptSceneFilter.value) return false;
-    }
-    if (els.promptActiveFilter.value && String(prompt.active) !== els.promptActiveFilter.value) return false;
-    return true;
+async function loadPromptOptions() {
+    const page = await getJson("/api/prompts?page=1&size=100&keyword=");
+    state.promptOptions = page.items || [];
+    renderPromptSelectors();
+}
+
+function renderPromptSelectors() {
+    renderTestOptions();
+    renderFewShotPromptOptions();
 }
 
 function renderPromptRows() {
     if (!state.prompts.length) {
-        els.promptRows.innerHTML = `<tr><td colspan="11">暂无提示词</td></tr>`;
+        els.promptRows.innerHTML = `<tr><td colspan="12">暂无提示词</td></tr>`;
     } else {
         els.promptRows.innerHTML = state.prompts.map((prompt) => {
             const scene = resolvePromptScene(prompt);
+            const outputSchema = findOutputSchemaById(prompt.outputSchemaId);
             return `
                 <tr>
                     <td>${prompt.id}</td>
@@ -773,6 +1142,7 @@ function renderPromptRows() {
                     <td>${dictValue("codeTypes", prompt.codeType)}</td>
                     <td>${dictValue("templateTypes", prompt.templateType)}</td>
                     <td>${dictValue("mailTypes", prompt.mailType)}</td>
+                    <td>${outputSchema ? `<span class="tag tag-gray">${escapeHtml(outputSchema.schemaName)}</span><div class="type-value">${escapeHtml(outputSchema.schemaCode)}</div>` : `<span class="tag tag-red">未关联</span>`}</td>
                     <td>${prompt.priority ?? 0}</td>
                     <td><span class="tag ${prompt.active ? "tag-green" : "tag-red"}">${prompt.active ? "启用" : "禁用"}</span></td>
                     <td><div class="prompt-text">${escapeHtml(prompt.userPrompt)}</div></td>
@@ -780,6 +1150,7 @@ function renderPromptRows() {
                     <td>
                         <button class="btn-link" type="button" data-prompt-action="view" data-id="${prompt.id}">查看</button>
                         <button class="btn-link" type="button" data-prompt-action="edit" data-id="${prompt.id}">编辑</button>
+                        <button class="btn-link" type="button" data-prompt-action="fewShot" data-id="${prompt.id}">Few-shot</button>
                         <button class="btn-link" type="button" data-prompt-action="toggle" data-id="${prompt.id}">${prompt.active ? "禁用" : "启用"}</button>
                         <button class="btn-link danger" type="button" data-prompt-action="delete" data-id="${prompt.id}">删除</button>
                     </td>
@@ -787,8 +1158,65 @@ function renderPromptRows() {
         }).join("");
     }
     els.promptPageInfo.textContent = `第 ${state.promptPage.page} / ${state.promptPage.totalPages} 页，共 ${state.promptPage.total} 条`;
+    renderPromptPageSelect();
     els.promptPrevButton.disabled = state.promptPage.page <= 1;
     els.promptNextButton.disabled = state.promptPage.page >= state.promptPage.totalPages;
+}
+
+function renderPromptPageSelect() {
+    const totalPages = Math.max(1, Number(state.promptPage.totalPages || 1));
+    const currentPage = Math.min(Math.max(1, Number(state.promptPage.page || 1)), totalPages);
+    els.promptPageSelect.innerHTML = Array.from({length: totalPages}, (_, index) => {
+        const page = index + 1;
+        return `<option value="${page}">第 ${page} 页</option>`;
+    }).join("");
+    els.promptPageSelect.value = String(currentPage);
+    els.promptPageSelect.disabled = totalPages <= 1;
+}
+
+async function loadOutputSchemas() {
+    const params = new URLSearchParams({
+        page: state.outputSchemaPage.page,
+        size: state.outputSchemaPage.size,
+        keyword: state.outputSchemaPage.keyword
+    });
+    if (els.outputSchemaSceneFilter.value) params.set("sceneId", els.outputSchemaSceneFilter.value);
+    if (els.outputSchemaActiveFilter.value) params.set("active", els.outputSchemaActiveFilter.value);
+    const page = await getJson(`/api/output-schemas?${params.toString()}`);
+    state.outputSchemas = page.items || [];
+    state.outputSchemaPage.total = page.total || 0;
+    state.outputSchemaPage.totalPages = page.totalPages || 1;
+    state.outputSchemaPage.page = page.page || 1;
+    renderOutputSchemaRows();
+}
+
+function renderOutputSchemaRows() {
+    if (!state.outputSchemas.length) {
+        els.outputSchemaRows.innerHTML = `<tr><td colspan="8">暂无输出结构</td></tr>`;
+    } else {
+        els.outputSchemaRows.innerHTML = state.outputSchemas.map((schema) => {
+            const scene = findSceneById(schema.sceneId);
+            return `
+                <tr>
+                    <td>${schema.id}</td>
+                    <td><div class="code-cell" title="${escapeHtml(schema.schemaCode)}">${escapeHtml(schema.schemaName)}</div><div class="type-value">${escapeHtml(schema.schemaCode)}</div></td>
+                    <td>${scene ? `<span class="tag tag-blue">${escapeHtml(scene.sceneName)}</span>` : `<span class="tag tag-gray">不限定</span>`}</td>
+                    <td><span class="tag ${schema.active ? "tag-green" : "tag-red"}">${schema.active ? "启用" : "禁用"}</span></td>
+                    <td><div class="prompt-text">${escapeHtml(schema.description)}</div></td>
+                    <td><div class="prompt-text">${escapeHtml(schema.promptFragment || schema.schemaContent)}</div></td>
+                    <td>${formatTime(schema.updateTime)}</td>
+                    <td>
+                        <button class="btn-link" type="button" data-output-schema-action="view" data-id="${schema.id}">查看</button>
+                        <button class="btn-link" type="button" data-output-schema-action="edit" data-id="${schema.id}">编辑</button>
+                        <button class="btn-link" type="button" data-output-schema-action="toggle" data-id="${schema.id}">${schema.active ? "禁用" : "启用"}</button>
+                        <button class="btn-link danger" type="button" data-output-schema-action="delete" data-id="${schema.id}">删除</button>
+                    </td>
+                </tr>`;
+        }).join("");
+    }
+    els.outputSchemaPageInfo.textContent = `第 ${state.outputSchemaPage.page} / ${state.outputSchemaPage.totalPages} 页，共 ${state.outputSchemaPage.total} 条`;
+    els.outputSchemaPrevButton.disabled = state.outputSchemaPage.page <= 1;
+    els.outputSchemaNextButton.disabled = state.outputSchemaPage.page >= state.outputSchemaPage.totalPages;
 }
 
 function onSceneAction(event) {
@@ -809,8 +1237,29 @@ function onPromptAction(event) {
     if (!prompt) return;
     if (button.dataset.promptAction === "view") openPromptDrawer(prompt, "view");
     if (button.dataset.promptAction === "edit") openPromptDrawer(prompt, "edit");
+    if (button.dataset.promptAction === "fewShot") openFewShotPage(prompt);
     if (button.dataset.promptAction === "toggle") togglePrompt(prompt);
     if (button.dataset.promptAction === "delete") deletePrompt(prompt);
+}
+
+function onOutputSchemaAction(event) {
+    const button = event.target.closest("[data-output-schema-action]");
+    if (!button) return;
+    const schema = state.outputSchemas.find((item) => item.id === Number(button.dataset.id));
+    if (!schema) return;
+    if (button.dataset.outputSchemaAction === "view") openOutputSchemaDrawer(schema, "view");
+    if (button.dataset.outputSchemaAction === "edit") openOutputSchemaDrawer(schema, "edit");
+    if (button.dataset.outputSchemaAction === "toggle") toggleOutputSchema(schema);
+    if (button.dataset.outputSchemaAction === "delete") deleteOutputSchema(schema);
+}
+
+function openFewShotPage(prompt) {
+    els.fewShotPromptFilter.value = String(prompt.id);
+    state.fewShotPage.page = 1;
+    state.fewShotPage.keyword = "";
+    els.fewShotKeyword.value = "";
+    loadFewShots();
+    showPage("fewShots");
 }
 
 function openSceneDrawer(scene, mode) {
@@ -821,12 +1270,6 @@ function openSceneDrawer(scene, mode) {
     els.sceneCode.value = scene.sceneCode || "";
     els.sceneName.value = scene.sceneName || "";
     els.sceneActive.value = String(scene.active ?? true);
-    els.sceneCodeType.value = scene.codeType || "";
-    els.sceneCodeTypeName.value = scene.codeTypeName || "";
-    els.sceneTemplateType.value = scene.templateType || "";
-    els.sceneTemplateTypeName.value = scene.templateTypeName || "";
-    els.sceneMailType.value = scene.mailType ?? 0;
-    els.sceneMailTypeName.value = scene.mailTypeName || "";
     els.sceneDescription.value = scene.description || "";
     setSceneReadonly(mode === "view");
     els.sceneDrawerMask.style.display = "flex";
@@ -840,8 +1283,7 @@ function closeSceneDrawer() {
 }
 
 function setSceneReadonly(readonly) {
-    [els.sceneCode, els.sceneName, els.sceneActive, els.sceneCodeType, els.sceneCodeTypeName,
-        els.sceneTemplateType, els.sceneTemplateTypeName, els.sceneMailType, els.sceneMailTypeName, els.sceneDescription]
+    [els.sceneCode, els.sceneName, els.sceneActive, els.sceneDescription]
         .forEach((element) => element.disabled = readonly);
     els.deleteSceneButton.style.display = readonly ? "none" : "";
     els.toggleSceneButton.style.display = readonly ? "none" : "";
@@ -855,12 +1297,6 @@ async function saveScene(event) {
     const payload = {
         sceneCode: els.sceneCode.value.trim(),
         sceneName: els.sceneName.value.trim(),
-        codeType: els.sceneCodeType.value.trim(),
-        codeTypeName: els.sceneCodeTypeName.value.trim(),
-        templateType: els.sceneTemplateType.value.trim(),
-        templateTypeName: els.sceneTemplateTypeName.value.trim(),
-        mailType: Number(els.sceneMailType.value || 0),
-        mailTypeName: els.sceneMailTypeName.value.trim(),
         description: els.sceneDescription.value,
         active: els.sceneActive.value === "true"
     };
@@ -903,6 +1339,99 @@ async function deleteScene(scene) {
     }
 }
 
+function openOutputSchemaDrawer(schema, mode) {
+    state.editingOutputSchema = schema;
+    state.outputSchemaMode = mode;
+    els.outputSchemaDrawerTitle.textContent = schema.id == null ? "新增输出结构" : mode === "view" ? `查看输出结构 #${schema.id}` : `编辑输出结构 #${schema.id}`;
+    els.outputSchemaId.value = schema.id ?? "";
+    els.outputSchemaCode.value = schema.schemaCode || "";
+    els.outputSchemaName.value = schema.schemaName || "";
+    els.outputSchemaActive.value = String(schema.active ?? true);
+    els.outputSchemaDescription.value = schema.description || "";
+    els.outputSchemaPromptFragment.value = schema.promptFragment || "";
+    els.outputSchemaContent.value = schema.schemaContent || "";
+    els.outputSchemaSampleOutput.value = schema.sampleOutput || "";
+    renderOutputSchemaSceneOptions(schema.sceneId ? String(schema.sceneId) : "");
+    setOutputSchemaReadonly(mode === "view");
+    els.deleteOutputSchemaButton.disabled = schema.id == null;
+    els.toggleOutputSchemaButton.disabled = schema.id == null;
+    els.outputSchemaDrawerMask.style.display = "flex";
+}
+
+function closeOutputSchemaDrawer() {
+    els.outputSchemaDrawerMask.style.display = "none";
+    state.editingOutputSchema = null;
+    state.outputSchemaMode = "edit";
+    setOutputSchemaReadonly(false);
+}
+
+function setOutputSchemaReadonly(readonly) {
+    [els.outputSchemaCode, els.outputSchemaName, els.outputSchemaScene, els.outputSchemaActive,
+        els.outputSchemaDescription, els.outputSchemaPromptFragment, els.outputSchemaContent,
+        els.outputSchemaSampleOutput]
+        .forEach((element) => element.disabled = readonly);
+    els.deleteOutputSchemaButton.style.display = readonly ? "none" : "";
+    els.toggleOutputSchemaButton.style.display = readonly ? "none" : "";
+    els.saveOutputSchemaButton.style.display = readonly ? "none" : "";
+}
+
+async function saveOutputSchema(event) {
+    event.preventDefault();
+    if (state.outputSchemaMode === "view") return;
+    const id = Number(els.outputSchemaId.value || 0);
+    const payload = {
+        schemaCode: els.outputSchemaCode.value.trim(),
+        schemaName: els.outputSchemaName.value.trim(),
+        sceneId: els.outputSchemaScene.value ? Number(els.outputSchemaScene.value) : null,
+        schemaContent: els.outputSchemaContent.value,
+        promptFragment: els.outputSchemaPromptFragment.value,
+        sampleOutput: els.outputSchemaSampleOutput.value,
+        description: els.outputSchemaDescription.value,
+        active: els.outputSchemaActive.value === "true"
+    };
+    if (!payload.schemaCode || !payload.schemaName) return setMessage("结构编码和名称不能为空", "error");
+    if (!payload.schemaContent.trim() && !payload.promptFragment.trim()) return setMessage("结构定义和提示词片段不能同时为空", "error");
+    try {
+        await sendJson(id ? `/api/output-schemas/${id}` : "/api/output-schemas", id ? "PUT" : "POST", payload);
+        closeOutputSchemaDrawer();
+        await refreshOutputSchemaData();
+        await loadOutputSchemas();
+        await loadPromptOptions();
+        await loadPrompts();
+        setMessage("输出结构已保存", "ok");
+    } catch (error) {
+        setMessage(`输出结构保存失败：${error.message}`, "error");
+    }
+}
+
+async function toggleOutputSchema(schema) {
+    if (!schema?.id) return;
+    try {
+        await sendJson(`/api/output-schemas/${schema.id}/status?active=${!schema.active}`, "POST", {});
+        await refreshOutputSchemaData();
+        await loadOutputSchemas();
+        await loadPromptOptions();
+        await loadPrompts();
+        setMessage(schema.active ? "输出结构已禁用" : "输出结构已启用", "ok");
+    } catch (error) {
+        setMessage(`输出结构状态更新失败：${error.message}`, "error");
+    }
+}
+
+async function deleteOutputSchema(schema) {
+    if (!schema?.id || !confirm(`确认删除输出结构 ${schema.schemaName}？`)) return;
+    try {
+        await deleteRequest(`/api/output-schemas/${schema.id}`);
+        await refreshOutputSchemaData();
+        await loadOutputSchemas();
+        await loadPromptOptions();
+        await loadPrompts();
+        setMessage("输出结构已删除", "ok");
+    } catch (error) {
+        setMessage(`输出结构删除失败：${error.message}`, "error");
+    }
+}
+
 function openPromptDrawer(prompt, mode) {
     state.editingPrompt = prompt;
     state.promptMode = mode;
@@ -911,11 +1440,15 @@ function openPromptDrawer(prompt, mode) {
     els.promptDrawerTitle.textContent = prompt.id == null ? "新增提示词" : mode === "view" ? `查看提示词 #${prompt.id}` : `编辑提示词 #${prompt.id}`;
     els.promptId.value = prompt.id ?? "";
     els.promptCode.value = prompt.promptCode || "";
+    setSelectValue(els.promptCodeType, prompt.codeType || "2", plainDictLabel("codeTypes", prompt.codeType || "2"));
+    setSelectValue(els.promptTemplateType, prompt.templateType || "1", plainDictLabel("templateTypes", prompt.templateType || "1"));
+    setSelectValue(els.promptMailType, String(prompt.mailType ?? 0), plainDictLabel("mailTypes", prompt.mailType ?? 0));
     els.priority.value = prompt.priority ?? 0;
     els.promptActive.value = String(prompt.active ?? true);
     els.systemPrompt.value = prompt.systemPrompt || "";
     els.userPrompt.value = prompt.userPrompt || "";
     renderPromptSceneOptions(String(sceneId));
+    renderPromptOutputSchemaOptions(prompt.outputSchemaId ? String(prompt.outputSchemaId) : "");
     setPromptReadonly(mode === "view");
     els.deletePromptButton.disabled = prompt.id == null;
     els.togglePromptButton.disabled = prompt.id == null;
@@ -930,7 +1463,8 @@ function closePromptDrawer() {
 }
 
 function setPromptReadonly(readonly) {
-    [els.promptCode, els.promptScene, els.priority, els.promptActive, els.systemPrompt, els.userPrompt]
+    [els.promptCode, els.promptScene, els.promptOutputSchema, els.promptCodeType, els.promptTemplateType, els.promptMailType,
+        els.priority, els.promptActive, els.systemPrompt, els.userPrompt]
         .forEach((element) => element.disabled = readonly);
     els.deletePromptButton.style.display = readonly ? "none" : "";
     els.togglePromptButton.style.display = readonly ? "none" : "";
@@ -945,19 +1479,21 @@ async function savePrompt(event) {
     const id = Number(els.promptId.value || 0);
     const payload = {
         sceneId: scene.id,
+        outputSchemaId: els.promptOutputSchema.value ? Number(els.promptOutputSchema.value) : null,
         promptCode: els.promptCode.value.trim(),
-        codeType: scene.codeType,
-        templateType: scene.templateType,
+        codeType: els.promptCodeType.value,
+        templateType: els.promptTemplateType.value,
         userPrompt: els.userPrompt.value,
         priority: Number(els.priority.value || 0),
         active: els.promptActive.value === "true",
         systemPrompt: els.systemPrompt.value,
-        mailType: Number(scene.mailType || 0)
+        mailType: Number(els.promptMailType.value || 0)
     };
     if (!payload.promptCode) return setMessage("提示词代码不能为空", "error");
     try {
         await sendJson(id ? `/api/prompts/${id}` : "/api/prompts", id ? "PUT" : "POST", payload);
         closePromptDrawer();
+        await loadPromptOptions();
         await loadPrompts();
         setMessage("提示词已保存", "ok");
     } catch (error) {
@@ -980,29 +1516,170 @@ async function deletePrompt(prompt) {
     if (!prompt?.id || !confirm(`确认删除提示词 ${prompt.promptCode}？`)) return;
     try {
         await deleteRequest(`/api/prompts/${prompt.id}`);
+        await loadPromptOptions();
         await loadPrompts();
+        await loadFewShots();
         setMessage("提示词已删除", "ok");
     } catch (error) {
         setMessage(`提示词删除失败：${error.message}`, "error");
     }
 }
 
-function renderPromptSceneFields() {
-    const scene = findSceneById(els.promptScene.value);
-    els.promptCodeTypeDisplay.value = scene ? `${scene.codeType} - ${scene.codeTypeName}` : "";
-    els.promptTemplateTypeDisplay.value = scene ? `${scene.templateType} - ${scene.templateTypeName}` : "";
-    els.promptMailTypeDisplay.value = scene ? `${scene.mailType} - ${scene.mailTypeName}` : "";
+async function loadFewShots() {
+    const params = new URLSearchParams({
+        page: state.fewShotPage.page,
+        size: state.fewShotPage.size,
+        keyword: state.fewShotPage.keyword
+    });
+    if (els.fewShotPromptFilter.value) params.set("promptId", els.fewShotPromptFilter.value);
+    if (els.fewShotActiveFilter.value) params.set("active", els.fewShotActiveFilter.value);
+    const page = await getJson(`/api/few-shots?${params.toString()}`);
+    state.fewShots = page.items || [];
+    state.fewShotPage.total = page.total || 0;
+    state.fewShotPage.totalPages = page.totalPages || 1;
+    state.fewShotPage.page = page.page || 1;
+    renderFewShotRows();
+}
+
+function renderFewShotRows() {
+    if (!state.fewShots.length) {
+        els.fewShotRows.innerHTML = `<tr><td colspan="8">暂无 Few-shot</td></tr>`;
+    } else {
+        els.fewShotRows.innerHTML = state.fewShots.map((fewShot) => {
+            const prompt = findPromptById(fewShot.promptId);
+            return `
+                <tr>
+                    <td>${fewShot.id}</td>
+                    <td>${prompt ? `<div class="code-cell" title="${escapeHtml(prompt.promptCode)}">${escapeHtml(prompt.promptCode)}</div>` : `#${fewShot.promptId}`}</td>
+                    <td>${escapeHtml(fewShot.title)}</td>
+                    <td>${fewShot.sortOrder ?? 0}</td>
+                    <td><span class="tag ${fewShot.active ? "tag-green" : "tag-red"}">${fewShot.active ? "启用" : "禁用"}</span></td>
+                    <td><div class="prompt-text">${escapeHtml(fewShot.content)}</div></td>
+                    <td>${formatTime(fewShot.updateTime)}</td>
+                    <td>
+                        <button class="btn-link" type="button" data-few-shot-action="view" data-id="${fewShot.id}">查看</button>
+                        <button class="btn-link" type="button" data-few-shot-action="edit" data-id="${fewShot.id}">编辑</button>
+                        <button class="btn-link" type="button" data-few-shot-action="toggle" data-id="${fewShot.id}">${fewShot.active ? "禁用" : "启用"}</button>
+                        <button class="btn-link danger" type="button" data-few-shot-action="delete" data-id="${fewShot.id}">删除</button>
+                    </td>
+                </tr>`;
+        }).join("");
+    }
+    els.fewShotPageInfo.textContent = `第 ${state.fewShotPage.page} / ${state.fewShotPage.totalPages} 页，共 ${state.fewShotPage.total} 条`;
+    els.fewShotPrevButton.disabled = state.fewShotPage.page <= 1;
+    els.fewShotNextButton.disabled = state.fewShotPage.page >= state.fewShotPage.totalPages;
+}
+
+function renderFewShotPromptOptions() {
+    const filterCurrent = els.fewShotPromptFilter.value;
+    const editCurrent = els.fewShotPrompt.value;
+    const prompts = allKnownPrompts();
+    const promptOptions = prompts.map((prompt) =>
+        `<option value="${prompt.id}">#${prompt.id} ${escapeHtml(prompt.promptCode)}</option>`
+    );
+    els.fewShotPromptFilter.innerHTML = [`<option value="">全部提示词</option>`].concat(promptOptions).join("");
+    els.fewShotPrompt.innerHTML = [`<option value="">请选择提示词</option>`].concat(promptOptions).join("");
+    els.fewShotPromptFilter.value = prompts.some((prompt) => String(prompt.id) === filterCurrent) ? filterCurrent : "";
+    els.fewShotPrompt.value = prompts.some((prompt) => String(prompt.id) === editCurrent) ? editCurrent : "";
+}
+
+function onFewShotAction(event) {
+    const button = event.target.closest("[data-few-shot-action]");
+    if (!button) return;
+    const fewShot = state.fewShots.find((item) => item.id === Number(button.dataset.id));
+    if (!fewShot) return;
+    if (button.dataset.fewShotAction === "view") openFewShotDrawer(fewShot, "view");
+    if (button.dataset.fewShotAction === "edit") openFewShotDrawer(fewShot, "edit");
+    if (button.dataset.fewShotAction === "toggle") toggleFewShot(fewShot);
+    if (button.dataset.fewShotAction === "delete") deleteFewShot(fewShot);
+}
+
+function openFewShotDrawer(fewShot, mode) {
+    state.editingFewShot = fewShot;
+    state.fewShotMode = mode;
+    els.fewShotDrawerTitle.textContent = fewShot.id == null ? "新增 Few-shot" : mode === "view" ? `查看 Few-shot #${fewShot.id}` : `编辑 Few-shot #${fewShot.id}`;
+    els.fewShotId.value = fewShot.id ?? "";
+    renderFewShotPromptOptions();
+    els.fewShotPrompt.value = fewShot.promptId ? String(fewShot.promptId) : els.fewShotPromptFilter.value || "";
+    els.fewShotTitle.value = fewShot.title || "";
+    els.fewShotSortOrder.value = fewShot.sortOrder ?? 0;
+    els.fewShotActive.value = String(fewShot.active ?? true);
+    els.fewShotContent.value = fewShot.content || "";
+    setFewShotReadonly(mode === "view");
+    els.deleteFewShotButton.disabled = fewShot.id == null;
+    els.toggleFewShotButton.disabled = fewShot.id == null;
+    els.fewShotDrawerMask.style.display = "flex";
+}
+
+function closeFewShotDrawer() {
+    els.fewShotDrawerMask.style.display = "none";
+    state.editingFewShot = null;
+    state.fewShotMode = "edit";
+    setFewShotReadonly(false);
+}
+
+function setFewShotReadonly(readonly) {
+    [els.fewShotPrompt, els.fewShotTitle, els.fewShotSortOrder, els.fewShotActive, els.fewShotContent]
+        .forEach((element) => element.disabled = readonly);
+    els.deleteFewShotButton.style.display = readonly ? "none" : "";
+    els.toggleFewShotButton.style.display = readonly ? "none" : "";
+    els.saveFewShotButton.style.display = readonly ? "none" : "";
+}
+
+async function saveFewShot(event) {
+    event.preventDefault();
+    if (state.fewShotMode === "view") return;
+    const id = Number(els.fewShotId.value || 0);
+    const payload = {
+        promptId: Number(els.fewShotPrompt.value || 0),
+        title: els.fewShotTitle.value.trim(),
+        content: els.fewShotContent.value,
+        sortOrder: Number(els.fewShotSortOrder.value || 0),
+        active: els.fewShotActive.value === "true"
+    };
+    if (!payload.promptId) return setMessage("请选择提示词", "error");
+    if (!payload.content.trim()) return setMessage("Few-shot 内容不能为空", "error");
+    try {
+        await sendJson(id ? `/api/few-shots/${id}` : "/api/few-shots", id ? "PUT" : "POST", payload);
+        closeFewShotDrawer();
+        await loadFewShots();
+        setMessage("Few-shot 已保存", "ok");
+    } catch (error) {
+        setMessage(`Few-shot 保存失败：${error.message}`, "error");
+    }
+}
+
+async function toggleFewShot(fewShot) {
+    if (!fewShot?.id) return;
+    try {
+        await sendJson(`/api/few-shots/${fewShot.id}/status?active=${!fewShot.active}`, "POST", {});
+        await loadFewShots();
+        setMessage(fewShot.active ? "Few-shot 已禁用" : "Few-shot 已启用", "ok");
+    } catch (error) {
+        setMessage(`Few-shot 状态更新失败：${error.message}`, "error");
+    }
+}
+
+async function deleteFewShot(fewShot) {
+    if (!fewShot?.id || !confirm(`确认删除 Few-shot ${fewShot.title || fewShot.id}？`)) return;
+    try {
+        await deleteRequest(`/api/few-shots/${fewShot.id}`);
+        await loadFewShots();
+        setMessage("Few-shot 已删除", "ok");
+    } catch (error) {
+        setMessage(`Few-shot 删除失败：${error.message}`, "error");
+    }
 }
 
 function renderTestOptions() {
     const current = els.testPrompt.value;
     els.testPrompt.innerHTML = [`<option value="">按发件人自动匹配</option>`].concat(
-        state.prompts.map((prompt) => {
+        state.promptOptions.map((prompt) => {
             const scene = resolvePromptScene(prompt);
             return `<option value="${prompt.id}">#${prompt.id} ${escapeHtml(prompt.promptCode)} / ${escapeHtml(scene?.sceneName || "未配置场景")}</option>`;
         })
     ).join("");
-    els.testPrompt.value = state.prompts.some((prompt) => String(prompt.id) === current) ? current : "";
+    els.testPrompt.value = state.promptOptions.some((prompt) => String(prompt.id) === current) ? current : "";
 }
 
 async function runTest() {
@@ -1072,6 +1749,24 @@ function resetPromptSearch() {
     loadPrompts();
 }
 
+function resetOutputSchemaSearch() {
+    els.outputSchemaKeyword.value = "";
+    els.outputSchemaSceneFilter.value = "";
+    els.outputSchemaActiveFilter.value = "";
+    state.outputSchemaPage.keyword = "";
+    state.outputSchemaPage.page = 1;
+    loadOutputSchemas();
+}
+
+function resetFewShotSearch() {
+    els.fewShotKeyword.value = "";
+    els.fewShotPromptFilter.value = "";
+    els.fewShotActiveFilter.value = "";
+    state.fewShotPage.keyword = "";
+    state.fewShotPage.page = 1;
+    loadFewShots();
+}
+
 function changeScenePage(delta) {
     const next = state.scenePage.page + delta;
     if (next < 1 || next > state.scenePage.totalPages) return;
@@ -1086,17 +1781,25 @@ function changePromptPage(delta) {
     loadPrompts();
 }
 
+function changeOutputSchemaPage(delta) {
+    const next = state.outputSchemaPage.page + delta;
+    if (next < 1 || next > state.outputSchemaPage.totalPages) return;
+    state.outputSchemaPage.page = next;
+    loadOutputSchemas();
+}
+
+function changeFewShotPage(delta) {
+    const next = state.fewShotPage.page + delta;
+    if (next < 1 || next > state.fewShotPage.totalPages) return;
+    state.fewShotPage.page = next;
+    loadFewShots();
+}
+
 function emptyScene() {
     return {
         id: null,
         sceneCode: "",
         sceneName: "",
-        codeType: "2",
-        codeTypeName: "邮箱",
-        templateType: "1",
-        templateTypeName: "航变解析模板",
-        mailType: 0,
-        mailTypeName: "类型识别",
         description: "",
         active: true
     };
@@ -1106,7 +1809,10 @@ function emptyPrompt() {
     return {
         id: null,
         sceneId: null,
+        outputSchemaId: null,
         promptCode: "",
+        codeType: "2",
+        templateType: "1",
         userPrompt: "解析航班变更邮件并返回结构化JSON数据：\\n\\n当前时间：{current_time}\\n邮件内容：\\n{email_content}\\n\\n请从邮件内容中提取航班变更信息，并映射到指定的JSON结构。只返回纯JSON数据，不要其他内容。",
         priority: 1,
         active: true,
@@ -1115,16 +1821,74 @@ function emptyPrompt() {
     };
 }
 
+function emptyOutputSchema() {
+    return {
+        id: null,
+        schemaCode: "",
+        schemaName: "",
+        sceneId: els.outputSchemaSceneFilter.value ? Number(els.outputSchemaSceneFilter.value) : null,
+        schemaContent: "",
+        promptFragment: "",
+        sampleOutput: "",
+        description: "",
+        active: true
+    };
+}
+
+function emptyFewShot() {
+    return {
+        id: null,
+        promptId: els.fewShotPromptFilter.value ? Number(els.fewShotPromptFilter.value) : null,
+        title: "",
+        content: "",
+        sortOrder: 0,
+        active: true
+    };
+}
+
+function findPromptById(id) {
+    if (!id) return null;
+    return allKnownPrompts().find((prompt) => String(prompt.id) === String(id)) || null;
+}
+
+function findOutputSchemaById(id) {
+    if (!id) return null;
+    return state.activeOutputSchemas.concat(state.outputSchemas)
+        .find((schema) => String(schema.id) === String(id)) || null;
+}
+
+function allKnownPrompts() {
+    const byId = new Map();
+    state.promptOptions.concat(state.prompts).forEach((prompt) => byId.set(String(prompt.id), prompt));
+    return Array.from(byId.values());
+}
+
 function findSceneById(id) {
     if (!id) return null;
     return (state.dictionaries.scenarios || []).find((scene) => String(scene.id) === String(id)) || null;
 }
 
+function findSceneByCode(sceneCode) {
+    return (state.dictionaries.scenarios || []).find((scene) => scene.sceneCode === sceneCode) || null;
+}
+
 function resolvePromptScene(prompt) {
-    return findSceneById(prompt.sceneId) || (state.dictionaries.scenarios || []).find((scene) =>
-        String(scene.codeType) === String(prompt.codeType)
-        && String(scene.templateType) === String(prompt.templateType)
-        && String(scene.mailType) === String(prompt.mailType)) || null;
+    return findSceneById(prompt.sceneId) || findSceneByCode(inferSceneCode(prompt));
+}
+
+function inferSceneCode(prompt) {
+    if (String(prompt.codeType) === "after-sale"
+        || (String(prompt.codeType) === "2" && !["1", "2"].includes(String(prompt.templateType)))
+        || (String(prompt.codeType) === "2" && ["2", "3", "9", "10"].includes(String(prompt.mailType)))) {
+        return "after_sale_email";
+    }
+    if (["3", "4"].includes(String(prompt.codeType))) {
+        return "flight_sms";
+    }
+    if (["1", "2"].includes(String(prompt.codeType)) && ["1", "2"].includes(String(prompt.templateType))) {
+        return "flight_email";
+    }
+    return "";
 }
 
 function dictValue(name, value) {
@@ -1139,6 +1903,14 @@ function plainDictLabel(name, value) {
     const rawValue = String(value ?? "");
     const item = (state.dictionaries[name] || []).find((candidate) => String(candidate.value) === rawValue);
     return item ? item.label : rawValue;
+}
+
+function setSelectValue(select, value, label) {
+    const rawValue = String(value ?? "");
+    if (!Array.from(select.options).some((option) => option.value === rawValue)) {
+        select.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(rawValue)}">${escapeHtml(rawValue)} - ${escapeHtml(label || rawValue)}</option>`);
+    }
+    select.value = rawValue;
 }
 
 async function getJson(url) {

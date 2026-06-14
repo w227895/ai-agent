@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
@@ -17,16 +18,25 @@ public class LlmPromptService {
     private final ChatClient chatClient;
     private final LlmPromptRepository repository;
     private final LlmPromptScenarioRepository scenarioRepository;
+    private final LlmPromptFewShotRepository fewShotRepository;
+    private final LlmOutputSchemaRepository outputSchemaRepository;
 
     public LlmPromptService(ChatClient chatClient, LlmPromptRepository repository,
-            LlmPromptScenarioRepository scenarioRepository) {
+            LlmPromptScenarioRepository scenarioRepository, LlmPromptFewShotRepository fewShotRepository,
+            LlmOutputSchemaRepository outputSchemaRepository) {
         this.chatClient = chatClient;
         this.repository = repository;
         this.scenarioRepository = scenarioRepository;
+        this.fewShotRepository = fewShotRepository;
+        this.outputSchemaRepository = outputSchemaRepository;
     }
 
     public PageResult<LlmPrompt> list(int page, int size, String keyword) {
-        return repository.findPage(page, size, keyword);
+        return list(page, size, keyword, null, null);
+    }
+
+    public PageResult<LlmPrompt> list(int page, int size, String keyword, Long sceneId, Boolean active) {
+        return repository.findPage(page, size, keyword, sceneId, active);
     }
 
     public PageResult<LlmPromptScenario> listScenes(int page, int size, String keyword) {
@@ -75,23 +85,15 @@ public class LlmPromptService {
         if (prompt == null || prompt.sceneId() == null) {
             throw new IllegalArgumentException("请选择场景");
         }
-        LlmPromptScenario scene = getScene(prompt.sceneId());
-        return repository.save(new LlmPrompt(
-                prompt.id(),
-                scene.id(),
-                prompt.promptCode(),
-                scene.codeType(),
-                scene.templateType(),
-                prompt.userPrompt(),
-                prompt.priority(),
-                prompt.active(),
-                prompt.createTime(),
-                prompt.updateTime(),
-                prompt.systemPrompt(),
-                scene.mailType()));
+        getScene(prompt.sceneId());
+        if (prompt.outputSchemaId() != null) {
+            getOutputSchema(prompt.outputSchemaId());
+        }
+        return repository.save(prompt);
     }
 
     public void delete(long id) {
+        fewShotRepository.deleteByPromptId(id);
         repository.delete(id);
     }
 
@@ -105,8 +107,12 @@ public class LlmPromptService {
         }
         LlmPrompt prompt = resolvePrompt(request);
         String emailContent = request.emailContent().trim();
-        String systemPrompt = blankToEmpty(prompt.systemPrompt()).trim();
-        String userPrompt = renderUserPrompt(prompt.userPrompt(), emailContent);
+        LlmOutputSchema outputSchema = resolveOutputSchema(prompt);
+        String systemPrompt = appendOutputSchema(
+                blankToEmpty(prompt.systemPrompt()).trim(),
+                renderOutputSchema(outputSchema));
+        String fewShot = renderFewShot(prompt.id(), emailContent);
+        String userPrompt = renderUserPrompt(prompt.userPrompt(), fewShot, emailContent);
         String finalPrompt = renderFinalPrompt(systemPrompt, userPrompt);
         long startedAt = System.currentTimeMillis();
         String result = chatClient.prompt()
@@ -116,6 +122,64 @@ public class LlmPromptService {
                 .content();
         long elapsedMs = System.currentTimeMillis() - startedAt;
         return new TestResult(prompt, emailContent, finalPrompt, result == null ? "" : result, elapsedMs, "SUCCESS");
+    }
+
+    public PageResult<LlmPromptFewShot> listFewShots(int page, int size, String keyword, Long promptId, Boolean active) {
+        return fewShotRepository.findPage(page, size, keyword, promptId, active);
+    }
+
+    public PageResult<LlmOutputSchema> listOutputSchemas(
+            int page, int size, String keyword, Long sceneId, Boolean active) {
+        return outputSchemaRepository.findPage(page, size, keyword, sceneId, active);
+    }
+
+    public java.util.List<LlmOutputSchema> listActiveOutputSchemas() {
+        return outputSchemaRepository.findActiveSchemas();
+    }
+
+    public LlmOutputSchema getOutputSchema(long id) {
+        return outputSchemaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("输出结构不存在: " + id));
+    }
+
+    public LlmOutputSchema saveOutputSchema(LlmOutputSchema schema) {
+        if (schema != null && schema.sceneId() != null) {
+            getScene(schema.sceneId());
+        }
+        return outputSchemaRepository.save(schema);
+    }
+
+    public void setOutputSchemaActive(long id, boolean active) {
+        outputSchemaRepository.setActive(id, active);
+    }
+
+    public void deleteOutputSchema(long id) {
+        long promptCount = outputSchemaRepository.countPromptReferences(id);
+        if (promptCount > 0) {
+            throw new IllegalArgumentException("该输出结构已关联 " + promptCount + " 条提示词，请先调整提示词关联");
+        }
+        outputSchemaRepository.delete(id);
+    }
+
+    public LlmPromptFewShot getFewShot(long id) {
+        return fewShotRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Few-shot 不存在: " + id));
+    }
+
+    public LlmPromptFewShot saveFewShot(LlmPromptFewShot fewShot) {
+        if (fewShot == null || fewShot.promptId() == null) {
+            throw new IllegalArgumentException("请选择提示词");
+        }
+        get(fewShot.promptId());
+        return fewShotRepository.save(fewShot);
+    }
+
+    public void setFewShotActive(long id, boolean active) {
+        fewShotRepository.setActive(id, active);
+    }
+
+    public void deleteFewShot(long id) {
+        fewShotRepository.delete(id);
     }
 
     private LlmPrompt resolvePrompt(TestRequest request) {
@@ -135,7 +199,7 @@ public class LlmPromptService {
                 .orElseThrow(() -> new IllegalArgumentException("没有可用的启用提示词"));
     }
 
-    private java.util.Optional<LlmPrompt> matchBySender(String sender) {
+    private Optional<LlmPrompt> matchBySender(String sender) {
         String normalizedSender = sender.trim().toLowerCase(Locale.ROOT);
         return repository.findActivePrompts().stream()
                 .filter(prompt -> "2".equals(prompt.codeType()))
@@ -163,12 +227,92 @@ public class LlmPromptService {
         return false;
     }
 
-    private String renderUserPrompt(String template, String emailContent) {
+    private String renderUserPrompt(String template, String fewShot, String emailContent) {
         String effectiveTemplate = isBlank(template)
                 ? "请处理下面的邮件内容，只返回结果：\n\n{email_content}"
                 : template;
+        String mainPrompt = renderTemplate(effectiveTemplate, emailContent);
+        String renderedFewShot = renderTemplate(fewShot, emailContent);
+        if (isBlank(renderedFewShot)) {
+            return mainPrompt;
+        }
+        return """
+                %s
+
+                Few-shot Examples
+
+                %s
+                """.formatted(mainPrompt, renderedFewShot).trim();
+    }
+
+    private String renderFewShot(Long promptId, String emailContent) {
+        if (promptId == null) {
+            return "";
+        }
+        return fewShotRepository.findActiveByPromptId(promptId).stream()
+                .map(item -> renderTemplate(item.content(), emailContent))
+                .filter(value -> !isBlank(value))
+                .reduce((left, right) -> left + "\n\n---\n\n" + right)
+                .orElse("");
+    }
+
+    private LlmOutputSchema resolveOutputSchema(LlmPrompt prompt) {
+        if (prompt.outputSchemaId() == null) {
+            return null;
+        }
+        return outputSchemaRepository.findById(prompt.outputSchemaId())
+                .filter(LlmOutputSchema::active)
+                .orElse(null);
+    }
+
+    private String renderOutputSchema(LlmOutputSchema outputSchema) {
+        if (outputSchema == null) {
+            return "";
+        }
+        String promptFragment = blankToEmpty(outputSchema.promptFragment()).trim();
+        String schemaContent = blankToEmpty(outputSchema.schemaContent()).trim();
+        String sampleOutput = blankToEmpty(outputSchema.sampleOutput()).trim();
+        StringBuilder builder = new StringBuilder();
+        if (!promptFragment.isBlank()) {
+            builder.append(promptFragment);
+        }
+        appendSection(builder, "Schema Definition", schemaContent);
+        appendSection(builder, "Sample Output", sampleOutput);
+        return builder.toString().trim();
+    }
+
+    private String appendOutputSchema(String systemPrompt, String outputSchemaPrompt) {
+        if (isBlank(outputSchemaPrompt)) {
+            return systemPrompt;
+        }
+        if (isBlank(systemPrompt)) {
+            return "Output Schema\n\n" + outputSchemaPrompt;
+        }
+        return """
+                %s
+
+                Output Schema
+
+                %s
+                """.formatted(systemPrompt, outputSchemaPrompt).trim();
+    }
+
+    private void appendSection(StringBuilder builder, String title, String content) {
+        if (content == null || content.isBlank()) {
+            return;
+        }
+        if (builder.length() > 0) {
+            builder.append("\n\n");
+        }
+        builder.append(title).append("\n").append(content);
+    }
+
+    private String renderTemplate(String template, String emailContent) {
+        if (template == null) {
+            return "";
+        }
         String currentTime = LocalDateTime.now().format(PROMPT_TIME_FORMATTER);
-        return effectiveTemplate
+        return template
                 .replace("{current_time}", currentTime)
                 .replace("{email_content}", emailContent)
                 .replace("{mail_content}", emailContent)

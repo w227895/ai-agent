@@ -1,8 +1,10 @@
 package com.ke.deepseektools.controller;
 
 import com.ke.deepseektools.prompt.LlmPrompt;
+import com.ke.deepseektools.prompt.LlmPromptFewShot;
 import com.ke.deepseektools.prompt.LlmPromptScenario;
 import com.ke.deepseektools.prompt.LlmPromptService;
+import com.ke.deepseektools.prompt.LlmOutputSchema;
 import com.ke.deepseektools.prompt.PageResult;
 import com.ke.deepseektools.prompt.PromptDictionaries;
 import org.springframework.http.HttpStatus;
@@ -32,8 +34,10 @@ public class LlmPromptController {
     public PageResult<LlmPrompt> listPrompts(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
-            @RequestParam(name = "keyword", defaultValue = "") String keyword) {
-        return service.list(page, size, keyword);
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "sceneId", required = false) Long sceneId,
+            @RequestParam(name = "active", required = false) Boolean active) {
+        return service.list(page, size, keyword, sceneId, active);
     }
 
     @GetMapping("/prompts/{id}")
@@ -64,6 +68,41 @@ public class LlmPromptController {
         return service.dictionaries();
     }
 
+    @GetMapping("/few-shots")
+    public PageResult<LlmPromptFewShot> listFewShots(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "promptId", required = false) Long promptId,
+            @RequestParam(name = "active", required = false) Boolean active) {
+        return service.listFewShots(page, size, keyword, promptId, active);
+    }
+
+    @GetMapping("/few-shots/{id}")
+    public LlmPromptFewShot getFewShot(@PathVariable("id") long id) {
+        return service.getFewShot(id);
+    }
+
+    @GetMapping("/output-schemas")
+    public PageResult<LlmOutputSchema> listOutputSchemas(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "sceneId", required = false) Long sceneId,
+            @RequestParam(name = "active", required = false) Boolean active) {
+        return service.listOutputSchemas(page, size, keyword, sceneId, active);
+    }
+
+    @GetMapping("/output-schemas/active")
+    public java.util.List<LlmOutputSchema> listActiveOutputSchemas() {
+        return service.listActiveOutputSchemas();
+    }
+
+    @GetMapping("/output-schemas/{id}")
+    public LlmOutputSchema getOutputSchema(@PathVariable("id") long id) {
+        return service.getOutputSchema(id);
+    }
+
     @PostMapping("/prompts")
     public LlmPrompt createPrompt(@RequestBody LlmPrompt prompt) {
         return service.save(prompt);
@@ -74,11 +113,22 @@ public class LlmPromptController {
         return service.saveScene(scenario);
     }
 
+    @PostMapping("/few-shots")
+    public LlmPromptFewShot createFewShot(@RequestBody LlmPromptFewShot fewShot) {
+        return service.saveFewShot(fewShot);
+    }
+
+    @PostMapping("/output-schemas")
+    public LlmOutputSchema createOutputSchema(@RequestBody LlmOutputSchema schema) {
+        return service.saveOutputSchema(schema);
+    }
+
     @PutMapping("/prompts/{id}")
     public LlmPrompt updatePrompt(@PathVariable("id") long id, @RequestBody LlmPrompt prompt) {
         return service.save(new LlmPrompt(
                 id,
                 prompt.sceneId(),
+                prompt.outputSchemaId(),
                 prompt.promptCode(),
                 prompt.codeType(),
                 prompt.templateType(),
@@ -91,22 +141,45 @@ public class LlmPromptController {
                 prompt.mailType()));
     }
 
+    @PutMapping("/output-schemas/{id}")
+    public LlmOutputSchema updateOutputSchema(@PathVariable("id") long id, @RequestBody LlmOutputSchema schema) {
+        return service.saveOutputSchema(new LlmOutputSchema(
+                id,
+                schema.schemaCode(),
+                schema.schemaName(),
+                schema.sceneId(),
+                schema.schemaContent(),
+                schema.promptFragment(),
+                schema.sampleOutput(),
+                schema.description(),
+                schema.active(),
+                schema.createTime(),
+                schema.updateTime()));
+    }
+
     @PutMapping("/scenes/{id}")
     public LlmPromptScenario updateScene(@PathVariable("id") long id, @RequestBody LlmPromptScenario scenario) {
         return service.saveScene(new LlmPromptScenario(
                 id,
                 scenario.sceneCode(),
                 scenario.sceneName(),
-                scenario.codeType(),
-                scenario.codeTypeName(),
-                scenario.templateType(),
-                scenario.templateTypeName(),
-                scenario.mailType(),
-                scenario.mailTypeName(),
                 scenario.description(),
                 scenario.active(),
                 scenario.createTime(),
                 scenario.updateTime()));
+    }
+
+    @PutMapping("/few-shots/{id}")
+    public LlmPromptFewShot updateFewShot(@PathVariable("id") long id, @RequestBody LlmPromptFewShot fewShot) {
+        return service.saveFewShot(new LlmPromptFewShot(
+                id,
+                fewShot.promptId(),
+                fewShot.title(),
+                fewShot.content(),
+                fewShot.sortOrder(),
+                fewShot.active(),
+                fewShot.createTime(),
+                fewShot.updateTime()));
     }
 
     @PostMapping("/prompts/{id}/status")
@@ -121,6 +194,18 @@ public class LlmPromptController {
         service.setSceneActive(id, active);
     }
 
+    @PostMapping("/few-shots/{id}/status")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setFewShotStatus(@PathVariable("id") long id, @RequestParam("active") boolean active) {
+        service.setFewShotActive(id, active);
+    }
+
+    @PostMapping("/output-schemas/{id}/status")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setOutputSchemaStatus(@PathVariable("id") long id, @RequestParam("active") boolean active) {
+        service.setOutputSchemaActive(id, active);
+    }
+
     @DeleteMapping("/prompts/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePrompt(@PathVariable("id") long id) {
@@ -131,6 +216,18 @@ public class LlmPromptController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteScene(@PathVariable("id") long id) {
         service.deleteScene(id);
+    }
+
+    @DeleteMapping("/few-shots/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFewShot(@PathVariable("id") long id) {
+        service.deleteFewShot(id);
+    }
+
+    @DeleteMapping("/output-schemas/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteOutputSchema(@PathVariable("id") long id) {
+        service.deleteOutputSchema(id);
     }
 
     @PostMapping("/test")

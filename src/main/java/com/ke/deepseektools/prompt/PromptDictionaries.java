@@ -15,39 +15,39 @@ public final class PromptDictionaries {
         return List.of(
                 new DictionaryItem("1", "供应商"),
                 new DictionaryItem("2", "邮箱"),
-                new DictionaryItem("4", "短信"));
+                new DictionaryItem("3", "短信"),
+                new DictionaryItem("4", "短信"),
+                new DictionaryItem("after-sale", "售后"));
     }
 
     public static List<DictionaryItem> templateTypes() {
         return List.of(
-                new DictionaryItem("1", "航变解析模板"),
-                new DictionaryItem("2", "字段提取模板"));
+                new DictionaryItem("1", "类型识别"),
+                new DictionaryItem("2", "字段提取"),
+                new DictionaryItem("3", "售后退票"),
+                new DictionaryItem("4", "售后短信"),
+                new DictionaryItem("5", "售后改期"),
+                new DictionaryItem("6", "售后补充"));
     }
 
     public static List<DictionaryItem> mailTypes() {
         return List.of(
                 new DictionaryItem("0", "类型识别"),
                 new DictionaryItem("1", "航变字段提取"),
-                new DictionaryItem("2", "退票字段提取"),
-                new DictionaryItem("3", "改期字段提取"));
+                new DictionaryItem("2", "退票/售后"),
+                new DictionaryItem("3", "改期字段提取"),
+                new DictionaryItem("9", "售后补充"),
+                new DictionaryItem("10", "售后补充"));
     }
 
     public static List<LlmPromptScenario> scenarios() {
         return List.of(
-                new LlmPromptScenario(null, "email_type_detect", "邮箱类型识别", "2", "邮箱", "1", "航变解析模板", 0,
-                        "类型识别", "邮件第一段：识别邮件类型", true, null, null),
-                new LlmPromptScenario(null, "email_flight_change_extract", "邮箱航变字段提取", "2", "邮箱", "2", "字段提取模板", 1,
-                        "航变字段提取", "邮件第二段：提取航变字段", true, null, null),
-                new LlmPromptScenario(null, "email_refund_extract", "邮箱退票字段提取", "2", "邮箱", "2", "字段提取模板", 2,
-                        "退票字段提取", "邮件第二段：提取退票字段", true, null, null),
-                new LlmPromptScenario(null, "email_change_extract", "邮箱改期字段提取", "2", "邮箱", "2", "字段提取模板", 3,
-                        "改期字段提取", "邮件第二段：提取改期字段", true, null, null),
-                new LlmPromptScenario(null, "sms_type_detect", "短信类型识别", "4", "短信", "1", "航变解析模板", 0,
-                        "类型识别", "短信第一段：识别短信类型", true, null, null),
-                new LlmPromptScenario(null, "sms_flight_change_extract", "短信航变字段提取", "4", "短信", "2", "字段提取模板", 1,
-                        "航变字段提取", "短信第二段：提取航变字段", true, null, null),
-                new LlmPromptScenario(null, "supplier_type_detect", "供应商类型识别", "1", "供应商", "1", "航变解析模板", 0,
-                        "类型识别", "供应商维度识别", true, null, null));
+                new LlmPromptScenario(null, "flight_email", "航变邮件识别",
+                        "邮件和供应商维度的航变识别、航变字段提取提示词", true, null, null),
+                new LlmPromptScenario(null, "flight_sms", "航变短信识别",
+                        "短信渠道的航变识别、航变字段提取提示词", true, null, null),
+                new LlmPromptScenario(null, "after_sale_email", "售后邮件识别",
+                        "退票、改期、售后补充等邮件类售后提示词", true, null, null));
     }
 
     public record DictionaryResult(

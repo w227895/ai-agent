@@ -5,9 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -27,20 +25,18 @@ public class LlmPromptScenarioRepository {
 
     public List<LlmPromptScenario> findActiveScenarios() {
         return jdbcTemplate.query("""
-                SELECT id, scene_code, scene_name, code_type, code_type_name, template_type, template_type_name,
-                       mail_type, mail_type_name, description, is_active, create_time, update_time
+                SELECT id, scene_code, scene_name, description, is_active, create_time, update_time
                 FROM llm_prompt_scene
                 WHERE is_active = 1
-                ORDER BY code_type, template_type, mail_type, scene_code, id
+                ORDER BY id
                 """, this::mapRow);
     }
 
     public List<LlmPromptScenario> findAllScenarios() {
         return jdbcTemplate.query("""
-                SELECT id, scene_code, scene_name, code_type, code_type_name, template_type, template_type_name,
-                       mail_type, mail_type_name, description, is_active, create_time, update_time
+                SELECT id, scene_code, scene_name, description, is_active, create_time, update_time
                 FROM llm_prompt_scene
-                ORDER BY code_type, template_type, mail_type, scene_code, id
+                ORDER BY is_active DESC, id
                 """, this::mapRow);
     }
 
@@ -55,38 +51,25 @@ public class LlmPromptScenarioRepository {
                 WHERE (? = ''
                     OR scene_code LIKE ?
                     OR scene_name LIKE ?
-                    OR code_type_name LIKE ?
-                    OR template_type_name LIKE ?
-                    OR mail_type_name LIKE ?
                     OR description LIKE ?)
                 """,
                 Long.class,
                 searchTerm.raw(),
                 searchTerm.like(),
                 searchTerm.like(),
-                searchTerm.like(),
-                searchTerm.like(),
-                searchTerm.like(),
                 searchTerm.like());
         List<LlmPromptScenario> items = jdbcTemplate.query("""
-                SELECT id, scene_code, scene_name, code_type, code_type_name, template_type, template_type_name,
-                       mail_type, mail_type_name, description, is_active, create_time, update_time
+                SELECT id, scene_code, scene_name, description, is_active, create_time, update_time
                 FROM llm_prompt_scene
                 WHERE (? = ''
                     OR scene_code LIKE ?
                     OR scene_name LIKE ?
-                    OR code_type_name LIKE ?
-                    OR template_type_name LIKE ?
-                    OR mail_type_name LIKE ?
                     OR description LIKE ?)
-                ORDER BY update_time DESC, id DESC
+                ORDER BY is_active DESC, id
                 LIMIT ? OFFSET ?
                 """,
                 this::mapRow,
                 searchTerm.raw(),
-                searchTerm.like(),
-                searchTerm.like(),
-                searchTerm.like(),
                 searchTerm.like(),
                 searchTerm.like(),
                 searchTerm.like(),
@@ -97,11 +80,18 @@ public class LlmPromptScenarioRepository {
 
     public Optional<LlmPromptScenario> findById(long id) {
         return jdbcTemplate.query("""
-                SELECT id, scene_code, scene_name, code_type, code_type_name, template_type, template_type_name,
-                       mail_type, mail_type_name, description, is_active, create_time, update_time
+                SELECT id, scene_code, scene_name, description, is_active, create_time, update_time
                 FROM llm_prompt_scene
                 WHERE id = ?
                 """, this::mapRow, id).stream().findFirst();
+    }
+
+    public Optional<LlmPromptScenario> findByCode(String sceneCode) {
+        return jdbcTemplate.query("""
+                SELECT id, scene_code, scene_name, description, is_active, create_time, update_time
+                FROM llm_prompt_scene
+                WHERE scene_code = ?
+                """, this::mapRow, trim(sceneCode)).stream().findFirst();
     }
 
     @Transactional
@@ -112,9 +102,8 @@ public class LlmPromptScenarioRepository {
             jdbcTemplate.update(connection -> {
                 var statement = connection.prepareStatement("""
                         INSERT INTO llm_prompt_scene
-                            (scene_code, scene_name, code_type, code_type_name, template_type, template_type_name,
-                             mail_type, mail_type_name, description, is_active)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            (scene_code, scene_name, description, is_active)
+                        VALUES (?, ?, ?, ?)
                         """, Statement.RETURN_GENERATED_KEYS);
                 bindScenario(statement, normalized);
                 return statement;
@@ -128,18 +117,12 @@ public class LlmPromptScenarioRepository {
                     UPDATE llm_prompt_scene
                     SET scene_code = ?,
                         scene_name = ?,
-                        code_type = ?,
-                        code_type_name = ?,
-                        template_type = ?,
-                        template_type_name = ?,
-                        mail_type = ?,
-                        mail_type_name = ?,
                         description = ?,
                         is_active = ?
                     WHERE id = ?
                     """);
             bindScenario(statement, normalized);
-            statement.setLong(11, normalized.id());
+            statement.setLong(5, normalized.id());
             return statement;
         });
         if (updated == 0) {
@@ -165,26 +148,11 @@ public class LlmPromptScenarioRepository {
     }
 
     public PromptDictionaries.DictionaryResult dictionaries() {
-        List<LlmPromptScenario> scenarios = findAllScenarios();
         return new PromptDictionaries.DictionaryResult(
-                distinct(scenarios, DictionaryKind.CODE_TYPE),
-                distinct(scenarios, DictionaryKind.TEMPLATE_TYPE),
-                distinct(scenarios, DictionaryKind.MAIL_TYPE),
-                scenarios);
-    }
-
-    private List<PromptDictionaries.DictionaryItem> distinct(List<LlmPromptScenario> scenarios, DictionaryKind kind) {
-        Map<String, String> items = new LinkedHashMap<>();
-        for (LlmPromptScenario scenario : scenarios) {
-            switch (kind) {
-                case CODE_TYPE -> items.putIfAbsent(scenario.codeType(), scenario.codeTypeName());
-                case TEMPLATE_TYPE -> items.putIfAbsent(scenario.templateType(), scenario.templateTypeName());
-                case MAIL_TYPE -> items.putIfAbsent(String.valueOf(scenario.mailType()), scenario.mailTypeName());
-            }
-        }
-        return items.entrySet().stream()
-                .map(entry -> new PromptDictionaries.DictionaryItem(entry.getKey(), entry.getValue()))
-                .toList();
+                PromptDictionaries.codeTypes(),
+                PromptDictionaries.templateTypes(),
+                PromptDictionaries.mailTypes(),
+                findAllScenarios());
     }
 
     private LlmPromptScenario mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -192,12 +160,6 @@ public class LlmPromptScenarioRepository {
                 rs.getLong("id"),
                 rs.getString("scene_code"),
                 rs.getString("scene_name"),
-                rs.getString("code_type"),
-                rs.getString("code_type_name"),
-                rs.getString("template_type"),
-                rs.getString("template_type_name"),
-                rs.getInt("mail_type"),
-                rs.getString("mail_type_name"),
                 rs.getString("description"),
                 rs.getInt("is_active") == 1,
                 toLocalDateTime(rs.getTimestamp("create_time")),
@@ -211,14 +173,8 @@ public class LlmPromptScenarioRepository {
     private void bindScenario(java.sql.PreparedStatement statement, LlmPromptScenario scenario) throws SQLException {
         statement.setString(1, scenario.sceneCode());
         statement.setString(2, scenario.sceneName());
-        statement.setString(3, scenario.codeType());
-        statement.setString(4, scenario.codeTypeName());
-        statement.setString(5, scenario.templateType());
-        statement.setString(6, scenario.templateTypeName());
-        statement.setInt(7, scenario.mailType());
-        statement.setString(8, scenario.mailTypeName());
-        statement.setString(9, scenario.description());
-        statement.setInt(10, scenario.active() ? 1 : 0);
+        statement.setString(3, scenario.description());
+        statement.setInt(4, scenario.active() ? 1 : 0);
     }
 
     private LlmPromptScenario normalize(LlmPromptScenario scenario) {
@@ -227,36 +183,16 @@ public class LlmPromptScenarioRepository {
         }
         String sceneCode = trim(scenario.sceneCode());
         String sceneName = trim(scenario.sceneName());
-        String codeType = trim(scenario.codeType());
-        String codeTypeName = trim(scenario.codeTypeName());
-        String templateType = trim(scenario.templateType());
-        String templateTypeName = trim(scenario.templateTypeName());
-        String mailTypeName = trim(scenario.mailTypeName());
         if (sceneCode.isEmpty()) {
             throw new IllegalArgumentException("场景编码不能为空");
         }
         if (sceneName.isEmpty()) {
             throw new IllegalArgumentException("场景名称不能为空");
         }
-        if (codeType.isEmpty() || codeTypeName.isEmpty()) {
-            throw new IllegalArgumentException("代码类型和值名称不能为空");
-        }
-        if (templateType.isEmpty() || templateTypeName.isEmpty()) {
-            throw new IllegalArgumentException("模板类型和值名称不能为空");
-        }
-        if (mailTypeName.isEmpty()) {
-            throw new IllegalArgumentException("邮件类型名称不能为空");
-        }
         return new LlmPromptScenario(
                 scenario.id(),
                 sceneCode,
                 sceneName,
-                codeType,
-                codeTypeName,
-                templateType,
-                templateTypeName,
-                scenario.mailType(),
-                mailTypeName,
                 blankToEmpty(scenario.description()),
                 scenario.active(),
                 scenario.createTime(),
@@ -274,12 +210,6 @@ public class LlmPromptScenarioRepository {
 
     private String trim(String value) {
         return value == null ? "" : value.trim();
-    }
-
-    private enum DictionaryKind {
-        CODE_TYPE,
-        TEMPLATE_TYPE,
-        MAIL_TYPE
     }
 
     private record SearchTerm(String raw, String like) {
