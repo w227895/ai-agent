@@ -1,6 +1,6 @@
 package com.ke.deepseektools.controller;
 
-import com.ke.deepseektools.fewshot.FewShotPlatformService;
+import com.ke.deepseektools.prompt.LlmPromptService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/mail")
 public class MailController {
-
-    private static final String FLIGHT_CHANGE_MAIL_SCENARIO = "flight-change-mail";
 
     private static final String SAMPLE_MAIL = """
             Subject: 航班变更通知 MU5101
@@ -24,32 +22,30 @@ public class MailController {
             请协助联系旅客确认是否接受变更。
             """;
 
-    private final FewShotPlatformService fewShotPlatformService;
+    private final LlmPromptService llmPromptService;
 
-    public MailController(FewShotPlatformService fewShotPlatformService) {
-        this.fewShotPlatformService = fewShotPlatformService;
+    public MailController(LlmPromptService llmPromptService) {
+        this.llmPromptService = llmPromptService;
     }
 
     @GetMapping("/process")
-    public MailProcessResponse processSampleMail() {
-        return processMail(new MailProcessRequest(SAMPLE_MAIL));
+    public LlmPromptService.TestResult processSampleMail() {
+        return processMail(new MailProcessRequest(null, "", "", SAMPLE_MAIL));
     }
 
     @PostMapping("/process")
-    public MailProcessResponse processMail(@RequestBody MailProcessRequest request) {
+    public LlmPromptService.TestResult processMail(@RequestBody MailProcessRequest request) {
         String emailContent = request.emailContent();
         if (emailContent == null || emailContent.isBlank()) {
             emailContent = SAMPLE_MAIL;
         }
-
-        String result = fewShotPlatformService.run(FLIGHT_CHANGE_MAIL_SCENARIO, emailContent).result();
-
-        return new MailProcessResponse(emailContent, result);
+        return llmPromptService.test(new LlmPromptService.TestRequest(
+                request.promptId(),
+                request.promptCode(),
+                request.sender(),
+                emailContent));
     }
 
-    public record MailProcessRequest(String emailContent) {
-    }
-
-    public record MailProcessResponse(String emailContent, String result) {
+    public record MailProcessRequest(Long promptId, String promptCode, String sender, String emailContent) {
     }
 }
