@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record LlmPrompt(
         Long id,
+        Long sceneId,
         String promptCode,
         String codeType,
         String templateType,

@@ -30,13 +30,16 @@ public class LlmPromptRepository {
         SearchTerm searchTerm = toSearchTerm(keyword);
         Long total = jdbcTemplate.queryForObject("""
                 SELECT COUNT(*)
-                FROM llm_prompt
+                FROM llm_prompt p
+                LEFT JOIN llm_prompt_scene s ON s.id = p.scene_id
                 WHERE (? = ''
-                    OR prompt_code LIKE ?
-                    OR code_type LIKE ?
-                    OR template_type LIKE ?
-                    OR system_prompt LIKE ?
-                    OR user_prompt LIKE ?)
+                    OR p.prompt_code LIKE ?
+                    OR p.code_type LIKE ?
+                    OR p.template_type LIKE ?
+                    OR p.system_prompt LIKE ?
+                    OR p.user_prompt LIKE ?
+                    OR s.scene_code LIKE ?
+                    OR s.scene_name LIKE ?)
                 """,
                 Long.class,
                 searchTerm.raw(),
@@ -44,22 +47,29 @@ public class LlmPromptRepository {
                 searchTerm.like(),
                 searchTerm.like(),
                 searchTerm.like(),
+                searchTerm.like(),
+                searchTerm.like(),
                 searchTerm.like());
         List<LlmPrompt> items = jdbcTemplate.query("""
-                SELECT id, prompt_code, code_type, template_type, user_prompt, priority,
-                       is_active, create_time, update_time, system_prompt, mail_type
-                FROM llm_prompt
+                SELECT p.id, p.scene_id, p.prompt_code, p.code_type, p.template_type, p.user_prompt, p.priority,
+                       p.is_active, p.create_time, p.update_time, p.system_prompt, p.mail_type
+                FROM llm_prompt p
+                LEFT JOIN llm_prompt_scene s ON s.id = p.scene_id
                 WHERE (? = ''
-                    OR prompt_code LIKE ?
-                    OR code_type LIKE ?
-                    OR template_type LIKE ?
-                    OR system_prompt LIKE ?
-                    OR user_prompt LIKE ?)
-                ORDER BY priority ASC, update_time DESC, id DESC
+                    OR p.prompt_code LIKE ?
+                    OR p.code_type LIKE ?
+                    OR p.template_type LIKE ?
+                    OR p.system_prompt LIKE ?
+                    OR p.user_prompt LIKE ?
+                    OR s.scene_code LIKE ?
+                    OR s.scene_name LIKE ?)
+                ORDER BY p.priority ASC, p.update_time DESC, p.id DESC
                 LIMIT ? OFFSET ?
                 """,
                 this::mapRow,
                 searchTerm.raw(),
+                searchTerm.like(),
+                searchTerm.like(),
                 searchTerm.like(),
                 searchTerm.like(),
                 searchTerm.like(),
@@ -72,7 +82,7 @@ public class LlmPromptRepository {
 
     public List<LlmPrompt> findActivePrompts() {
         return jdbcTemplate.query("""
-                SELECT id, prompt_code, code_type, template_type, user_prompt, priority,
+                SELECT id, scene_id, prompt_code, code_type, template_type, user_prompt, priority,
                        is_active, create_time, update_time, system_prompt, mail_type
                 FROM llm_prompt
                 WHERE is_active = 1
@@ -82,7 +92,7 @@ public class LlmPromptRepository {
 
     public Optional<LlmPrompt> findById(long id) {
         return jdbcTemplate.query("""
-                SELECT id, prompt_code, code_type, template_type, user_prompt, priority,
+                SELECT id, scene_id, prompt_code, code_type, template_type, user_prompt, priority,
                        is_active, create_time, update_time, system_prompt, mail_type
                 FROM llm_prompt
                 WHERE id = ?
@@ -94,7 +104,7 @@ public class LlmPromptRepository {
             return Optional.empty();
         }
         return jdbcTemplate.query("""
-                SELECT id, prompt_code, code_type, template_type, user_prompt, priority,
+                SELECT id, scene_id, prompt_code, code_type, template_type, user_prompt, priority,
                        is_active, create_time, update_time, system_prompt, mail_type
                 FROM llm_prompt
                 WHERE prompt_code = ? AND is_active = 1
@@ -111,18 +121,19 @@ public class LlmPromptRepository {
             jdbcTemplate.update(connection -> {
                 var statement = connection.prepareStatement("""
                         INSERT INTO llm_prompt
-                            (prompt_code, code_type, template_type, user_prompt, priority,
+                            (scene_id, prompt_code, code_type, template_type, user_prompt, priority,
                              is_active, system_prompt, mail_type)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """, Statement.RETURN_GENERATED_KEYS);
-                statement.setString(1, normalized.promptCode());
-                statement.setString(2, normalized.codeType());
-                statement.setString(3, normalized.templateType());
-                statement.setString(4, normalized.userPrompt());
-                statement.setInt(5, normalized.priority());
-                statement.setInt(6, normalized.active() ? 1 : 0);
-                statement.setString(7, normalized.systemPrompt());
-                statement.setInt(8, normalized.mailType());
+                setNullableLong(statement, 1, normalized.sceneId());
+                statement.setString(2, normalized.promptCode());
+                statement.setString(3, normalized.codeType());
+                statement.setString(4, normalized.templateType());
+                statement.setString(5, normalized.userPrompt());
+                statement.setInt(6, normalized.priority());
+                statement.setInt(7, normalized.active() ? 1 : 0);
+                statement.setString(8, normalized.systemPrompt());
+                statement.setInt(9, normalized.mailType());
                 return statement;
             }, keyHolder);
             Number key = keyHolder.getKey();
@@ -131,7 +142,8 @@ public class LlmPromptRepository {
 
         int updated = jdbcTemplate.update("""
                 UPDATE llm_prompt
-                SET prompt_code = ?,
+                SET scene_id = ?,
+                    prompt_code = ?,
                     code_type = ?,
                     template_type = ?,
                     user_prompt = ?,
@@ -141,6 +153,7 @@ public class LlmPromptRepository {
                     mail_type = ?
                 WHERE id = ?
                 """,
+                normalized.sceneId(),
                 normalized.promptCode(),
                 normalized.codeType(),
                 normalized.templateType(),
@@ -172,9 +185,18 @@ public class LlmPromptRepository {
         }
     }
 
+    public long countBySceneId(long sceneId) {
+        Long total = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM llm_prompt WHERE scene_id = ?",
+                Long.class,
+                sceneId);
+        return total == null ? 0 : total;
+    }
+
     private LlmPrompt mapRow(ResultSet rs, int rowNum) throws SQLException {
         return new LlmPrompt(
                 rs.getLong("id"),
+                nullableLong(rs, "scene_id"),
                 rs.getString("prompt_code"),
                 rs.getString("code_type"),
                 rs.getString("template_type"),
@@ -197,6 +219,7 @@ public class LlmPromptRepository {
         }
         return new LlmPrompt(
                 prompt.id(),
+                prompt.sceneId(),
                 promptCode,
                 defaultValue(prompt.codeType(), "2"),
                 defaultValue(prompt.templateType(), "1"),
@@ -207,6 +230,20 @@ public class LlmPromptRepository {
                 prompt.updateTime(),
                 blankToEmpty(prompt.systemPrompt()),
                 prompt.mailType());
+    }
+
+    private void setNullableLong(java.sql.PreparedStatement statement, int parameterIndex, Long value)
+            throws SQLException {
+        if (value == null) {
+            statement.setNull(parameterIndex, java.sql.Types.BIGINT);
+        } else {
+            statement.setLong(parameterIndex, value);
+        }
+    }
+
+    private Long nullableLong(ResultSet rs, String column) throws SQLException {
+        long value = rs.getLong(column);
+        return rs.wasNull() ? null : value;
     }
 
     private LocalDateTime toLocalDateTime(Timestamp timestamp) {

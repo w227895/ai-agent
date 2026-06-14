@@ -16,14 +16,46 @@ public class LlmPromptService {
 
     private final ChatClient chatClient;
     private final LlmPromptRepository repository;
+    private final LlmPromptScenarioRepository scenarioRepository;
 
-    public LlmPromptService(ChatClient chatClient, LlmPromptRepository repository) {
+    public LlmPromptService(ChatClient chatClient, LlmPromptRepository repository,
+            LlmPromptScenarioRepository scenarioRepository) {
         this.chatClient = chatClient;
         this.repository = repository;
+        this.scenarioRepository = scenarioRepository;
     }
 
     public PageResult<LlmPrompt> list(int page, int size, String keyword) {
         return repository.findPage(page, size, keyword);
+    }
+
+    public PageResult<LlmPromptScenario> listScenes(int page, int size, String keyword) {
+        return scenarioRepository.findPage(page, size, keyword);
+    }
+
+    public java.util.List<LlmPromptScenario> listActiveScenes() {
+        return scenarioRepository.findActiveScenarios();
+    }
+
+    public LlmPromptScenario getScene(long id) {
+        return scenarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("场景不存在: " + id));
+    }
+
+    public LlmPromptScenario saveScene(LlmPromptScenario scenario) {
+        return scenarioRepository.save(scenario);
+    }
+
+    public void setSceneActive(long id, boolean active) {
+        scenarioRepository.setActive(id, active);
+    }
+
+    public void deleteScene(long id) {
+        long promptCount = repository.countBySceneId(id);
+        if (promptCount > 0) {
+            throw new IllegalArgumentException("该场景已关联 " + promptCount + " 条提示词，请先改为禁用或调整提示词场景");
+        }
+        scenarioRepository.delete(id);
     }
 
     public LlmPrompt get(long id) {
@@ -31,8 +63,32 @@ public class LlmPromptService {
                 .orElseThrow(() -> new IllegalArgumentException("提示词不存在: " + id));
     }
 
+    public PromptDictionaries.DictionaryResult dictionaries() {
+        PromptDictionaries.DictionaryResult result = scenarioRepository.dictionaries();
+        if (result.scenarios().isEmpty()) {
+            return PromptDictionaries.all();
+        }
+        return result;
+    }
+
     public LlmPrompt save(LlmPrompt prompt) {
-        return repository.save(prompt);
+        if (prompt == null || prompt.sceneId() == null) {
+            throw new IllegalArgumentException("请选择场景");
+        }
+        LlmPromptScenario scene = getScene(prompt.sceneId());
+        return repository.save(new LlmPrompt(
+                prompt.id(),
+                scene.id(),
+                prompt.promptCode(),
+                scene.codeType(),
+                scene.templateType(),
+                prompt.userPrompt(),
+                prompt.priority(),
+                prompt.active(),
+                prompt.createTime(),
+                prompt.updateTime(),
+                prompt.systemPrompt(),
+                scene.mailType()));
     }
 
     public void delete(long id) {

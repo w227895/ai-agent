@@ -1,8 +1,10 @@
 package com.ke.deepseektools.controller;
 
 import com.ke.deepseektools.prompt.LlmPrompt;
+import com.ke.deepseektools.prompt.LlmPromptScenario;
 import com.ke.deepseektools.prompt.LlmPromptService;
 import com.ke.deepseektools.prompt.PageResult;
+import com.ke.deepseektools.prompt.PromptDictionaries;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -39,15 +41,44 @@ public class LlmPromptController {
         return service.get(id);
     }
 
+    @GetMapping("/scenes")
+    public PageResult<LlmPromptScenario> listScenes(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword) {
+        return service.listScenes(page, size, keyword);
+    }
+
+    @GetMapping("/scenes/active")
+    public java.util.List<LlmPromptScenario> listActiveScenes() {
+        return service.listActiveScenes();
+    }
+
+    @GetMapping("/scenes/{id}")
+    public LlmPromptScenario getScene(@PathVariable("id") long id) {
+        return service.getScene(id);
+    }
+
+    @GetMapping("/dictionaries")
+    public PromptDictionaries.DictionaryResult dictionaries() {
+        return service.dictionaries();
+    }
+
     @PostMapping("/prompts")
     public LlmPrompt createPrompt(@RequestBody LlmPrompt prompt) {
         return service.save(prompt);
+    }
+
+    @PostMapping("/scenes")
+    public LlmPromptScenario createScene(@RequestBody LlmPromptScenario scenario) {
+        return service.saveScene(scenario);
     }
 
     @PutMapping("/prompts/{id}")
     public LlmPrompt updatePrompt(@PathVariable("id") long id, @RequestBody LlmPrompt prompt) {
         return service.save(new LlmPrompt(
                 id,
+                prompt.sceneId(),
                 prompt.promptCode(),
                 prompt.codeType(),
                 prompt.templateType(),
@@ -60,16 +91,46 @@ public class LlmPromptController {
                 prompt.mailType()));
     }
 
+    @PutMapping("/scenes/{id}")
+    public LlmPromptScenario updateScene(@PathVariable("id") long id, @RequestBody LlmPromptScenario scenario) {
+        return service.saveScene(new LlmPromptScenario(
+                id,
+                scenario.sceneCode(),
+                scenario.sceneName(),
+                scenario.codeType(),
+                scenario.codeTypeName(),
+                scenario.templateType(),
+                scenario.templateTypeName(),
+                scenario.mailType(),
+                scenario.mailTypeName(),
+                scenario.description(),
+                scenario.active(),
+                scenario.createTime(),
+                scenario.updateTime()));
+    }
+
     @PostMapping("/prompts/{id}/status")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setPromptStatus(@PathVariable("id") long id, @RequestParam("active") boolean active) {
         service.setActive(id, active);
     }
 
+    @PostMapping("/scenes/{id}/status")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setSceneStatus(@PathVariable("id") long id, @RequestParam("active") boolean active) {
+        service.setSceneActive(id, active);
+    }
+
     @DeleteMapping("/prompts/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePrompt(@PathVariable("id") long id) {
         service.delete(id);
+    }
+
+    @DeleteMapping("/scenes/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteScene(@PathVariable("id") long id) {
+        service.deleteScene(id);
     }
 
     @PostMapping("/test")
